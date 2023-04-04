@@ -1,8 +1,12 @@
 
 function SignUp(props) {
+  const handleSignUp = () => {
+
+  }
+
   return (
     <div id="signup">
-      Sign Up
+      <button onClick={handleSignUp}>Sign Up</button>
     </div>
   )
 }

@@ -7,7 +7,7 @@ import SignUp from './components/SignUp';
 import Features from './components/Features';
 import Plans from './components/Plans';
 import Resources from './components/Resources';
-import { BrowserRouter as Router, Route, Link, Routes } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 
 function App() {
   const [name, setName] = useState('');
@@ -17,27 +17,25 @@ function App() {
   const [displaySignUp, setDisplaySignUp] = useState(false);
 
   return (
-    <Router>
-      <div className="App">
-        <Header
-          setDisplayLogin={(value) => setDisplayLogin(value)}
-          setDisplaySignUp={(value) => setDisplaySignUp(value)}
-        />
+    <div className="App">
+      <Header
+        setDisplayLogin={(value) => setDisplayLogin(value)}
+        setDisplaySignUp={(value) => setDisplaySignUp(value)}
+      />
 
-        <Routes>
-          <Route exact path="features" element={<Features />} />
-          <Route path="/resources" element={<Resources />} />
-          <Route path="/plans" element={<Plans />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<SignUp />} />
-        </Routes>
+      <Routes>
+        <Route exact path="features" element={<Features />} />
+        <Route path="/resources" element={<Resources />} />
+        <Route path="/plans" element={<Plans />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<SignUp />} />
+      </Routes>
 
-        <CollectStudentInfo
-          updateName={(value) => setName(value)}
-          updateGrade={(value) => setGrade(value)}
-        />
-      </div>
-    </Router>
+      <CollectStudentInfo
+        updateName={(value) => setName(value)}
+        updateGrade={(value) => setGrade(value)}
+      />
+    </div>
   );
 }
 
