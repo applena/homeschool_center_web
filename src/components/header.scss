@@ -1,0 +1,28 @@
+#header {
+  display: flex;
+  margin: 20px;
+  border-bottom: 2px solid lightgray;
+  padding-bottom: 10px;
+
+  img {
+    width: 10%;
+  }
+
+  nav {
+    width: 50%;
+    margin-top: 3%;
+
+    ul {
+      display: flex;
+      list-style-type: none;
+      justify-content: space-around;
+    }
+  }
+
+  #buttons {
+    display: flex;
+    margin-top: 3%;
+    width: 40%;
+    justify-content: space-evenly;
+  }
+}
