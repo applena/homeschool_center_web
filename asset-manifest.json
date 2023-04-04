@@ -1,0 +1,14 @@
+{
+  "files": {
+    "main.css": "/homeschool_center_web/static/css/main.7c9982c9.css",
+    "main.js": "/homeschool_center_web/static/js/main.0d4198f9.js",
+    "static/media/logo.png": "/homeschool_center_web/static/media/logo.9d59a619a1afdad5361e.png",
+    "index.html": "/homeschool_center_web/index.html",
+    "main.7c9982c9.css.map": "/homeschool_center_web/static/css/main.7c9982c9.css.map",
+    "main.0d4198f9.js.map": "/homeschool_center_web/static/js/main.0d4198f9.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.7c9982c9.css",
+    "static/js/main.0d4198f9.js"
+  ]
+}
