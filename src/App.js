@@ -9,7 +9,8 @@ import SignUp from './components/SignUp';
 import Features from './components/Features';
 import Plans from './components/Plans';
 import Resources from './components/Resources';
-import PrivacyPolicy from './components/privacyPolicy';
+import PrivacyPolicy from './docs/privacyPolicy';
+import TOS from './docs/TOS';
 
 // libs
 import { Route, Routes } from "react-router-dom";
@@ -35,6 +36,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/privacy" element={<PrivacyPolicy />} />
+        <Route path="/tos" element={<TOS />} />
       </Routes>
 
       <CollectStudentInfo
