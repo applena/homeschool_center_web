@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import './app.scss';
+
+// pages
 import CollectStudentInfo from './components/CollectStudentInfo';
 import Header from './components/Header';
 import Login from './components/Login';
@@ -7,6 +9,9 @@ import SignUp from './components/SignUp';
 import Features from './components/Features';
 import Plans from './components/Plans';
 import Resources from './components/Resources';
+import PrivacyPolicy from './components/privacyPolicy';
+
+// libs
 import { Route, Routes } from "react-router-dom";
 
 function App() {
@@ -29,6 +34,7 @@ function App() {
         <Route path="/plans" element={<Plans />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
+        <Route path="/privacy" element={<PrivacyPolicy />} />
       </Routes>
 
       <CollectStudentInfo
