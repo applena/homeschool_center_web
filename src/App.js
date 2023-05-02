@@ -4,7 +4,7 @@ import './app.scss';
 // pages
 import CollectStudentInfo from './components/CollectStudentInfo';
 import Header from './components/Header';
-import Login from './components/Login';
+import Login from './components/Login/Login';
 import SignUp from './components/SignUp';
 import Features from './components/Features';
 import Plans from './components/Plans';

@@ -33,3 +33,5 @@ function privacyPolicy() {
     </div>
   )
 }
+
+export default privacyPolicy;
