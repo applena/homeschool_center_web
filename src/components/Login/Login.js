@@ -2,7 +2,9 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { GoogleLogin } from '@react-oauth/google';
 
 import { useSelector, useDispatch } from 'react-redux';
-import { signIn, setHICalendarObj, setHICalendarConfig } from '../../redux/signInStatus';
+import { signIn } from '../../redux/signInStatus';
+import { setHICalendarObj } from '../../redux/hICalendar';
+import { setHICalendarConfig } from '../../redux/config';
 import { gapi } from 'gapi-script';
 
 import getCalendars from './getCalendars';
@@ -24,8 +26,6 @@ const SCOPES = 'https://www.googleapis.com/auth/calendar';
 function Login(props) {
   const [credentialResponse, setCredentialResponse] = useState({});
   const isSignedIn = useSelector((state) => state.signInStatus.value);
-  const hICalendarObj = useSelector((state) => state.hiCalendar);
-  const config = useSelector((state) => state.config);
   console.log('LOGIN', isSignedIn);
   const dispatch = useDispatch();
 
@@ -84,14 +84,14 @@ function Login(props) {
     }
 
     // get the configEvent
-    const configEvent = await getConfig(hICalendar.id);
+    let configEvent = await getConfig(hICalendar.id);
 
     // if no configEvent, make it
     if (!configEvent) {
       console.log('no config event found - making it');
       // make config object and save to redux
-      const newConfig = await makeConfig(hICalendar.id, config);
-      dispatch(setHICalendarConfig(newConfig));
+      configEvent = await makeConfig(hICalendar.id);
+      dispatch(setHICalendarConfig(configEvent));
     }
   }
 

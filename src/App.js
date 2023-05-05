@@ -2,7 +2,7 @@ import { useState } from 'react';
 import './app.scss';
 
 // pages
-import CollectStudentInfo from './components/CollectStudentInfo';
+// import CollectStudentInfo from './components/CollectStudentInfo';
 import Header from './components/Header';
 import Login from './components/Login/Login';
 import SignUp from './components/SignUp';
@@ -14,6 +14,15 @@ import TOS from './docs/TOS';
 
 // libs
 import { Route, Routes } from "react-router-dom";
+import { Calendar, momentLocalizer } from 'react-big-calendar';
+import 'react-big-calendar/lib/css/react-big-calendar.css';
+import moment from "moment";
+// import GoogleAPICalendar from 'google-calendar-react';
+// import Calendar from 'react-big-calendar';
+
+
+moment.locale("en-GB");
+const localizer = momentLocalizer(moment);
 
 function App() {
   const [name, setName] = useState('');
@@ -21,6 +30,23 @@ function App() {
 
   const [displayLogin, setDisplayLogin] = useState(false);
   const [displaySignUp, setDisplaySignUp] = useState(false);
+
+  const [eventsData, setEventsData] = useState([]);
+
+  const handleSelect = ({ start, end }) => {
+    console.log(start);
+    console.log(end);
+    const title = window.prompt("New Event name");
+    if (title)
+      setEventsData([
+        ...eventsData,
+        {
+          start,
+          end,
+          title
+        }
+      ]);
+  };
 
   return (
     <div className="App">
@@ -39,10 +65,23 @@ function App() {
         <Route path="/tos" element={<TOS />} />
       </Routes>
 
-      <CollectStudentInfo
+      <Calendar
+        views={["day", "agenda", "work_week", "month"]}
+        selectable
+        localizer={localizer}
+        defaultDate={new Date()}
+        defaultView="month"
+        events={eventsData}
+        style={{ height: "100vh" }}
+        onSelectEvent={(event) => alert(event.title)}
+        onSelectSlot={handleSelect}
+      />
+
+
+      {/* <CollectStudentInfo
         updateName={(value) => setName(value)}
         updateGrade={(value) => setGrade(value)}
-      />
+      /> */}
     </div>
   );
 }
