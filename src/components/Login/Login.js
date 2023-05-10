@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { GoogleLogin } from '@react-oauth/google';
+import { GoogleLogin, hasGrantedAllScopesGoogle } from '@react-oauth/google';
 
 import { useSelector, useDispatch } from 'react-redux';
 import { signIn } from '../../redux/signInStatus';
@@ -28,6 +28,7 @@ function Login(props) {
   const isSignedIn = useSelector((state) => state.signInStatus.value);
   console.log('LOGIN', isSignedIn);
   const dispatch = useDispatch();
+  const [clientIsLoaded, setClientIsLoaded] = useState(false);
 
   // const [documents, setDocuments] = useState([]);
   /**
@@ -36,41 +37,9 @@ function Login(props) {
    * appropriate message is printed.
    */
   const listUpcomingEvents = useCallback(async () => {
-
-    // look for a calendar named homeschool island
-    // if it doesn't exist
-    // create it 
-    // create a configuration event for sometime in the past
-
-    // let response;
-
-    // const request = {
-    //   'calendarId': 'primary',
-    //   'timeMin': (new Date()).toISOString(),
-    //   'showDeleted': false,
-    //   'singleEvents': true,
-    //   'maxResults': 10,
-    //   'orderBy': 'startTime',
-    // };
-    // response = await gapi.client.calendar.events.list(request);
-
-    // console.log({ response });
-    // if (!response?.result?.items) return;
-
-
-    // const events = response.result.items;
-    // if (!events || events.length === 0) {
-    //   document.getElementById('content').innerText = 'No events found.';
-    //   return;
-    // }
-    // // Flatten to string to display
-    // const output = events.reduce(
-    //   (str, event) => `${str}${event.summary} (${event.start.dateTime || event.start.date})\n`,
-    //   'Events:\n');
-    // document.getElementById('content').innerText = output;
   }, [])
 
-  const setUpHICalendar = async (calendarList) => {
+  const setUpHICalendar = useCallback(async (calendarList) => {
     // get the hi calendar
     let hICalendar = calendarList.find((cal) => cal.summary === 'Home School Island')
 
@@ -93,16 +62,32 @@ function Login(props) {
       configEvent = await makeConfig(hICalendar.id);
       dispatch(setHICalendarConfig(configEvent));
     }
-  }
+  }, [dispatch])
+
+  // const authorizeCalendarAccess = async () => {
+
+  // }
 
   useEffect(() => {
     if (!isSignedIn) return;
+    if (clientIsLoaded) return;
+
     gapi.load('client', async () => {
       await gapi.client.init({
         clientId: process.env.REACT_APP_GOOGLE_DRIVE_CLIENT_ID,
         discoveryDocs: DISCOVERY_DOCS,
         scope: SCOPES
       });
+      setClientIsLoaded(true);
+      let tokenClient = window.google.accounts.oauth2.initTokenClient({
+        client_id: process.env.REACT_APP_GOOGLE_DRIVE_CLIENT_ID,
+        scope: SCOPES,
+        callback: '', // defined later
+      });
+
+      // prompts the user for calendar access
+      tokenClient.requestAccessToken({ prompt: 'consent' });
+
       getCalendars(function (calendarList) {
         setUpHICalendar(calendarList)
       });
@@ -117,7 +102,7 @@ function Login(props) {
     //   // });
     // })
 
-  }, [isSignedIn, listUpcomingEvents])
+  }, [isSignedIn, listUpcomingEvents, setUpHICalendar])
 
 
   return (
