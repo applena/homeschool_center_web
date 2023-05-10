@@ -24,7 +24,7 @@ const SCOPES = 'https://www.googleapis.com/auth/calendar';
 
 
 function Login(props) {
-  const [credentialResponse, setCredentialResponse] = useState({});
+  // const [credentialResponse, setCredentialResponse] = useState({});
   const isSignedIn = useSelector((state) => state.signInStatus.value);
   console.log('LOGIN', isSignedIn);
   const dispatch = useDispatch();
@@ -102,7 +102,7 @@ function Login(props) {
     //   // });
     // })
 
-  }, [isSignedIn, listUpcomingEvents, setUpHICalendar])
+  }, [isSignedIn, listUpcomingEvents, setUpHICalendar, clientIsLoaded])
 
 
   return (
@@ -113,7 +113,7 @@ function Login(props) {
           onSuccess={credentialResponse => {
             console.log(credentialResponse);
             dispatch(signIn(true));
-            setCredentialResponse(credentialResponse);
+            // setCredentialResponse(credentialResponse);
           }}
           auto_select
           onError={() => {

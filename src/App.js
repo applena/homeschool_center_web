@@ -17,6 +17,7 @@ import { Route, Routes } from "react-router-dom";
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import moment from "moment";
+import { useSelector } from 'react-redux';
 // import GoogleAPICalendar from 'google-calendar-react';
 // import Calendar from 'react-big-calendar';
 
@@ -30,6 +31,8 @@ function App() {
 
   const [displayLogin, setDisplayLogin] = useState(false);
   const [displaySignUp, setDisplaySignUp] = useState(false);
+
+  const isSignedIn = useSelector((state) => state.signInStatus.value);
 
   const [eventsData, setEventsData] = useState([]);
 
@@ -65,17 +68,20 @@ function App() {
         <Route path="/tos" element={<TOS />} />
       </Routes>
 
-      <Calendar
-        views={["day", "agenda", "work_week", "month"]}
-        selectable
-        localizer={localizer}
-        defaultDate={new Date()}
-        defaultView="month"
-        events={eventsData}
-        style={{ height: "100vh" }}
-        onSelectEvent={(event) => alert(event.title)}
-        onSelectSlot={handleSelect}
-      />
+      {isSignedIn &&
+        <Calendar
+          views={["day", "agenda", "month"]}
+          selectable
+          localizer={localizer}
+          defaultDate={new Date()}
+          defaultView="month"
+          events={eventsData}
+          style={{ height: "100vh" }}
+          onSelectEvent={(event) => alert(event.title)}
+          onSelectSlot={handleSelect}
+        />
+      }
+
 
 
       {/* <CollectStudentInfo
