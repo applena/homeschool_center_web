@@ -3,10 +3,9 @@ import { Route, Router } from "react-router-dom";
 
 //pages
 import Features from "../components/Features";
-import Login from "../components/Login";
-import SignUp from "../components/SignUp";
 import Plans from "../components/Plans";
 import Resources from "../components/Resources";
+import LandingPage from "../components/LandingPage";
 
 
 function Routes() {
@@ -15,19 +14,15 @@ function Routes() {
       <Route
         exact
         path="/"
-        component={Features}
-      />
-      <Route
-        path="/login"
-        component={Login}
-      />
-      <Route
-        path="/signup"
-        component={SignUp}
+        component={LandingPage}
       />
       <Route
         path="/plans"
         component={Plans}
+      />
+      <Route
+        path="/features"
+        component={Features}
       />
       <Route
         path="/resources"
