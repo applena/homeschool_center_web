@@ -2,10 +2,9 @@ import React, { useState, useCallback, useEffect } from 'react';
 import './header.scss';
 import HSCLogo from '../assets/logo.png';
 import { BrowserRouter as Link } from "react-router-dom";
-import { googleLogout } from '@react-oauth/google';
+import { GoogleLogin, googleLogout, hasGrantedAllScopesGoogle } from '@react-oauth/google';
 import { useSelector, useDispatch } from 'react-redux';
-import { signIn } from '../redux/signInStatus';
-import { GoogleLogin } from '@react-oauth/google';
+import { signIn, credentialResponse, setClientIsLoaded } from '../redux/signInStatus';
 import getCalendars from './Login/getCalendars';
 import getConfig from './Login/getConfig';
 import makeConfig from './Login/makeConfig';
@@ -24,10 +23,10 @@ const DISCOVERY_DOCS = [
 const SCOPES = 'https://www.googleapis.com/auth/calendar';
 
 function Header(props) {
-  const isSignedIn = useSelector((state) => state.signInStatus.value);
+  const isSignedIn = useSelector((state) => state.signInStatus.signedIn);
+  const credentials = useSelector((state) => state.signInStatus.credentialResponse);
+  const clientIsLoaded = useSelector((state) => state.signInStatus.clientLoaded);
   const dispatch = useDispatch();
-  console.log('LOGIN', isSignedIn);
-  const [clientIsLoaded, setClientIsLoaded] = useState(false);
 
   // const [documents, setDocuments] = useState([]);
   /**
@@ -63,29 +62,41 @@ function Header(props) {
     }
   }, [dispatch])
 
-  // const authorizeCalendarAccess = async () => {
-
-  // }
-
   useEffect(() => {
+
     if (!isSignedIn) return;
     if (clientIsLoaded) return;
 
+    console.log(`gapi client loading...`);
     gapi.load('client', async () => {
+      console.log(`gapi client loaded`);
       await gapi.client.init({
         clientId: process.env.REACT_APP_GOOGLE_DRIVE_CLIENT_ID,
         discoveryDocs: DISCOVERY_DOCS,
         scope: SCOPES
       });
       setClientIsLoaded(true);
+
+      console.log(`gapi client getting tokenClient...`);
       let tokenClient = window.google.accounts.oauth2.initTokenClient({
         client_id: process.env.REACT_APP_GOOGLE_DRIVE_CLIENT_ID,
         scope: SCOPES,
         callback: '', // defined later
       });
 
-      // prompts the user for calendar access
-      tokenClient.requestAccessToken({ prompt: 'consent' });
+      const hasAccess = hasGrantedAllScopesGoogle(
+        credentials,
+        SCOPES,
+      );
+      console.log(`gapi hasGrantedAllScopesGoogle`, { SCOPES, hasAccess, tokenClient });
+
+      if (!hasAccess) {
+        // prompts the user for calendar access
+        console.log(`gapi client requestAccessToken`);
+        tokenClient.requestAccessToken({ prompt: 'consent' });
+        console.log(`gapi client requestAccessToken:done`);
+
+      }
 
       getCalendars(function (calendarList) {
         setUpHICalendar(calendarList)
@@ -101,8 +112,9 @@ function Header(props) {
     //   // });
     // })
 
-  }, [isSignedIn, listUpcomingEvents, setUpHICalendar, clientIsLoaded])
+  }, [isSignedIn, listUpcomingEvents, setUpHICalendar, clientIsLoaded, credentials])
 
+  console.log('Header Render', { isSignedIn, credentials });
   return (
     <div id="header">
       <img alt="homeschool center name" src={HSCLogo} />
@@ -122,10 +134,10 @@ function Header(props) {
       {!isSignedIn ?
 
         <GoogleLogin
-          onSuccess={credentialResponse => {
-            // console.log(credentialResponse);
+          onSuccess={response => {
+            console.log('GoogleLogin onSuccess', response);
             dispatch(signIn(true));
-            // setCredentialResponse(credentialResponse);
+            dispatch(credentialResponse(response));
           }}
           auto_select
           onError={() => {

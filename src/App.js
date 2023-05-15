@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import './app.scss';
 
 // pages
@@ -9,44 +9,56 @@ import Plans from './components/Plans';
 import Resources from './components/Resources';
 import PrivacyPolicy from './docs/privacyPolicy';
 import TOS from './docs/TOS';
+import AddEvent from './components/AddEvent';
 
 // libs
 import { Route, Routes, BrowserRouter } from "react-router-dom";
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import moment from "moment";
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import LandingPage from './components/LandingPage';
+import Modal from 'react-modal';
 
+Modal.setAppElement(App);
 
 moment.locale("en-GB");
 const localizer = momentLocalizer(moment);
 
 function App() {
+  const [displayAddEvent, setDisplayAddEvent] = useState(false);
   // const [name, setName] = useState('');
   // const [grade, setGrade] = useState(0);
 
   // const [displayLogin, setDisplayLogin] = useState(false);
   // const [displaySignUp, setDisplaySignUp] = useState(false);
 
-  const isSignedIn = useSelector((state) => state.signInStatus.value);
 
-  const [eventsData, setEventsData] = useState([]);
+  const isSignedIn = useSelector((state) => state.signInStatus.signedIn);
+  const eventsData = useSelector((state) => state.events);
 
-  const handleSelect = ({ start, end }) => {
-    console.log(start);
-    console.log(end);
-    const title = window.prompt("New Event name");
-    if (title)
-      setEventsData([
-        ...eventsData,
-        {
-          start,
-          end,
-          title
-        }
-      ]);
-  };
+  // const [eventsData, setEventsData] = useState([]);
+
+  const handleSelect = useCallback(({ start, end }) => {
+    // console.log(start);
+    // console.log(end);
+
+    setDisplayAddEvent(true);
+    console.log('display add event', displayAddEvent)
+
+    // const title = window.prompt("New Event name");
+    // if (title)
+    //   setEventsData([
+    //     ...eventsData,
+    //     {
+    //       start,
+    //       end,
+    //       title
+    //     }
+    //   ]);
+  }, [displayAddEvent]);
+
+  console.log('App', { displayAddEvent });
 
   return (
     <div className="App">
@@ -77,12 +89,12 @@ function App() {
         />
       }
 
-
-
-      {/* <CollectStudentInfo
-        updateName={(value) => setName(value)}
-        updateGrade={(value) => setGrade(value)}
-      /> */}
+      {displayAddEvent &&
+        <AddEvent
+          displayAddEvent={displayAddEvent}
+          setDisplayAddEvent={() => setDisplayAddEvent(false)}
+        />
+      }
     </div>
   );
 }

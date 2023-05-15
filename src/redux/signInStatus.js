@@ -3,16 +3,26 @@ import { createSlice } from '@reduxjs/toolkit';
 export const signInSlice = createSlice({
   name: 'signInStatus',
   initialState: {
-    value: false,
+    signedIn: false,
+    credentialResponse: {},
+    clientLoaded: false
   },
   reducers: {
     signIn: (state, action) => {
-      state.value = action.payload;
+      state.signedIn = action.payload;
     },
+    credentialResponse: (state, action) => {
+      console.log('redux credntial Response', { state, action });
+      state.credentialResponse = action.payload;
+    },
+    setClientIsLoaded: (state, action) => {
+      console.log('setClientIsLoaded', { action });
+      state.clientLoaded = action.payload;
+    }
   },
 })
 
 // Action creators are generated for each case reducer function
-export const { signIn } = signInSlice.actions
+export const { signIn, credentialResponse, setClientIsLoaded } = signInSlice.actions
 
 export default signInSlice.reducer
