@@ -148,7 +148,7 @@ function Header(props) {
         />
         :
         <div>
-          <button onClick={() => {
+          <button className="button" onClick={() => {
             console.log('tryin to logout');
             googleLogout();
             dispatch(signIn(false));

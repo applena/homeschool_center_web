@@ -1,11 +1,33 @@
+@import "~bootstrap/scss/bootstrap";
+
 .App {
   text-align: center;
 }
 
-button {
+.button {
   width: 100px;
   background-color: lightblue;
   border-radius: 60px;
   border: 1px solid lightgray;
   height: 40px;
+}
+
+.closeButton {
+  width: 60px;
+  background-color: white;
+  border-radius: 60px;
+  border: 1px solid lightblue;
+  height: 40px;
+}
+
+.flex {
+  display: flex;
+}
+
+.spaceBetween {
+  justify-content: space-between;
+}
+
+.flexCol {
+  flex-direction: column;
 }

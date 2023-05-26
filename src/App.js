@@ -20,7 +20,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import LandingPage from './components/LandingPage';
 import Modal from 'react-modal';
 
-Modal.setAppElement(App);
+// Modal.setAppElement(App);
 
 moment.locale("en-GB");
 const localizer = momentLocalizer(moment);
