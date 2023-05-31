@@ -3,5 +3,40 @@
   left: 20%;
   width: 100%;
   z-index: 20;
-  position: absolute;
+  position: absolute !important;
+}
+
+.dropdown {
+  display: flex;
+  margin: 1em;
+}
+
+.react-time-picker__wrapper {
+  text-align: left;
+  margin-top: 5px;
+
+  .react-time-picker__inputGroup {
+    display: inline-block;
+  }
+
+  .react-time-picker__clear-button {
+    margin-left: 20px;
+  }
+
+  .react-time-picker__inputGroup__input {
+    width: auto !important;
+    height: 30px;
+  }
+}
+
+
+form {
+  label {
+    margin: 10px 0;
+    text-align: left;
+  }
+
+  input {
+    width: 100%;
+  }
 }

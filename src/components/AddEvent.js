@@ -1,48 +1,28 @@
 import { useCallback, useState } from 'react';
-// import Modal from 'react-modal';
 import './addEvent.scss';
 import DropdownButton from 'react-bootstrap/DropdownButton';
 import Dropdown from 'react-bootstrap/Dropdown';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
+import TimePicker from 'react-time-picker';
+import 'react-datetime-picker/dist/DateTimePicker.css';
+import 'react-calendar/dist/Calendar.css';
+import 'react-clock/dist/Clock.css';
 
 function AddEvent(props) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [eventType, setEventType] = useState('Select Event Type');
   const [subject, setSubject] = useState('Subject');
+  const [time, setTime] = useState();
+  const [repeats, setRepeats] = useState(false);
 
-  console.log({ subject })
-
-  // let subtitle;
+  console.log({ time })
   console.log('Add event', props);
-  // const afterOpenModal = useCallback(() => {
-  //   // references are now sync'd and can be accessed.
-  //   subtitle.style.color = '#f00';
-  // }, [])
-
-  const updateInput = (e, field) => {
-    // console.log(e.target.value)
-    switch (field) {
-      case 'name':
-        setName(e.target.value);
-        break;
-      case 'description':
-        setDescription(e.target.value);
-        break;
-      default:
-        return 'foo';
-    }
-  }
-
-  // function afterOpenModal() {
-  //   // references are now sync'd and can be accessed.
-  //   subtitle.style.color = '#f00';
-  // }
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log({ name, description })
+    console.log({ name, description, eventType, subject })
   }
 
 
@@ -56,31 +36,65 @@ function AddEvent(props) {
           <Modal.Title>Add Event</Modal.Title>
         </Modal.Header>
 
-        <Modal.Body>
-          <DropdownButton id="dropdown-basic-button" title={eventType}>
-            <Dropdown.Item
-              onClick={() => setEventType('Class')}
-            >Class</Dropdown.Item>
-            <Dropdown.Item
-              onClick={() => setEventType('Everything Else')}
-            >Everything Else</Dropdown.Item>
-          </DropdownButton>
+        <form>
+          <Modal.Body>
+            <div className='flex'>
+              <DropdownButton id="dropdown-basic-button" title={eventType}>
+                <Dropdown.Item
+                  onClick={() => setEventType('Class')}
+                >Class</Dropdown.Item>
+                <Dropdown.Item
+                  onClick={() => setEventType('Everything Else')}
+                >Everything Else</Dropdown.Item>
+              </DropdownButton>
 
-          {eventType === 'Class' &&
-            <DropdownButton title={subject}>
-              <Dropdown.Item onClick={(e) => setSubject(e.target.textContent)}>ELA</Dropdown.Item>
-              <Dropdown.Item onClick={(e) => setSubject(e.target.textContent)}>Math</Dropdown.Item>
-              <Dropdown.Item onClick={(e) => setSubject(e.target.textContent)}>Science</Dropdown.Item>
-              <Dropdown.Item onClick={(e) => setSubject(e.target.textContent)}>History</Dropdown.Item>
-            </DropdownButton>
-          }
+              {eventType === 'Class' &&
+                <DropdownButton title={subject}>
+                  <Dropdown.Item onClick={(e) => setSubject(e.target.textContent)}>ELA</Dropdown.Item>
+                  <Dropdown.Item onClick={(e) => setSubject(e.target.textContent)}>Math</Dropdown.Item>
+                  <Dropdown.Item onClick={(e) => setSubject(e.target.textContent)}>Science</Dropdown.Item>
+                  <Dropdown.Item onClick={(e) => setSubject(e.target.textContent)}>History</Dropdown.Item>
+                </DropdownButton>
+              }
+            </div>
 
-        </Modal.Body>
+            <div className='flex'>
+              <input style={{ display: 'inline-block', width: 'auto', marginRight: '10px' }} onClick={() => setRepeats(!repeats)} type="checkbox" />
+              <label>
+                repeats
+              </label>
+            </div>
 
-        <Modal.Footer>
-          <Button onClick={() => props.setDisplayAddEvent(false)} variant="secondary">Close</Button>
-          <Button variant="primary">Save changes</Button>
-        </Modal.Footer>
+            <div className='flex flexCol'>
+              <label>
+                Name:
+                <input
+                  onChange={(e) => setName(e.target.value)}
+                  type="text" name="name" />
+              </label>
+
+              <label>
+                Description:
+                <input
+                  onChange={(e) => setDescription(e.target.value)}
+                  type="text" name="description" />
+              </label>
+
+              <TimePicker
+                disableClock
+                onChange={setTime}
+                value={time}
+              />
+            </div>
+          </Modal.Body>
+
+          <Modal.Footer>
+            <Button onClick={() => props.setDisplayAddEvent(false)} variant="secondary">Close</Button>
+            <Button
+              onClick={(e) => handleSubmit(e)}
+              variant="primary">Save changes</Button>
+          </Modal.Footer>
+        </form>
       </Modal.Dialog>
     </div>
   )
