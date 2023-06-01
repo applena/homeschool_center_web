@@ -18,16 +18,18 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 import moment from "moment";
 import { useSelector, useDispatch } from 'react-redux';
 import LandingPage from './components/LandingPage';
-import Modal from 'react-modal';
-
-// Modal.setAppElement(App);
 
 moment.locale("en-GB");
 const localizer = momentLocalizer(moment);
 
 function App() {
   const [displayAddEvent, setDisplayAddEvent] = useState(false);
-  const [dateSelected, setDateSelected] = useState('');
+  const [daySelected, setDaySelected] = useState('');
+  const [dateSelected, setDateSelected] = useState(new Date());
+  const [month, setMonth] = useState('');
+  const [day, setDay] = useState('');
+  const [ordinalsOfMonth, setOrdinalsOfMonth] = useState('');
+
   // const [name, setName] = useState('');
   // const [grade, setGrade] = useState(0);
 
@@ -41,39 +43,69 @@ function App() {
   // const [eventsData, setEventsData] = useState([]);
 
   const handleSelect = useCallback(({ start, end }) => {
-    // console.log(start);
-    // console.log(end);
-    start = start + '';
-    start = start.slice(0, 3);
-    switch (start) {
-      case 'Mon':
-        start = 'Monday';
+
+    setDateSelected(start);
+
+    //find and set the ordinals - ex: 'thrid thursday of the month'
+    const ordinals = ["", "first", "second", "third", "fourth", "fifth"];
+    let date = start + '';
+    let tokens = date.split(/[ ,]/);
+    const dayOfWeek = getTheDayOfWeek(tokens[0]);
+    setOrdinalsOfMonth("the " + ordinals[Math.ceil(tokens[2] / 7)] + " " + dayOfWeek + " of the month");
+
+    //find and set the day of the week
+    let newStart = start + '';
+    newStart = newStart.slice(0, 3);
+    const dayOWeek = getTheDayOfWeek(newStart);
+    setDaySelected(dayOWeek);
+
+    //find and set the Month selected
+    let monthIndex = start.getMonth()
+    switch (monthIndex) {
+      case 0:
+        setMonth('January');
         break;
-      case 'Tue':
-        start = 'Tuesday';
+      case 1:
+        setMonth('February');
         break;
-      case 'Wed':
-        start = 'Wednesdday';
+      case 2:
+        setMonth('March');
         break;
-      case 'Thu':
-        start = 'Thursday';
+      case 3:
+        setMonth('April');
         break;
-      case 'Fri':
-        start = 'Friday';
+      case 4:
+        setMonth('May');
         break;
-      case 'Sat':
-        start = 'Saturday';
+      case 5:
+        setMonth('June');
         break;
-      case 'Sun':
-        start = 'Sunday';
+      case 6:
+        setMonth('July');
+        break;
+      case 7:
+        setMonth('August');
+        break;
+      case 8:
+        setMonth('September');
+        break;
+      case 9:
+        setMonth('October');
+        break;
+      case 10:
+        setMonth('November');
+        break;
+      case 11:
+        setMonth('December');
         break;
       default:
-        start = '';
+        setMonth('');
     }
 
+    //set the day selected
+    setDay(start.getDate());
+
     setDisplayAddEvent(true);
-    setDateSelected(start);
-    // console.log('display add event', displayAddEvent)
 
     // const title = window.prompt("New Event name");
     // if (title)
@@ -86,6 +118,27 @@ function App() {
     //     }
     //   ]);
   }, []);
+
+  const getTheDayOfWeek = (abrivation) => {
+    switch (abrivation) {
+      case 'Mon':
+        return 'Monday';
+      case 'Tue':
+        return 'Tuesday';
+      case 'Wed':
+        return 'Wednesdday';
+      case 'Thu':
+        return 'Thursday';
+      case 'Fri':
+        return 'Friday';
+      case 'Sat':
+        return 'Saturday';
+      case 'Sun':
+        return ('Sunday');
+      default:
+        return ('');
+    }
+  }
 
   console.log('App', { displayAddEvent });
 
@@ -121,7 +174,11 @@ function App() {
       {displayAddEvent &&
         <AddEvent
           displayAddEvent={displayAddEvent}
+          daySelected={daySelected}
           dateSelected={dateSelected}
+          month={month}
+          day={day}
+          ordinal={ordinalsOfMonth}
           setDisplayAddEvent={() => setDisplayAddEvent(false)}
         />
       }

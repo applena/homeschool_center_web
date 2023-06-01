@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import './addEvent.scss';
 import DropdownButton from 'react-bootstrap/DropdownButton';
 import Dropdown from 'react-bootstrap/Dropdown';
@@ -70,9 +70,10 @@ function AddEvent(props) {
             {repeats &&
               <DropdownButton title={repeatFrequency}>
                 <Dropdown.Item onClick={(e) => setSubject(e.target.textContent)}>Daily</Dropdown.Item>
-                <Dropdown.Item onClick={(e) => setSubject(e.target.textContent)}>Weekly on {props.dateSelected}</Dropdown.Item>
-                <Dropdown.Item onClick={(e) => setSubject(e.target.textContent)}>Monthly</Dropdown.Item>
-                <Dropdown.Item onClick={(e) => setSubject(e.target.textContent)}>History</Dropdown.Item>
+                <Dropdown.Item onClick={(e) => setSubject(e.target.textContent)}>Weekly on {props.daySelected}</Dropdown.Item>
+                <Dropdown.Item onClick={(e) => setSubject(e.target.textContent)}>Monthly on {props.ordinal}</Dropdown.Item>
+                <Dropdown.Item onClick={(e) => setSubject(e.target.textContent)}>Annually on {props.month} {props.day}</Dropdown.Item>
+                <Dropdown.Item onClick={(e) => setSubject(e.target.textContent)}>Every weekday (Monday to Friday)</Dropdown.Item>
               </DropdownButton>
             }
 
