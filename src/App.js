@@ -27,6 +27,7 @@ const localizer = momentLocalizer(moment);
 
 function App() {
   const [displayAddEvent, setDisplayAddEvent] = useState(false);
+  const [dateSelected, setDateSelected] = useState('');
   // const [name, setName] = useState('');
   // const [grade, setGrade] = useState(0);
 
@@ -42,9 +43,37 @@ function App() {
   const handleSelect = useCallback(({ start, end }) => {
     // console.log(start);
     // console.log(end);
+    start = start + '';
+    start = start.slice(0, 3);
+    switch (start) {
+      case 'Mon':
+        start = 'Monday';
+        break;
+      case 'Tue':
+        start = 'Tuesday';
+        break;
+      case 'Wed':
+        start = 'Wednesdday';
+        break;
+      case 'Thu':
+        start = 'Thursday';
+        break;
+      case 'Fri':
+        start = 'Friday';
+        break;
+      case 'Sat':
+        start = 'Saturday';
+        break;
+      case 'Sun':
+        start = 'Sunday';
+        break;
+      default:
+        start = '';
+    }
 
     setDisplayAddEvent(true);
-    console.log('display add event', displayAddEvent)
+    setDateSelected(start);
+    // console.log('display add event', displayAddEvent)
 
     // const title = window.prompt("New Event name");
     // if (title)
@@ -56,7 +85,7 @@ function App() {
     //       title
     //     }
     //   ]);
-  }, [displayAddEvent]);
+  }, []);
 
   console.log('App', { displayAddEvent });
 
@@ -92,6 +121,7 @@ function App() {
       {displayAddEvent &&
         <AddEvent
           displayAddEvent={displayAddEvent}
+          dateSelected={dateSelected}
           setDisplayAddEvent={() => setDisplayAddEvent(false)}
         />
       }

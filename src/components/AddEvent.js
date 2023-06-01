@@ -16,8 +16,10 @@ function AddEvent(props) {
   const [subject, setSubject] = useState('Subject');
   const [time, setTime] = useState();
   const [repeats, setRepeats] = useState(false);
+  const [repeatFrequency, setRepeatFrequency] = useState('How Often');
+  const [dayOfWeek, setDayOfWeek] = useState('');
 
-  console.log({ time })
+  console.log({ repeats })
   console.log('Add event', props);
 
   const handleSubmit = (e) => {
@@ -64,6 +66,15 @@ function AddEvent(props) {
                 repeats
               </label>
             </div>
+
+            {repeats &&
+              <DropdownButton title={repeatFrequency}>
+                <Dropdown.Item onClick={(e) => setSubject(e.target.textContent)}>Daily</Dropdown.Item>
+                <Dropdown.Item onClick={(e) => setSubject(e.target.textContent)}>Weekly on {props.dateSelected}</Dropdown.Item>
+                <Dropdown.Item onClick={(e) => setSubject(e.target.textContent)}>Monthly</Dropdown.Item>
+                <Dropdown.Item onClick={(e) => setSubject(e.target.textContent)}>History</Dropdown.Item>
+              </DropdownButton>
+            }
 
             <div className='flex flexCol'>
               <label>
