@@ -10,29 +10,83 @@ import 'react-calendar/dist/Calendar.css';
 import 'react-clock/dist/Clock.css';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import DropdownItem from 'react-bootstrap/esm/DropdownItem';
+import { gapi } from 'gapi-script';
 
 function AddEvent(props) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [eventType, setEventType] = useState('Select Event Type');
   const [subject, setSubject] = useState('Subject');
-  const [time, setTime] = useState();
+  const [startTime, setStartTime] = useState('');
+  const [endTime, setEndTime] = useState('');
   const [repeats, setRepeats] = useState(false);
   const [repeatFrequency, setRepeatFrequency] = useState('How Often');
   const [newSubject, setNewSubject] = useState('');
   const [repeateNumberFrequency, setRepeatNumberFrequency] = useState(0);
   const [repeatTimeBlock, setRepeatTimeBlock] = useState('Days');
-  const [repeatsOn, setRepeatsOn] = useState('Monday');
+  const [repeatsOn, setRepeatsOn] = useState('Day Of Week');
   const [endsOn, setEndsOn] = useState('never');
   const [endDate, setEndDate] = useState('');
+  const [afterOccurance, setAfterOccurance] = useState('0 Occurances');
 
-  console.log({ newSubject })
-  console.log('Add event', props);
+  // props.daySelected = 'Friday'
+  // props.dateSelected = Sat Jun 10 2023 00:00:00 GMT-0700 (Pacific Daylight Time)
+  // name = 'algebra'
+  // description = 'a class on algebra'
+  // subject = 'math'
+  // startTime = '13:00'
+  // repeats = true
+  // repeatsFrequency = 'Daily'
+  // props.day = 10
+  // props.month = 'June'
+
+
+  // console.log({ newSubject }, props.dateSelected)
+  // console.log('Add event', props);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log({ name, description, eventType, subject })
+    let dateTimeStart = new Date(props.month + props.day).toISOString().substring(0, 11);
+    dateTimeStart = dateTimeStart + startTime + ':00';
+
+    let dateTimeEnd = new Date(props.month + props.day).toISOString().substring(0, 11);
+    dateTimeEnd = dateTimeEnd + endTime + ':00';
+    // console.log({ dateTime })
+    // console.log({ name, description, eventType, subject, time })
+    const event = {
+      'summary': name,
+      'description': description,
+      'start': {
+        'dateTime': dateTimeStart,
+        'timeZone': Intl.DateTimeFormat().resolvedOptions().timeZone
+
+      },
+      'end': {
+        'dateTime': dateTimeEnd,
+        'timeZone': Intl.DateTimeFormat().resolvedOptions().timeZone
+      },
+      // 'recurrence': [
+      //   'RRULE:FREQ=DAILY;COUNT=2'
+      // ],
+      'reminders': {
+        'useDefault': false,
+        'overrides': [
+          { 'method': 'email', 'minutes': 24 * 60 },
+          { 'method': 'popup', 'minutes': 10 }
+        ]
+      }
+    };
+
+    const request = gapi.client.calendar.events.insert({
+      'calendarId': 'primary',
+      'resource': event
+    });
+
+    request.execute(function (event) {
+      console.log('Event created: ' + event.htmlLink);
+    });
+
+    // console.log({ event })
   }
 
 
@@ -143,7 +197,38 @@ function AddEvent(props) {
 
                 {endsOn === 'After' &&
                   <Modal.Body>
-                    occurances here
+                    <DropdownButton title={afterOccurance}>
+                      <Dropdown.Item onClick={(e) => setAfterOccurance(e.target.textContent)}>
+                        1 Occurances
+                      </Dropdown.Item>
+                      <Dropdown.Item onClick={(e) => setAfterOccurance(e.target.textContent)}>
+                        2 Occurances
+                      </Dropdown.Item>
+                      <Dropdown.Item onClick={(e) => setAfterOccurance(e.target.textContent)}>
+                        3 Occurances
+                      </Dropdown.Item>
+                      <Dropdown.Item onClick={(e) => setAfterOccurance(e.target.textContent)}>
+                        4 Occurances
+                      </Dropdown.Item>
+                      <Dropdown.Item onClick={(e) => setAfterOccurance(e.target.textContent)}>
+                        5 Occurances
+                      </Dropdown.Item>
+                      <Dropdown.Item onClick={(e) => setAfterOccurance(e.target.textContent)}>
+                        6 Occurances
+                      </Dropdown.Item>
+                      <Dropdown.Item onClick={(e) => setAfterOccurance(e.target.textContent)}>
+                        7 Occurances
+                      </Dropdown.Item>
+                      <Dropdown.Item onClick={(e) => setAfterOccurance(e.target.textContent)}>
+                        8 Occurances
+                      </Dropdown.Item>
+                      <Dropdown.Item onClick={(e) => setAfterOccurance(e.target.textContent)}>
+                        9 Occurances
+                      </Dropdown.Item>
+                      <Dropdown.Item onClick={(e) => setAfterOccurance(e.target.textContent)}>
+                        10 Occurances
+                      </Dropdown.Item>
+                    </DropdownButton>
                   </Modal.Body>
                 }
 
@@ -185,8 +270,13 @@ function AddEvent(props) {
 
               <TimePicker
                 disableClock
-                onChange={setTime}
-                value={time}
+                onChange={setStartTime}
+                value={startTime}
+              />
+              <TimePicker
+                disableClock
+                onChange={setEndTime}
+                value={endTime}
               />
             </div>
           </Modal.Body>
