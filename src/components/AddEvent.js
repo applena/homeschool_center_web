@@ -28,6 +28,8 @@ function AddEvent(props) {
   const [endDate, setEndDate] = useState('');
   const [afterOccurance, setAfterOccurance] = useState('0 Occurances');
   const [startDate, setStartDate] = useState(props.dateSelected);
+  const [allDay, setAllDay] = useState(false);
+  const [repeatTimeFrame, setRepeatTimeFrame] = useState('How Often');
 
   // props.daySelected = 'Friday'
   // props.dateSelected = Sat Jun 10 2023 00:00:00 GMT-0700 (Pacific Daylight Time)
@@ -43,27 +45,22 @@ function AddEvent(props) {
 
   // console.log({ newSubject }, props.dateSelected)
   // console.log('Add event', props);
-  // console.log({ repeatsOn })
+  // console.log('startDate', { startDate, startTime, endDate, endTime })
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    let dateTimeStart = new Date(props.month + props.day).toISOString().substring(0, 11);
-    dateTimeStart = dateTimeStart + startTime + ':00';
 
-    let dateTimeEnd = new Date(props.month + props.day).toISOString().substring(0, 11);
-    dateTimeEnd = dateTimeEnd + endTime + ':00';
-    // console.log({ dateTime })
-    // console.log({ name, description, eventType, subject, time })
+    // "2011-06-03T10:00:00.000-07:00" - GAPI
+
+    // construct the event obj
     const event = {
       'summary': name,
       'description': description,
       'start': {
-        'dateTime': dateTimeStart,
         'timeZone': Intl.DateTimeFormat().resolvedOptions().timeZone
 
       },
       'end': {
-        'dateTime': dateTimeEnd,
         'timeZone': Intl.DateTimeFormat().resolvedOptions().timeZone
       },
       'reminders': {
@@ -75,45 +72,64 @@ function AddEvent(props) {
       }
     };
 
+    // add start and end date/time
+    if (!allDay) {
+      let startDateTime = new Date(startDate);
+      startDateTime.setHours(startTime.split(':')[0], startTime.split(':')[1]);
 
+      let endDateTime = new Date(startDate);
+      endDateTime.setHours(endTime.split(':')[0], endTime.split(':')[1]);
+
+      event['start']['dateTime'] = startDateTime;
+      event['end']['dateTime'] = endDateTime;
+    } else {
+      event['start']['date'] = new Date(startDate);
+      event['end']['date'] = new Date(startDate);
+    }
+
+    // add recurrence
     if (repeats) {
       let recurrence = [];
       if (!['How Often', 'Custom'].includes(repeatFrequency)) {
         recurrence.push(`RRULE:FREQ=${repeatFrequency}`);
+        console.log('pushing repeatFrequency', { repeatFrequency })
       }
 
-      if (repeatFrequency) {
+      if (repeatTimeFrame !== 'How Often') {
         recurrence.push(`COUNT=${repeateNumberFrequency}`);
+        console.log('pushing repeatNumberFrequency', { repeatTimeFrame, repeateNumberFrequency })
       }
 
       if (repeatsOn !== 'Day Of Week') {
         recurrence.push(`BYDAY=${repeatsOn}`);
+        console.log('pushing repeatsOn', { repeatsOn })
       }
 
       if (endsOn === 'After') {
         recurrence.push(`COUNT=${afterOccurance}`);
+        console.log('pushing endsOn', { endsOn, afterOccurance })
       }
 
       // if repeatFrequency is 'Custom'
 
       recurrence.join(';');
 
-      console.log({ recurrence })
+      // console.log({ recurrence })
 
       event['recurrence'] = recurrence;
     }
 
-    console.log(event);
+    console.log({ event });
 
 
-    // const request = gapi.client.calendar.events.insert({
-    //   'calendarId': 'primary',
-    //   'resource': event
-    // });
+    const request = gapi.client.calendar.events.insert({
+      'calendarId': 'primary', // TODO: update to HI calendar ID
+      'resource': event
+    });
 
-    // request.execute(function (event) {
-    //   console.log('Event created: ' + event.htmlLink);
-    // });
+    request.execute(function (event) {
+      console.log('Event created: ' + event.htmlLink);
+    });
 
     // console.log({ event })
   }
@@ -181,11 +197,11 @@ function AddEvent(props) {
                     <Dropdown.Item onClick={(e) => setRepeatNumberFrequency(e.target.textContent)}>10</Dropdown.Item>
                   </DropdownButton>
 
-                  <DropdownButton title={repeatFrequency}>
-                    <Dropdown.Item onClick={(e) => setRepeatFrequency('DAILY')}>Days</Dropdown.Item>
-                    <Dropdown.Item onClick={(e) => setRepeatFrequency('WEEKLY')}>Weeks</Dropdown.Item>
-                    <Dropdown.Item onClick={(e) => setRepeatFrequency('MONTHLY')}>Months</Dropdown.Item>
-                    <Dropdown.Item onClick={(e) => setRepeatFrequency('YEARLY')}>Years</Dropdown.Item>
+                  <DropdownButton title={repeatTimeFrame}>
+                    <Dropdown.Item onClick={(e) => setRepeatTimeFrame('DAILY')}>Days</Dropdown.Item>
+                    <Dropdown.Item onClick={(e) => setRepeatTimeFrame('WEEKLY')}>Weeks</Dropdown.Item>
+                    <Dropdown.Item onClick={(e) => setRepeatTimeFrame('MONTHLY')}>Months</Dropdown.Item>
+                    <Dropdown.Item onClick={(e) => setRepeatTimeFrame('YEARLY')}>Years</Dropdown.Item>
                   </DropdownButton>
                 </div>
                 <div className="flex" style={{ textAlign: 'left', alignItems: 'center' }}>Repeats on
@@ -308,16 +324,32 @@ function AddEvent(props) {
                   type="text" name="description" />
               </label>
 
-              <TimePicker
-                disableClock
-                onChange={setStartTime}
-                value={startTime}
-              />
-              <TimePicker
-                disableClock
-                onChange={setEndTime}
-                value={endTime}
-              />
+              <div className='flex'>
+                <input style={{ display: 'inline-block', width: 'auto', marginRight: '10px' }} onClick={() => setAllDay(!allDay)} type="checkbox" />
+                <label>
+                  All Day
+                </label>
+              </div>
+
+              {!allDay &&
+                <div className='flex flexCol'>
+                  <label>Start Time
+                    <TimePicker
+                      disableClock
+                      onChange={setStartTime}
+                      value={startTime}
+                    />
+                  </label>
+
+                  <label>End Time
+                    <TimePicker
+                      disableClock
+                      onChange={setEndTime}
+                      value={endTime}
+                    />
+                  </label>
+                </div>
+              }
             </div>
           </Modal.Body>
 
