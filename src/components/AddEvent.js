@@ -23,11 +23,11 @@ function AddEvent(props) {
   const [repeatFrequency, setRepeatFrequency] = useState('How Often');
   const [newSubject, setNewSubject] = useState('');
   const [repeateNumberFrequency, setRepeatNumberFrequency] = useState(0);
-  const [repeatTimeBlock, setRepeatTimeBlock] = useState('Days');
   const [repeatsOn, setRepeatsOn] = useState('Day Of Week');
   const [endsOn, setEndsOn] = useState('never');
   const [endDate, setEndDate] = useState('');
   const [afterOccurance, setAfterOccurance] = useState('0 Occurances');
+  const [startDate, setStartDate] = useState(props.dateSelected);
 
   // props.daySelected = 'Friday'
   // props.dateSelected = Sat Jun 10 2023 00:00:00 GMT-0700 (Pacific Daylight Time)
@@ -43,6 +43,7 @@ function AddEvent(props) {
 
   // console.log({ newSubject }, props.dateSelected)
   // console.log('Add event', props);
+  // console.log({ repeatsOn })
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -65,9 +66,6 @@ function AddEvent(props) {
         'dateTime': dateTimeEnd,
         'timeZone': Intl.DateTimeFormat().resolvedOptions().timeZone
       },
-      // 'recurrence': [
-      //   'RRULE:FREQ=DAILY;COUNT=2'
-      // ],
       'reminders': {
         'useDefault': false,
         'overrides': [
@@ -77,14 +75,45 @@ function AddEvent(props) {
       }
     };
 
-    const request = gapi.client.calendar.events.insert({
-      'calendarId': 'primary',
-      'resource': event
-    });
 
-    request.execute(function (event) {
-      console.log('Event created: ' + event.htmlLink);
-    });
+    if (repeats) {
+      let recurrence = [];
+      if (!['How Often', 'Custom'].includes(repeatFrequency)) {
+        recurrence.push(`RRULE:FREQ=${repeatFrequency}`);
+      }
+
+      if (repeatFrequency) {
+        recurrence.push(`COUNT=${repeateNumberFrequency}`);
+      }
+
+      if (repeatsOn !== 'Day Of Week') {
+        recurrence.push(`BYDAY=${repeatsOn}`);
+      }
+
+      if (endsOn === 'After') {
+        recurrence.push(`COUNT=${afterOccurance}`);
+      }
+
+      // if repeatFrequency is 'Custom'
+
+      recurrence.join(';');
+
+      console.log({ recurrence })
+
+      event['recurrence'] = recurrence;
+    }
+
+    console.log(event);
+
+
+    // const request = gapi.client.calendar.events.insert({
+    //   'calendarId': 'primary',
+    //   'resource': event
+    // });
+
+    // request.execute(function (event) {
+    //   console.log('Event created: ' + event.htmlLink);
+    // });
 
     // console.log({ event })
   }
@@ -102,26 +131,37 @@ function AddEvent(props) {
 
         <form>
           <Modal.Body>
-            <div className='flex'>
-              <DropdownButton id="dropdown-basic-button" title={eventType}>
-                <Dropdown.Item
-                  onClick={() => setEventType('Class')}
-                >Class</Dropdown.Item>
-                <Dropdown.Item
-                  onClick={() => setEventType('Everything Else')}
-                >Everything Else</Dropdown.Item>
-              </DropdownButton>
 
-              {eventType === 'Class' &&
-                <DropdownButton title={subject}>
-                  <Dropdown.Item onClick={(e) => setSubject(e.target.textContent)}>ELA</Dropdown.Item>
-                  <Dropdown.Item onClick={(e) => setSubject(e.target.textContent)}>Math</Dropdown.Item>
-                  <Dropdown.Item onClick={(e) => setSubject(e.target.textContent)}>Science</Dropdown.Item>
-                  <Dropdown.Item onClick={(e) => setSubject(e.target.textContent)}>History</Dropdown.Item>
-                  <Dropdown.Divider />
-                  <Dropdown.Item onClick={(e) => e.stopPropagation()}><input type="text" name="Create a New Subject" onChange={(e) => { setNewSubject(e.target.value); setSubject(e.target.value) }}></input></Dropdown.Item>
+            <div className='flex, flexCol'>
+              <div className='flex'>
+                <DropdownButton id="dropdown-basic-button" title={eventType}>
+                  <Dropdown.Item
+                    onClick={() => setEventType('Class')}
+                  >Class</Dropdown.Item>
+                  <Dropdown.Item
+                    onClick={() => setEventType('Everything Else')}
+                  >Everything Else</Dropdown.Item>
                 </DropdownButton>
-              }
+
+                {eventType === 'Class' &&
+                  <DropdownButton title={subject}>
+                    <Dropdown.Item onClick={(e) => setSubject(e.target.textContent)}>ELA</Dropdown.Item>
+                    <Dropdown.Item onClick={(e) => setSubject(e.target.textContent)}>Math</Dropdown.Item>
+                    <Dropdown.Item onClick={(e) => setSubject(e.target.textContent)}>Science</Dropdown.Item>
+                    <Dropdown.Item onClick={(e) => setSubject(e.target.textContent)}>History</Dropdown.Item>
+                    <Dropdown.Divider />
+                    <Dropdown.Item onClick={(e) => e.stopPropagation()}><input type="text" name="Create a New Subject" onChange={(e) => { setNewSubject(e.target.value); setSubject(e.target.value) }}></input></Dropdown.Item>
+                  </DropdownButton>
+                }
+              </div>
+              <label style={{ display: 'block', width: '100%' }}>
+                <span style={{ marginRight: '8px' }}>Date</span>
+                <DatePicker
+                  selected={startDate === props.dateSelected ? props.dateSelected : startDate}
+                  onChange={(startDate) => setStartDate(startDate)}
+                />
+              </label>
+
             </div>
 
             {repeatFrequency === 'Custom' &&
@@ -141,34 +181,34 @@ function AddEvent(props) {
                     <Dropdown.Item onClick={(e) => setRepeatNumberFrequency(e.target.textContent)}>10</Dropdown.Item>
                   </DropdownButton>
 
-                  <DropdownButton title={repeatTimeBlock}>
-                    <Dropdown.Item onClick={(e) => setRepeatTimeBlock(e.target.textContent)}>Days</Dropdown.Item>
-                    <Dropdown.Item onClick={(e) => setRepeatTimeBlock(e.target.textContent)}>Weeks</Dropdown.Item>
-                    <Dropdown.Item onClick={(e) => setRepeatTimeBlock(e.target.textContent)}>Months</Dropdown.Item>
-                    <Dropdown.Item onClick={(e) => setRepeatTimeBlock(e.target.textContent)}>Years</Dropdown.Item>
+                  <DropdownButton title={repeatFrequency}>
+                    <Dropdown.Item onClick={(e) => setRepeatFrequency('DAILY')}>Days</Dropdown.Item>
+                    <Dropdown.Item onClick={(e) => setRepeatFrequency('WEEKLY')}>Weeks</Dropdown.Item>
+                    <Dropdown.Item onClick={(e) => setRepeatFrequency('MONTHLY')}>Months</Dropdown.Item>
+                    <Dropdown.Item onClick={(e) => setRepeatFrequency('YEARLY')}>Years</Dropdown.Item>
                   </DropdownButton>
                 </div>
                 <div className="flex" style={{ textAlign: 'left', alignItems: 'center' }}>Repeats on
                   <DropdownButton title={repeatsOn}>
-                    <Dropdown.Item onClick={(e) => setRepeatsOn(e.target.textContent)}>
+                    <Dropdown.Item onClick={(e) => setRepeatsOn(e.target.textContent.substring(0, 2).toUpperCase())}>
                       Monday
                     </Dropdown.Item>
-                    <Dropdown.Item onClick={(e) => setRepeatsOn(e.target.textContent)}>
+                    <Dropdown.Item onClick={(e) => setRepeatsOn(e.target.textContent.substring(0, 2).toUpperCase())}>
                       Tuesday
                     </Dropdown.Item>
-                    <Dropdown.Item onClick={(e) => setRepeatsOn(e.target.textContent)}>
+                    <Dropdown.Item onClick={(e) => setRepeatsOn(e.target.textContent.substring(0, 2).toUpperCase())}>
                       Wednesday
                     </Dropdown.Item>
-                    <Dropdown.Item onClick={(e) => setRepeatsOn(e.target.textContent)}>
+                    <Dropdown.Item onClick={(e) => setRepeatsOn(e.target.textContent.substring(0, 2).toUpperCase())}>
                       Thursday
                     </Dropdown.Item>
-                    <Dropdown.Item onClick={(e) => setRepeatsOn(e.target.textContent)}>
+                    <Dropdown.Item onClick={(e) => setRepeatsOn(e.target.textContent.substring(0, 2).toUpperCase())}>
                       Friday
                     </Dropdown.Item>
-                    <Dropdown.Item onClick={(e) => setRepeatsOn(e.target.textContent)}>
+                    <Dropdown.Item onClick={(e) => setRepeatsOn(e.target.textContent.substring(0, 2).toUpperCase())}>
                       Saturday
                     </Dropdown.Item>
-                    <Dropdown.Item onClick={(e) => setRepeatsOn(e.target.textContent)}>
+                    <Dropdown.Item onClick={(e) => setRepeatsOn(e.target.textContent.substring(0, 2).toUpperCase())}>
                       Sunday
                     </Dropdown.Item>
                   </DropdownButton>
@@ -198,34 +238,34 @@ function AddEvent(props) {
                 {endsOn === 'After' &&
                   <Modal.Body>
                     <DropdownButton title={afterOccurance}>
-                      <Dropdown.Item onClick={(e) => setAfterOccurance(e.target.textContent)}>
+                      <Dropdown.Item onClick={(e) => setAfterOccurance(1)}>
                         1 Occurances
                       </Dropdown.Item>
-                      <Dropdown.Item onClick={(e) => setAfterOccurance(e.target.textContent)}>
+                      <Dropdown.Item onClick={(e) => setAfterOccurance(2)}>
                         2 Occurances
                       </Dropdown.Item>
-                      <Dropdown.Item onClick={(e) => setAfterOccurance(e.target.textContent)}>
+                      <Dropdown.Item onClick={(e) => setAfterOccurance(3)}>
                         3 Occurances
                       </Dropdown.Item>
-                      <Dropdown.Item onClick={(e) => setAfterOccurance(e.target.textContent)}>
+                      <Dropdown.Item onClick={(e) => setAfterOccurance(4)}>
                         4 Occurances
                       </Dropdown.Item>
-                      <Dropdown.Item onClick={(e) => setAfterOccurance(e.target.textContent)}>
+                      <Dropdown.Item onClick={(e) => setAfterOccurance(5)}>
                         5 Occurances
                       </Dropdown.Item>
-                      <Dropdown.Item onClick={(e) => setAfterOccurance(e.target.textContent)}>
+                      <Dropdown.Item onClick={(e) => setAfterOccurance(6)}>
                         6 Occurances
                       </Dropdown.Item>
-                      <Dropdown.Item onClick={(e) => setAfterOccurance(e.target.textContent)}>
+                      <Dropdown.Item onClick={(e) => setAfterOccurance(7)}>
                         7 Occurances
                       </Dropdown.Item>
-                      <Dropdown.Item onClick={(e) => setAfterOccurance(e.target.textContent)}>
+                      <Dropdown.Item onClick={(e) => setAfterOccurance(8)}>
                         8 Occurances
                       </Dropdown.Item>
-                      <Dropdown.Item onClick={(e) => setAfterOccurance(e.target.textContent)}>
+                      <Dropdown.Item onClick={(e) => setAfterOccurance(9)}>
                         9 Occurances
                       </Dropdown.Item>
-                      <Dropdown.Item onClick={(e) => setAfterOccurance(e.target.textContent)}>
+                      <Dropdown.Item onClick={(e) => setAfterOccurance(10)}>
                         10 Occurances
                       </Dropdown.Item>
                     </DropdownButton>
@@ -244,11 +284,11 @@ function AddEvent(props) {
 
             {repeats &&
               <DropdownButton title={repeatFrequency}>
-                <Dropdown.Item onClick={(e) => setRepeatFrequency(e.target.textContent)}>Daily</Dropdown.Item>
-                <Dropdown.Item onClick={(e) => setRepeatFrequency(e.target.textContent)}>Weekly on {props.daySelected}</Dropdown.Item>
-                <Dropdown.Item onClick={(e) => setRepeatFrequency(e.target.textContent)}>Monthly on {props.ordinal}</Dropdown.Item>
-                <Dropdown.Item onClick={(e) => setRepeatFrequency(e.target.textContent)}>Annually on {props.month} {props.day}</Dropdown.Item>
-                <Dropdown.Item onClick={(e) => setRepeatFrequency(e.target.textContent)}>Every weekday (Monday to Friday)</Dropdown.Item>
+                <Dropdown.Item onClick={(e) => setRepeatFrequency('DAILY')}>Daily</Dropdown.Item>
+                <Dropdown.Item onClick={(e) => setRepeatFrequency('WEEKLY')}>Weekly on {props.daySelected}</Dropdown.Item>
+                <Dropdown.Item onClick={(e) => setRepeatFrequency('MONTHLY')}>Monthly on {props.ordinal}</Dropdown.Item>
+                <Dropdown.Item onClick={(e) => setRepeatFrequency('YEARLY')}>Annually on {props.month} {props.day}</Dropdown.Item>
+                <Dropdown.Item onClick={(e) => setRepeatFrequency('MO, TU, WE, TH, FR')}>Every weekday (Monday to Friday)</Dropdown.Item>
                 <Dropdown.Item onClick={(e) => setRepeatFrequency(e.target.textContent)}>Custom</Dropdown.Item>
               </DropdownButton>
             }
