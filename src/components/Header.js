@@ -26,8 +26,11 @@ function Header(props) {
   const isSignedIn = useSelector((state) => state.signInStatus.signedIn);
   const credentials = useSelector((state) => state.signInStatus.credentialResponse);
   const clientIsLoaded = useSelector((state) => state.signInStatus.clientLoaded);
+  const hICalendar = useSelector((state) => state.hICalendar)
   const dispatch = useDispatch();
+  const [hIID, setHIID] = useState('');
 
+  console.log({ hICalendar });
   // const [documents, setDocuments] = useState([]);
   /**
    * Print the summary and start datetime/date of the next ten events in
@@ -35,9 +38,17 @@ function Header(props) {
    * appropriate message is printed.
    */
   const listUpcomingEvents = useCallback(async () => {
-  }, [])
+    console.log({ hIID })
+    if (!hIID) {
+      return;
+    }
+    const events = await gapi.client.calendar.events.list({ calendarId: hIID })
+    console.log({ events });
+  }, [hIID])
 
   const setUpHICalendar = useCallback(async (calendarList) => {
+    // console.log('in setUpHICalendar', { calendarList });
+
     // get the hi calendar
     let hICalendar = calendarList.find((cal) => cal.summary === 'Home School Island')
 
@@ -47,8 +58,11 @@ function Header(props) {
       // make HI calendar and save to redux
       hICalendar = await makeHICalendar();
       console.log('made hi calendar', { hICalendar });
-      dispatch(setHICalendarObj(hICalendar));
+    } else {
+      console.log('hICalendar found', { hICalendar })
     }
+    dispatch(setHICalendarObj(hICalendar));
+    setHIID(hICalendar.id);
 
     // get the configEvent
     let configEvent = await getConfig(hICalendar.id);
@@ -100,8 +114,8 @@ function Header(props) {
 
       getCalendars(function (calendarList) {
         setUpHICalendar(calendarList)
+        listUpcomingEvents();
       });
-      listUpcomingEvents();
     });
 
     // getCalendars(function () {

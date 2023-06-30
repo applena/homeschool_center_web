@@ -11,6 +11,7 @@ import 'react-clock/dist/Clock.css';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { gapi } from 'gapi-script';
+import { useSelector, useDispatch } from 'react-redux';
 
 function AddEvent(props) {
   const [name, setName] = useState('');
@@ -31,6 +32,9 @@ function AddEvent(props) {
   const [allDay, setAllDay] = useState(false);
   const [repeatTimeFrame, setRepeatTimeFrame] = useState('How Often');
 
+  const hICalendar = useSelector((state) => state.hICalendar);
+  // console.log({ hICalendar })
+
   // props.daySelected = 'Friday'
   // props.dateSelected = Sat Jun 10 2023 00:00:00 GMT-0700 (Pacific Daylight Time)
   // name = 'algebra'
@@ -41,11 +45,13 @@ function AddEvent(props) {
   // repeatsFrequency = 'Daily'
   // props.day = 10
   // props.month = 'June'
+  // props.ordinal = 
 
 
   // console.log({ newSubject }, props.dateSelected)
   // console.log('Add event', props);
   // console.log('startDate', startDate.toISOString().substring(0, 10))
+  // console.log('!!!', props.ordinal.split(' ')[2].substring(0, 2).toUpperCase());
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -94,6 +100,9 @@ function AddEvent(props) {
     if (repeats) {
       let recurrence = [];
       if (!['How Often', 'Custom'].includes(repeatFrequency)) {
+        if (repeatFrequency === 'MONTHLY') {
+          // recurrence.push(`RRULE:FREQ=${repeatFrequency};BYDAY=${props.ordinal.split(' ')[2].substring(0, 2).toUpperCase()}`)
+        }
         recurrence.push(`RRULE:FREQ=${repeatFrequency}`);
         console.log('pushing repeatFrequency', { repeatFrequency })
       }
@@ -126,7 +135,7 @@ function AddEvent(props) {
 
 
     const request = gapi.client.calendar.events.insert({
-      'calendarId': 'primary', // TODO: update to HI calendar ID
+      'calendarId': hICalendar.id,
       'resource': event
     });
 

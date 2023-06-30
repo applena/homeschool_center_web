@@ -7,6 +7,7 @@ export const eventsSlice = createSlice({
     addEvent: (state, action) => {
       state = [...state, action.payload];
       console.log('event saved', state);
+      return state;
     },
     removeEvent: (state, action) => {
       //find event with id via action.payload

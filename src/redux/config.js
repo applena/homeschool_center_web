@@ -7,6 +7,7 @@ export const configSlice = createSlice({
     setHICalendarConfig: (state, action) => {
       state = action.payload;
       console.log('config saved', action.payload);
+      return state;
     }
   }
 })

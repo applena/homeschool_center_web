@@ -7,6 +7,7 @@ export const hISlice = createSlice({
     setHICalendarObj: (state, action) => {
       state = action.payload;
       console.log('hi calendar saved', action.payload);
+      return state;
     }
   }
 })

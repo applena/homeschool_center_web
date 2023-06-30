@@ -10,14 +10,17 @@ export const signInSlice = createSlice({
   reducers: {
     signIn: (state, action) => {
       state.signedIn = action.payload;
+      return state;
     },
     credentialResponse: (state, action) => {
       console.log('redux credntial Response', { state, action });
       state.credentialResponse = action.payload;
+      return state;
     },
     setClientIsLoaded: (state, action) => {
       console.log('setClientIsLoaded', { action });
       state.clientLoaded = action.payload;
+      return state;
     }
   },
 })
