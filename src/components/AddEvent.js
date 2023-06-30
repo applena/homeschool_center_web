@@ -45,7 +45,7 @@ function AddEvent(props) {
 
   // console.log({ newSubject }, props.dateSelected)
   // console.log('Add event', props);
-  // console.log('startDate', { startDate, startTime, endDate, endTime })
+  // console.log('startDate', startDate.toISOString().substring(0, 10))
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -77,14 +77,17 @@ function AddEvent(props) {
       let startDateTime = new Date(startDate);
       startDateTime.setHours(startTime.split(':')[0], startTime.split(':')[1]);
 
+      console.log('!!!', new Date(startDate.setHours('13', '15')))
+
       let endDateTime = new Date(startDate);
       endDateTime.setHours(endTime.split(':')[0], endTime.split(':')[1]);
 
       event['start']['dateTime'] = startDateTime;
       event['end']['dateTime'] = endDateTime;
     } else {
-      event['start']['date'] = new Date(startDate);
-      event['end']['date'] = new Date(startDate);
+      //"start": {"date": "2015-06-01"}
+      event['start']['date'] = startDate.toISOString().substring(0, 10);
+      event['end']['date'] = startDate.toISOString().substring(0, 10);
     }
 
     // add recurrence
