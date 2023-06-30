@@ -53,7 +53,7 @@ function AddEvent(props) {
   // console.log('startDate', startDate.toISOString().substring(0, 10))
   // console.log('!!!', props.ordinal.split(' ')[2].substring(0, 2).toUpperCase());
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     // "2011-06-03T10:00:00.000-07:00" - GAPI
@@ -83,8 +83,6 @@ function AddEvent(props) {
       let startDateTime = new Date(startDate);
       startDateTime.setHours(startTime.split(':')[0], startTime.split(':')[1]);
 
-      console.log('!!!', new Date(startDate.setHours('13', '15')))
-
       let endDateTime = new Date(startDate);
       endDateTime.setHours(endTime.split(':')[0], endTime.split(':')[1]);
 
@@ -101,7 +99,7 @@ function AddEvent(props) {
       let recurrence = [];
       if (!['How Often', 'Custom'].includes(repeatFrequency)) {
         if (repeatFrequency === 'MONTHLY') {
-          // recurrence.push(`RRULE:FREQ=${repeatFrequency};BYDAY=${props.ordinal.split(' ')[2].substring(0, 2).toUpperCase()}`)
+          recurrence.push(`RRULE:FREQ=${repeatFrequency};BYDAY=1${props.ordinal.split(' ')[2].substring(0, 2).toUpperCase()}`)
         }
         recurrence.push(`RRULE:FREQ=${repeatFrequency}`);
         console.log('pushing repeatFrequency', { repeatFrequency })
@@ -131,19 +129,24 @@ function AddEvent(props) {
       event['recurrence'] = recurrence;
     }
 
-    console.log({ event });
+    // console.log({ event });
 
 
-    const request = gapi.client.calendar.events.insert({
+    const request = await gapi.client.calendar.events.insert({
       'calendarId': hICalendar.id,
       'resource': event
     });
 
-    request.execute(function (event) {
-      console.log('Event created: ' + event.htmlLink);
-    });
+    console.log({ request });
 
-    // console.log({ event })
+    // request.execute(function (event) {
+    //   console.log('Event created: ' + event.htmlLink);
+    // });
+
+
+    const events = await gapi.client.calendar.events.list({ calendarId: hICalendar.id })
+    console.log({ events });
+
   }
 
 
