@@ -97,12 +97,17 @@ function AddEvent(props) {
     // add recurrence
     if (repeats) {
       let recurrence = [];
-      if (!['How Often', 'Custom'].includes(repeatFrequency)) {
+      if (!['How Often', 'Custom', 'Weekdays'].includes(repeatFrequency)) {
         if (repeatFrequency === 'MONTHLY') {
           recurrence.push(`RRULE:FREQ=${repeatFrequency};BYDAY=1${props.ordinal.split(' ')[2].substring(0, 2).toUpperCase()}`)
         }
         recurrence.push(`RRULE:FREQ=${repeatFrequency}`);
         console.log('pushing repeatFrequency', { repeatFrequency })
+      }
+
+      if (repeatFrequency === 'Weekdays') {
+        recurrence.push(`RRULE:FREQ=DAILY`);
+        console.log('pushing weekdays rule');
       }
 
       if (repeatTimeFrame !== 'How Often') {
@@ -122,14 +127,13 @@ function AddEvent(props) {
 
       // if repeatFrequency is 'Custom'
 
-      recurrence.join(';');
+      // "RRULE:FREQ=DAILY;BYDAY=MO, TU, WE, TH, FR"
+      // ["RRULE:FREQ=WEEKLY;BYDAY=FR,MO,TH,TU,WE"]
 
-      // console.log({ recurrence })
-
-      event['recurrence'] = recurrence;
+      event['recurrence'] = [recurrence.join(';')];
     }
 
-    // console.log({ event });
+    console.log({ event });
 
 
     const request = await gapi.client.calendar.events.insert({
@@ -319,7 +323,7 @@ function AddEvent(props) {
                 <Dropdown.Item onClick={(e) => setRepeatFrequency('WEEKLY')}>Weekly on {props.daySelected}</Dropdown.Item>
                 <Dropdown.Item onClick={(e) => setRepeatFrequency('MONTHLY')}>Monthly on {props.ordinal}</Dropdown.Item>
                 <Dropdown.Item onClick={(e) => setRepeatFrequency('YEARLY')}>Annually on {props.month} {props.day}</Dropdown.Item>
-                <Dropdown.Item onClick={(e) => setRepeatFrequency('MO, TU, WE, TH, FR')}>Every weekday (Monday to Friday)</Dropdown.Item>
+                <Dropdown.Item onClick={(e) => { setRepeatsOn('MO,TU,WE,TH,FR'); setRepeatFrequency('Weekdays') }}>Every weekday (Monday to Friday)</Dropdown.Item>
                 <Dropdown.Item onClick={(e) => setRepeatFrequency(e.target.textContent)}>Custom</Dropdown.Item>
               </DropdownButton>
             }
