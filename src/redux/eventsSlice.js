@@ -20,11 +20,16 @@ export const eventsSlice = createSlice({
       // remove event
       // add new event
       console.log('udpated event', action.payload, state);
+    },
+    setEvents: (state, action) => {
+      console.log('setting events from google', action.payload)
+      state = action.payload;
+      return state;
     }
   },
 })
 
 // Action creators are generated for each case reducer function
-export const { signIn } = eventsSlice.actions
+export const { setEvents } = eventsSlice.actions
 
 export default eventsSlice.reducer

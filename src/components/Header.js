@@ -11,6 +11,7 @@ import makeConfig from './Login/makeConfig';
 import makeHICalendar from './Login/makeHICalendar';
 import { setHICalendarObj } from '../redux/hICalendar';
 import { setHICalendarConfig } from '../redux/config';
+import { setEvents } from '../redux/eventsSlice';
 import { gapi } from 'gapi-script';
 
 // Array of API discovery doc URLs for APIs
@@ -44,7 +45,9 @@ function Header(props) {
     }
     const events = await gapi.client.calendar.events.list({ calendarId: hIID })
     console.log({ events });
-  }, [hIID])
+    dispatch(setEvents(events.result.items));
+
+  }, [hIID, dispatch])
 
   const setUpHICalendar = useCallback(async (calendarList) => {
     // console.log('in setUpHICalendar', { calendarList });

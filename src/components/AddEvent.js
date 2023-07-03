@@ -12,6 +12,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { gapi } from 'gapi-script';
 import { useSelector, useDispatch } from 'react-redux';
+import { setEvents } from '../redux/eventsSlice';
 
 function AddEvent(props) {
   const [name, setName] = useState('');
@@ -31,6 +32,7 @@ function AddEvent(props) {
   const [startDate, setStartDate] = useState(props.dateSelected);
   const [allDay, setAllDay] = useState(false);
   const [repeatTimeFrame, setRepeatTimeFrame] = useState('How Often');
+  const dispatch = useDispatch();
 
   const hICalendar = useSelector((state) => state.hICalendar);
   // console.log({ hICalendar })
@@ -150,6 +152,7 @@ function AddEvent(props) {
 
     const events = await gapi.client.calendar.events.list({ calendarId: hICalendar.id })
     console.log({ events });
+
 
   }
 
