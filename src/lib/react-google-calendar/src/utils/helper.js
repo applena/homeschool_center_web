@@ -49,7 +49,7 @@ export function isMultiEvent(startTime, endTime) {
 //modified from https://github.com/PimpTrizkit/PJs/wiki/12.-Shade,-Blend-and-Convert-a-Web-Color-(pSBC.js)#stackoverflow-archive-begin
 export function pSBC(p, c0, c1, l) {
   let r, g, b, P, f, t, h, i = parseInt, m = Math.round, a = typeof (c1) == "string";
-  if (typeof (p) != "number" || p < -1 || p > 1 || typeof (c0) != "string" || (c0[0] !== 'r' && c0[0] !== '#') || (c1 && !a)) return null;
+  if (typeof (p) !== "number" || p < -1 || p > 1 || typeof (c0) !== "string" || (c0[0] !== 'r' && c0[0] !== '#') || (c1 && !a)) return null;
 
   function pSBCr(d) {
     let n = d.length, x = {};
@@ -66,7 +66,7 @@ export function pSBC(p, c0, c1, l) {
     } return x
   };
 
-  h = c0.length > 9, h = a ? c1.length > 9 ? true : c1 == "c" ? !h : false : h, f = pSBCr(c0), P = p < 0, t = c1 && c1 != "c" ? pSBCr(c1) : P ? { r: 0, g: 0, b: 0, a: -1 } : { r: 255, g: 255, b: 255, a: -1 }, p = P ? p * -1 : p, P = 1 - p;
+  h = c0.length > 9, h = a ? c1.length > 9 ? true : c1 === "c" ? !h : false : h, f = pSBCr(c0), P = p < 0, t = c1 && c1 != "c" ? pSBCr(c1) : P ? { r: 0, g: 0, b: 0, a: -1 } : { r: 255, g: 255, b: 255, a: -1 }, p = P ? p * -1 : p, P = 1 - p;
   if (!f || !t) return null;
   if (l) r = m(P * f.r + p * t.r), g = m(P * f.g + p * t.g), b = m(P * f.b + p * t.b);
   else r = m((P * f.r ** 2 + p * t.r ** 2) ** 0.5), g = m((P * f.g ** 2 + p * t.g ** 2) ** 0.5), b = m((P * f.b ** 2 + p * t.b ** 2) ** 0.5);
