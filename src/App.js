@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import './app.scss';
 
 // pages
@@ -10,17 +10,19 @@ import Resources from './components/Resources';
 import PrivacyPolicy from './docs/privacyPolicy';
 import TOS from './docs/TOS';
 import AddEvent from './components/AddEvent';
+import './components/Calendar/calendar.scss';
 
 // libs
 import { Route, Routes, BrowserRouter } from "react-router-dom";
-import { Calendar, momentLocalizer } from 'react-big-calendar';
-import 'react-big-calendar/lib/css/react-big-calendar.css';
-import moment from "moment";
+// import { Calendar, momentLocalizer } from 'react-big-calendar';
+// import 'react-big-calendar/lib/css/react-big-calendar.css';
+// import moment from "moment";
+import Calendar from "./lib/react-google-calendar/src";
 import { useSelector, useDispatch } from 'react-redux';
 import LandingPage from './components/LandingPage';
 
-moment.locale("en-GB");
-const localizer = momentLocalizer(moment);
+// moment.locale("en-GB");
+// const localizer = momentLocalizer(moment);
 
 function App() {
   const [displayAddEvent, setDisplayAddEvent] = useState(false);
@@ -30,15 +32,14 @@ function App() {
   const [day, setDay] = useState('');
   const [ordinalsOfMonth, setOrdinalsOfMonth] = useState('');
 
-  // const [name, setName] = useState('');
-  // const [grade, setGrade] = useState(0);
-
-  // const [displayLogin, setDisplayLogin] = useState(false);
-  // const [displaySignUp, setDisplaySignUp] = useState(false);
-
 
   const isSignedIn = useSelector((state) => state.signInStatus.signedIn);
   const eventsData = useSelector((state) => state.events);
+  const hICalendar = useSelector((state) => state.hICalendar)
+
+  // console.log({ eventsData })
+
+  // console.log({ API_KEY, calendars })
 
   // const [eventsData, setEventsData] = useState([]);
 
@@ -106,17 +107,6 @@ function App() {
     setDay(start.getDate());
 
     setDisplayAddEvent(true);
-
-    // const title = window.prompt("New Event name");
-    // if (title)
-    //   setEventsData([
-    //     ...eventsData,
-    //     {
-    //       start,
-    //       end,
-    //       title
-    //     }
-    //   ]);
   }, []);
 
   const getTheDayOfWeek = (abrivation) => {
@@ -140,7 +130,7 @@ function App() {
     }
   }
 
-  console.log('App', { displayAddEvent });
+  console.log('App', { displayAddEvent, eventsData });
 
   return (
     <div className="App">
@@ -157,17 +147,23 @@ function App() {
         </Routes>
       </BrowserRouter>
 
-      {isSignedIn &&
+      {isSignedIn && eventsData.length &&
+        // <Calendar
+        //   views={["day", "agenda", "month"]}
+        //   selectable
+        //   localizer={localizer}
+        //   defaultDate={new Date()}
+        //   defaultView="month"
+        //   events={eventsData}
+        //   style={{ height: "100vh" }}
+        //   onSelectEvent={(event) => alert(event.title)}
+        //   onSelectSlot={handleSelect}
+        // />
+
         <Calendar
-          views={["day", "agenda", "month"]}
-          selectable
-          localizer={localizer}
-          defaultDate={new Date()}
-          defaultView="month"
           events={eventsData}
-          style={{ height: "100vh" }}
-          onSelectEvent={(event) => alert(event.title)}
-          onSelectSlot={handleSelect}
+          summary={hICalendar.summary}
+          color={hICalendar.backgroundColor}
         />
       }
 

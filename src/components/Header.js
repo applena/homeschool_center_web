@@ -39,7 +39,7 @@ function Header(props) {
    * appropriate message is printed.
    */
   const listUpcomingEvents = useCallback(async () => {
-    console.log({ hIID })
+    console.log('list upcoming events', { hIID })
     if (!hIID) {
       return;
     }

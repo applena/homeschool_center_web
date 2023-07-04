@@ -6,7 +6,6 @@ import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import TimePicker from 'react-time-picker';
 import 'react-datetime-picker/dist/DateTimePicker.css';
-import 'react-calendar/dist/Calendar.css';
 import 'react-clock/dist/Clock.css';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
