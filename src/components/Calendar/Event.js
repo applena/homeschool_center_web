@@ -4,9 +4,6 @@ import moment from "moment-timezone";
 
 import FiberManualRecordIcon from "./svg/fiberManualRecord";
 
-import Tooltip from "./tooltip";
-
-import { Manager, Reference } from 'react-popper';
 
 function Event(props) {
   const [showTooltip, setShowTooltip] = useState(false);
@@ -42,6 +39,7 @@ function Event(props) {
           </span>
         </div>
       </div>
+
     </div>
   )
 }

@@ -3,14 +3,18 @@ import React, { useEffect, useState, useCallback } from "react";
 import moment from "moment-timezone";
 import { rrulestr } from "rrule";
 
-import Event from "./event";
-import MultiEvent from "./multiEvent";
+import Event from "./Event";
+import MultiEvent from "./MultiEvent";
 
-import { isMultiEvent } from "./utils/helper";
+import { isMultiEvent } from "../../lib/utils/helper";
 
 import gud from "gud";
 
-import { Languages, availableLanguages } from "./languages";
+import { Languages, availableLanguages } from "../../lib/utils/languages";
+
+import AddEvent from './AddEvent';
+
+import './calendar.scss';
 
 function Calendar(props) {
   const [monthNames, setMonthNames] = useState([...Languages.EN.MONTHS]);
@@ -20,7 +24,10 @@ function Calendar(props) {
   const [singleEvents, setSingleEvents] = useState([]); //single day events
   const [eventsEachDay, setEventsEachDay] = useState([]);
 
-  console.log('calendar constructed', { props, events, singleEvents })
+  const [selectedDate, setSelectedDate] = useState(false);
+
+  // console.log('index - selectedDate - month', current.month())
+
 
   // decides how to render events
   const drawMultiEvent = useCallback((eventsEachDay, props) => {
@@ -343,7 +350,8 @@ function Calendar(props) {
   }
 
   //renders the blocks for the days of each month
-  const renderDates = (eventsEachDay) => {
+  const renderDates = useCallback((eventsEachDay) => {
+    console.log('render dates', { eventsEachDay })
     var days = [...Array(current.daysInMonth() + 1).keys()].slice(1); // create array from 1 to number of days in month
 
     var dayOfWeek = current.day(); //get day of week of first day in the month
@@ -353,36 +361,26 @@ function Calendar(props) {
     return [
       [...Array(dayOfWeek)].map((x, i) => (
         <div
-          className="day"
+          className="day test"
           key={"empty-day-" + i}
         ></div>
       )),
       days.map(x => {
-        if (x === moment().date() && current.isSame(moment(), "month")) {
-          return (
-            <div
-              className="day"
-              key={"day-" + x}
-            >
-              <span className="day-span">
-                {x}
-              </span>
-              <div className="innerDay" id={"day-" + x}>{eventsEachDay[x - 1]}</div>
-            </div>
-          );
-        } else {
-          return (
-            <div
-              className="day"
-              key={"day-" + x}
-            >
-              <span className="day-span">
-                {x}
-              </span>
-              <div className="innerDay" id={"day-" + x}>{eventsEachDay[x - 1]}</div>
-            </div>
-          );
-        }
+        // x is the day of the month -- ie. 23
+        return (
+          <div
+            className="day"
+            key={"day-" + x}
+            onClick={() => {
+              setSelectedDate(new Date(`${current.year()}-${current.month() + 1}-${`${x}`.padStart(2, '0')}`));
+            }}
+          >
+            <span className="day-span">
+              {x}
+            </span>
+            <div className="innerDay" id={"day-" + x}>{eventsEachDay[x - 1]}</div>
+          </div>
+        )
       }),
       [...Array(padDays)].map((x, i) => (
         <div
@@ -391,7 +389,7 @@ function Calendar(props) {
         ></div>
       ))
     ];
-  }
+  }, [current])
 
   //TODO: refactor
   //decides how to render events
@@ -480,6 +478,7 @@ function Calendar(props) {
     return dates;
   }
 
+  console.log('calendar render', { selectedDate })
   return (
     <div
       className="calendar"
@@ -515,6 +514,13 @@ function Calendar(props) {
         </div>
       }
 
+      {selectedDate &&
+        <AddEvent
+          selectedDate={selectedDate}
+          setSelectedDate={setSelectedDate}
+          foo={1}
+        />
+      }
     </div>
   );
 }

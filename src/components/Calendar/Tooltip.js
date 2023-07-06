@@ -6,7 +6,7 @@ import moment from "moment-timezone";
 
 import { Popper } from 'react-popper';
 
-import { isAllDay, getCalendarURL } from "./utils/helper";
+import { isAllDay, getCalendarURL } from "../../lib/utils/helper";
 
 import Place from "./svg/place";
 import Subject from "./svg/subject";

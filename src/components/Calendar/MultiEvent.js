@@ -3,9 +3,9 @@ import React, { useState } from "react";
 
 import moment from "moment-timezone";
 
-import Tooltip from "./tooltip";
+import Tooltip from "./Tooltip";
 
-import { isAllDay, pSBC } from "./utils/helper";
+import { isAllDay, pSBC } from "../../lib/utils/helper";
 
 import { Manager, Reference } from 'react-popper';
 

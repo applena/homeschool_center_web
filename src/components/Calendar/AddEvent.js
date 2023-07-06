@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import './addEvent.scss';
 import DropdownButton from 'react-bootstrap/DropdownButton';
 import Dropdown from 'react-bootstrap/Dropdown';
@@ -11,7 +11,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { gapi } from 'gapi-script';
 import { useSelector, useDispatch } from 'react-redux';
-import { setEvents } from '../redux/eventsSlice';
+import { setEvents } from '../../redux/eventsSlice';
 
 function AddEvent(props) {
   const [name, setName] = useState('');
@@ -28,31 +28,107 @@ function AddEvent(props) {
   const [endsOn, setEndsOn] = useState('never');
   const [endDate, setEndDate] = useState('');
   const [afterOccurance, setAfterOccurance] = useState('0 Occurances');
-  const [startDate, setStartDate] = useState(props.dateSelected);
+  const [startDate, setStartDate] = useState(props.selectedDate);
   const [allDay, setAllDay] = useState(false);
   const [repeatTimeFrame, setRepeatTimeFrame] = useState('How Often');
+
+  const [daySelected, setDaySelected] = useState('');
+  const [month, setMonth] = useState('');
+  const [day, setDay] = useState('');
+  const [ordinalsOfMonth, setOrdinalsOfMonth] = useState('');
+
   const dispatch = useDispatch();
 
   const hICalendar = useSelector((state) => state.hICalendar);
-  // console.log({ hICalendar })
-
-  // props.daySelected = 'Friday'
-  // props.dateSelected = Sat Jun 10 2023 00:00:00 GMT-0700 (Pacific Daylight Time)
-  // name = 'algebra'
-  // description = 'a class on algebra'
-  // subject = 'math'
-  // startTime = '13:00'
-  // repeats = true
-  // repeatsFrequency = 'Daily'
-  // props.day = 10
-  // props.month = 'June'
-  // props.ordinal = 
 
 
-  // console.log({ newSubject }, props.dateSelected)
-  // console.log('Add event', props);
-  // console.log('startDate', startDate.toISOString().substring(0, 10))
-  // console.log('!!!', props.ordinal.split(' ')[2].substring(0, 2).toUpperCase());
+  useEffect(() => {
+    // console.log('selected date from index', props)
+
+    //find and set the ordinals - ex: 'thrid thursday of the month'
+    const ordinals = ["", "first", "second", "third", "fourth", "fifth"];
+    let date = props.selectedDate + '';
+    let tokens = date.split(/[ ,]/);
+    const dayOfWeek = getTheDayOfWeek(tokens[0]);
+    setOrdinalsOfMonth("the " + ordinals[Math.ceil(tokens[2] / 7)] + " " + dayOfWeek + " of the month");
+
+
+    //find and set the day of the week
+    let newStart = props.selectedDate + '';
+    newStart = newStart.slice(0, 3);
+    const dayOWeek = getTheDayOfWeek(newStart);
+    setDaySelected(dayOWeek);
+
+    console.log('handle select', props.selectedDate);
+    //find and set the Month selected
+    let monthIndex = props.selectedDate.getMonth();
+    // console.log({ monthIndex });
+    switch (monthIndex) {
+      case 0:
+        setMonth('January');
+        break;
+      case 1:
+        setMonth('February');
+        break;
+      case 2:
+        setMonth('March');
+        break;
+      case 3:
+        setMonth('April');
+        break;
+      case 4:
+        setMonth('May');
+        break;
+      case 5:
+        setMonth('June');
+        break;
+      case 6:
+        setMonth('July');
+        break;
+      case 7:
+        setMonth('August');
+        break;
+      case 8:
+        setMonth('September');
+        break;
+      case 9:
+        setMonth('October');
+        break;
+      case 10:
+        setMonth('November');
+        break;
+      case 11:
+        setMonth('December');
+        break;
+      default:
+        setMonth('');
+    }
+
+    //set the day selected
+    setDay(props.selectedDate.getDate());
+
+  }, [props.selectedDate]);
+
+  const getTheDayOfWeek = (abrivation) => {
+    switch (abrivation) {
+      case 'Mon':
+        return 'Monday';
+      case 'Tue':
+        return 'Tuesday';
+      case 'Wed':
+        return 'Wednesdday';
+      case 'Thu':
+        return 'Thursday';
+      case 'Fri':
+        return 'Friday';
+      case 'Sat':
+        return 'Saturday';
+      case 'Sun':
+        return ('Sunday');
+      default:
+        return ('');
+    }
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -90,6 +166,7 @@ function AddEvent(props) {
       event['start']['dateTime'] = startDateTime;
       event['end']['dateTime'] = endDateTime;
     } else {
+      console.log('!!!!!!!1', startDate, startDate.toISOString().substring(0, 10))
       //"start": {"date": "2015-06-01"}
       event['start']['date'] = startDate.toISOString().substring(0, 10);
       event['end']['date'] = startDate.toISOString().substring(0, 10);
@@ -100,7 +177,7 @@ function AddEvent(props) {
       let recurrence = [];
       if (!['How Often', 'Custom', 'Weekdays'].includes(repeatFrequency)) {
         if (repeatFrequency === 'MONTHLY') {
-          recurrence.push(`RRULE:FREQ=${repeatFrequency};BYDAY=1${props.ordinal.split(' ')[2].substring(0, 2).toUpperCase()}`)
+          recurrence.push(`RRULE:FREQ=${repeatFrequency};BYDAY=1${ordinalsOfMonth.split(' ')[2].substring(0, 2).toUpperCase()}`)
         }
         recurrence.push(`RRULE:FREQ=${repeatFrequency}`);
         console.log('pushing repeatFrequency', { repeatFrequency })
@@ -151,6 +228,8 @@ function AddEvent(props) {
 
     const events = await gapi.client.calendar.events.list({ calendarId: hICalendar.id })
     console.log({ events });
+    dispatch(setEvents(events));
+    props.setSelectedDate(false);
 
 
   }
@@ -162,7 +241,7 @@ function AddEvent(props) {
       style={{ display: 'block', position: 'initial' }}
     >
       <Modal.Dialog>
-        <Modal.Header onHide={() => props.setDisplayAddEvent(false)} closeButton>
+        <Modal.Header onHide={() => props.setSelectedDate(false)} closeButton>
           <Modal.Title>Add Event</Modal.Title>
         </Modal.Header>
 
@@ -194,7 +273,7 @@ function AddEvent(props) {
               <label style={{ display: 'block', width: '100%' }}>
                 <span style={{ marginRight: '8px' }}>Date</span>
                 <DatePicker
-                  selected={startDate === props.dateSelected ? props.dateSelected : startDate}
+                  selected={props.selectedDate}
                   onChange={(startDate) => setStartDate(startDate)}
                 />
               </label>
@@ -322,9 +401,9 @@ function AddEvent(props) {
             {repeats &&
               <DropdownButton title={repeatFrequency}>
                 <Dropdown.Item onClick={(e) => setRepeatFrequency('DAILY')}>Daily</Dropdown.Item>
-                <Dropdown.Item onClick={(e) => setRepeatFrequency('WEEKLY')}>Weekly on {props.daySelected}</Dropdown.Item>
-                <Dropdown.Item onClick={(e) => setRepeatFrequency('MONTHLY')}>Monthly on {props.ordinal}</Dropdown.Item>
-                <Dropdown.Item onClick={(e) => setRepeatFrequency('YEARLY')}>Annually on {props.month} {props.day}</Dropdown.Item>
+                <Dropdown.Item onClick={(e) => setRepeatFrequency('WEEKLY')}>Weekly on {daySelected}</Dropdown.Item>
+                <Dropdown.Item onClick={(e) => setRepeatFrequency('MONTHLY')}>Monthly on {ordinalsOfMonth}</Dropdown.Item>
+                <Dropdown.Item onClick={(e) => setRepeatFrequency('YEARLY')}>Annually on {month} {day}</Dropdown.Item>
                 <Dropdown.Item onClick={(e) => { setRepeatsOn('MO,TU,WE,TH,FR'); setRepeatFrequency('Weekdays') }}>Every weekday (Monday to Friday)</Dropdown.Item>
                 <Dropdown.Item onClick={(e) => setRepeatFrequency(e.target.textContent)}>Custom</Dropdown.Item>
               </DropdownButton>
@@ -375,7 +454,7 @@ function AddEvent(props) {
           </Modal.Body>
 
           <Modal.Footer>
-            <Button onClick={() => props.setDisplayAddEvent(false)} variant="secondary">Close</Button>
+            <Button onClick={() => props.setSelectedDate(false)} variant="secondary">Close</Button>
             <Button
               onClick={(e) => handleSubmit(e)}
               variant="primary">Save changes</Button>
