@@ -91,7 +91,7 @@ function Calendar(props) {
   const getRenderEvents = useCallback((events, singleEvents) => {
     let eventsEachDay = [...Array(current.daysInMonth())].map((e) => []); //create array of empty arrays of length daysInMonth
 
-    console.log('beginning of get render events', { events })
+    // console.log('beginning of get render events', { events })
     events.forEach((event) => {
       if (event.recurrence) {
         let duration = moment.duration(event.endTime.diff(event.startTime));

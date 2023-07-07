@@ -89,19 +89,26 @@ html {
   height: 26px;
   position: relative;
 
+
   &:focus {
     outline: none;
   }
-}
 
-.event-text {
-  color: "#51565d";
-  padding: "3px 0px 3px 20px";
-  margin-right: "5px";
-  overflow-x: "hidden";
-  white-space: "nowrap";
-  position: "relative";
-  text-align: "left";
+  border-radius: 3px;
+  width: 100%;
+  text-align: left;
+
+  &:hover {
+    cursor: pointer;
+    background: rgba(81, 86, 93, 0.1);
+  }
+
+  color: #51565d;
+  padding: 0px 0px 3px 3px;
+  margin-right: 5px;
+  overflow-x: hidden;
+  white-space: nowrap;
+  position: relative;
 }
 
 .event-text-one {
@@ -129,6 +136,8 @@ html {
   &:focus {
     outline: none;
   }
+
+  text-align: left;
 
   position: relative;
 }
@@ -170,16 +179,6 @@ html {
 
 .day-span {
   padding-right: '6px',
-}
-
-.reference {
-  border-radius: 3px;
-  width: 100%;
-
-  &:hover {
-    cursor: pointer;
-    background: rgba(81, 86, 93, 0.1);
-  }
 }
 
 .tooltip {

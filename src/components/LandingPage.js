@@ -5,6 +5,8 @@ function LandingPage(props) {
   const eventsData = useSelector((state) => state.events);
   const hICalendar = useSelector((state) => state.hICalendar)
 
+  console.log('landing page,', props.isSignedIn, eventsData.length)
+
   return (
     <div id="landing-page">
       {props.isSignedIn && eventsData.length &&

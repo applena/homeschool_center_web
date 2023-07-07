@@ -59,7 +59,7 @@ function AddEvent(props) {
     const dayOWeek = getTheDayOfWeek(newStart);
     setDaySelected(dayOWeek);
 
-    console.log('handle select', props.selectedDate);
+    // console.log('handle select', props.selectedDate);
     //find and set the Month selected
     let monthIndex = props.selectedDate.getMonth();
     // console.log({ monthIndex });
@@ -166,7 +166,7 @@ function AddEvent(props) {
       event['start']['dateTime'] = startDateTime;
       event['end']['dateTime'] = endDateTime;
     } else {
-      console.log('!!!!!!!1', startDate, startDate.toISOString().substring(0, 10))
+      // console.log('!!!!!!!1', startDate, startDate.toISOString().substring(0, 10))
       //"start": {"date": "2015-06-01"}
       event['start']['date'] = startDate.toISOString().substring(0, 10);
       event['end']['date'] = startDate.toISOString().substring(0, 10);
@@ -228,7 +228,7 @@ function AddEvent(props) {
 
     const events = await gapi.client.calendar.events.list({ calendarId: hICalendar.id })
     console.log({ events });
-    dispatch(setEvents(events));
+    dispatch(setEvents(events.result.items));
     props.setSelectedDate(false);
 
 
