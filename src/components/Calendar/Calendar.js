@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 
 import moment from "moment-timezone";
 import { rrulestr } from "rrule";
@@ -25,8 +25,6 @@ function Calendar(props) {
   const [eventsEachDay, setEventsEachDay] = useState([]);
 
   const [selectedDate, setSelectedDate] = useState(false);
-
-  // console.log('index - selectedDate - month', current.month())
 
 
   // decides how to render events
@@ -205,37 +203,8 @@ function Calendar(props) {
     return eventsEachDay;
   }, [current, drawMultiEvent, props.startTime, props.styles])
 
-
-  useEffect(() => {
-    if (
-      Boolean(props.language) &&
-      availableLanguages.includes(props.language.toUpperCase())
-    ) {
-      // try to change language
-      try {
-        const lang = props.language.toUpperCase();
-        setMonthNames([...Languages[lang].MONTHS]);
-        setDays([...Languages[lang].DAYS]);
-      } catch (err) {
-        console.error("Error choosing a new language", err);
-      }
-    }
-
-
-    //process events
-    // console.log('calendar props', props)
-    const { events, singleEvents } = processEvents(props.events, props.summary, props.color);
-    console.log('results of processEvents', { events, singleEvents })
-
-    //set state with calculated values
-    setEvents(events);
-    setSingleEvents(singleEvents);
-
-    setEventsEachDay(getRenderEvents(events, singleEvents));
-  }, [props.color, props.language, props.events, props.summary, getRenderEvents])
-
   //get easy to work with events and singleEvents from response
-  const processEvents = (items, calendarName, color) => {
+  const processEvents = useCallback((items, calendarName, color) => {
     let singleEvents = [];
     let events = [];
     let changed = [];
@@ -316,16 +285,46 @@ function Calendar(props) {
     });
 
     return { events, singleEvents };
-  }
+  }, [props.color])
+
+
+  useEffect(() => {
+    if (
+      Boolean(props.language) &&
+      availableLanguages.includes(props.language.toUpperCase())
+    ) {
+      // try to change language
+      try {
+        const lang = props.language.toUpperCase();
+        setMonthNames([...Languages[lang].MONTHS]);
+        setDays([...Languages[lang].DAYS]);
+      } catch (err) {
+        console.error("Error choosing a new language", err);
+      }
+    }
+
+
+    //process events
+    const { events, singleEvents } = processEvents(props.events, props.summary, props.color);
+    // console.log('results of processEvents', { events, singleEvents })
+
+    //set state with calculated values
+    setEvents(events);
+    setSingleEvents(singleEvents);
+
+    setEventsEachDay(getRenderEvents(events, singleEvents));
+  }, [props.color, props.language, props.events, props.summary, getRenderEvents, processEvents])
 
   //sets current month to previous month
   const lastMonth = () => {
-    setCurrent(current.subtract(1, "months"));
+    // console.log('last month', current.subtract(1, 'months'))
+    setCurrent(moment(current.subtract(1, "months")));
   }
 
   //sets current month to following month
   const nextMonth = () => {
-    setCurrent(current.add(1, "months"));
+    // console.log('next month', current.add(1, 'months'))
+    setCurrent(moment(current.add(1, "months")));
   }
 
   // const clearEvents = () => {
@@ -478,7 +477,9 @@ function Calendar(props) {
     return dates;
   }
 
-  console.log('calendar render', { selectedDate })
+  let currentMonth = useMemo(() => monthNames[current.month()], [current, monthNames]);
+  console.log('calendar render', { selectedDate, current, currentMonth });
+
   return (
     <div
       className="calendar"
@@ -492,7 +493,7 @@ function Calendar(props) {
         </div>
         <div>
           <h2 className="calendar-title">
-            {monthNames[current.month()] + " " + current.year()}
+            {currentMonth + " " + current.year()}
           </h2>
         </div>
         <div

@@ -3,11 +3,11 @@ import React from "react";
 
 import moment from "moment-timezone";
 
-
 import { isAllDay, pSBC } from "../../lib/utils/helper";
 
 
 function MultiEvent(props) {
+  // console.log('muliEvent', { props })
 
   return (
     <div
@@ -20,10 +20,8 @@ function MultiEvent(props) {
       <div style={{
         width: `calc(100% - ${8 * (props.arrowLeft + props.arrowRight)}px)`,
         borderRadius: '3px',
-        background: `${props.color}`,
-        '&:hover': {
-          background: pSBC(-0.35, props.color),
-        }
+        background: props.color,
+        border: `1px solid ${pSBC(-0.2, props.color)}`
       }}
       >
         <div

@@ -104,12 +104,13 @@ html {
   }
 
   color: #51565d;
-  padding: 0px 0px 3px 3px;
+  padding: 0px 0px 3px px;
   margin-right: 5px;
   overflow-x: hidden;
   white-space: nowrap;
   position: relative;
 }
+
 
 .event-text-one {
   padding: '3px 0px';
@@ -138,8 +139,13 @@ html {
   }
 
   text-align: left;
-
   position: relative;
+
+  &:hover {
+    opacity: .8;
+  }
+
+  cursor: pointer;
 }
 
 .below {
