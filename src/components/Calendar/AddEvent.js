@@ -29,7 +29,7 @@ function AddEvent(props) {
   const [endDate, setEndDate] = useState('');
   const [afterOccurance, setAfterOccurance] = useState('0 Occurances');
   const [startDate, setStartDate] = useState(props.selectedDate);
-  const [allDay, setAllDay] = useState(false);
+  const [allDay, setAllDay] = useState(true);
   const [repeatTimeFrame, setRepeatTimeFrame] = useState('How Often');
 
   const [daySelected, setDaySelected] = useState('');
@@ -157,6 +157,7 @@ function AddEvent(props) {
 
     // add start and end date/time
     if (!allDay) {
+      console.log('Not all day', allDay, startDate)
       let startDateTime = new Date(startDate);
       startDateTime.setHours(startTime.split(':')[0], startTime.split(':')[1]);
 
@@ -166,10 +167,12 @@ function AddEvent(props) {
       event['start']['dateTime'] = startDateTime;
       event['end']['dateTime'] = endDateTime;
     } else {
-      // console.log('!!!!!!!1', startDate, startDate.toISOString().substring(0, 10))
+      console.log('all day event', startDate, startDate.toISOString().substring(0, 10))
       //"start": {"date": "2015-06-01"}
+      const endDate = new Date(startDate)
+      endDate.setDate(endDate.getDate() + 1);
       event['start']['date'] = startDate.toISOString().substring(0, 10);
-      event['end']['date'] = startDate.toISOString().substring(0, 10);
+      event['end']['date'] = endDate.toISOString().substring(0, 10);
     }
 
     // add recurrence
@@ -425,7 +428,7 @@ function AddEvent(props) {
               </label>
 
               <div className='flex'>
-                <input style={{ display: 'inline-block', width: 'auto', marginRight: '10px' }} onClick={() => setAllDay(!allDay)} type="checkbox" />
+                <input style={{ display: 'inline-block', width: 'auto', marginRight: '10px' }} onChange={() => setAllDay(!allDay)} type="checkbox" defaultChecked />
                 <label>
                   All Day
                 </label>
