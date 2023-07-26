@@ -351,11 +351,11 @@ function Calendar(props) {
   //renders the blocks for the days of each month
   const renderDates = useCallback((eventsEachDay) => {
     console.log('render dates', { eventsEachDay })
-    var days = [...Array(current.daysInMonth() + 1).keys()].slice(1); // create array from 1 to number of days in month
+    const days = [...Array(current.daysInMonth() + 1).keys()].slice(1); // create array from 1 to number of days in month
 
-    var dayOfWeek = current.day(); //get day of week of first day in the month
+    const dayOfWeek = current.day(); //get day of week of first day in the month
 
-    var padDays = (((-current.daysInMonth() - current.day()) % 7) + 7) % 7; //number of days to fill out the last row    
+    const padDays = (((-current.daysInMonth() - current.day()) % 7) + 7) % 7; //number of days to fill out the last row    
 
     return [
       [...Array(dayOfWeek)].map((x, i) => (
@@ -390,8 +390,10 @@ function Calendar(props) {
     ];
   }, [current])
 
-  //TODO: refactor
-  //decides how to render events
+
+  const editEvent = (id) => {
+    console.log('edit event', { id });
+  }
 
   //TODO: refactor this too?
   //handles rendering and proper stacking of individual blocks 
@@ -435,32 +437,35 @@ function Calendar(props) {
     for (let i = 0; i < length; i++) {
       //placeholders
       while (eventsEachDay[startDate - 1 + i].length <= chosenRow) {
-        eventsEachDay[startDate - 1 + i].push(<div className="event below placeholder" key={`placeholder-${gud()}`}></div>);
+        eventsEachDay[startDate - 1 + i].push(<div className="event below placeholder"></div>);
       }
 
       //rest of event that is under the main banner
-      eventsEachDay[startDate - 1 + i][chosenRow] = <div className="isEvent event below" key={`filler-${gud()}`}></div>;
+      eventsEachDay[startDate - 1 + i][chosenRow] = <div className="isEvent event below"></div>;
     }
 
     //render event
-    eventsEachDay[startDate - 1][chosenRow] = <div className="isEvent" key={`multi-event-${chosenRow}`}><MultiEvent {...props} {...multiEventProps} length={length} arrowLeft={arrowLeft} arrowRight={arrowRight} key={`multi-event-${gud()}`} /></div>;
+    eventsEachDay[startDate - 1][chosenRow] = <div className="isEvent" key={`multi-event-${chosenRow}`}><MultiEvent {...props} {...multiEventProps} editEvent={(id) => editEvent(id)} length={length} arrowLeft={arrowLeft} arrowRight={arrowRight} key={`multi-event-${gud()}`} /></div>;
   }
+
 
   //attempts to render in a placeholder then at the end
   const renderSingleEvent = (eventsEachDay, date, props) => {
     let foundEmpty = false;
     let nodes = eventsEachDay[date - 1];
+    console.log('renderSingleEven', { nodes, props })
     for (let i = 0; i < nodes.length; i++) {
       if (nodes[i].props.className.includes("event") && !nodes[i].props.className.includes("isEvent")) { //target only placeholders
-        nodes[i] = <div className="isEvent" key={`single-event-${gud()}`}>
-          <Event {...props} key={`single-event-${gud()}`} />
+        props.foo = 1;
+        nodes[i] = <div className="isEvent" key={`single-event-${i}`}>
+          <Event {...props} editEvent={(id) => editEvent(id)} key={`single-event-${i}`} />
         </div>;
         foundEmpty = true;
         break;
       }
     }
     if (!foundEmpty) {
-      eventsEachDay[date - 1].push(<div className="isEvent" key={`single-event-${gud()}`}><Event {...props} key={`single-event-${gud()}`} /></div>)
+      eventsEachDay[date - 1].push(<div className="isEvent" key={`single-event-${date - 1}`}><Event {...props} editEvent={(id) => editEvent(id)} /></div>)
     }
   }
 

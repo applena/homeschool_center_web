@@ -7,12 +7,13 @@ import moment from "moment-timezone";
 
 function Event(props) {
   // const [showTooltip, setShowTooltip] = useState(false);
-
+  console.log('EVENT', props)
 
   return (
     <div
       className="event"
       tabIndex="0"
+      onClick={() => props.editEvent(props.id)}
     >
 
       <span className="event-text-span" style={{ color: props.color }}>
