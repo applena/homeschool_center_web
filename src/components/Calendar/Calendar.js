@@ -15,16 +15,70 @@ import { Languages, availableLanguages } from "../../lib/utils/languages";
 import AddEvent from './AddEvent';
 
 import './calendar.scss';
+import EditEvent from "./EditEvent";
 
 function Calendar(props) {
   const [monthNames, setMonthNames] = useState([...Languages.EN.MONTHS]);
   const [days, setDays] = useState([...Languages.EN.DAYS]);
   const [current, setCurrent] = useState(moment().startOf("month").utc(true)); //current position on calendar (first day of month)
-  const [events, setEvents] = useState([]);//all day or multi day events
-  const [singleEvents, setSingleEvents] = useState([]); //single day events
   const [eventsEachDay, setEventsEachDay] = useState([]);
+  const [displayEditEvent, setDisplayEditEvent] = useState(false);
+  const [editEventId, setEditEventId] = useState('');
 
   const [selectedDate, setSelectedDate] = useState(false);
+
+  //TODO: refactor this too?
+  //handles rendering and proper stacking of individual blocks 
+  const renderMultiEventBlock = useCallback((eventsEachDay, startDate, length, props, arrowLeft, arrowRight) => {
+    let multiEventProps = {
+      tooltipStyles: props?.styles?.tooltip || {},//gets this.props.styles.tooltip if exists, else empty object
+      multiEventStyles: props?.styles?.multiEvent || {},
+    }
+
+    let maxBlocks = 0;
+    let closedSlots = []; //keep track of rows that the event can't be inserted into
+
+    for (let i = 0; i < length; i++) {
+      let dayEvents = eventsEachDay[startDate - 1 + i];
+      if (dayEvents.length > maxBlocks) {
+        maxBlocks = dayEvents.length;
+      }
+
+      //address rows that are not the last element in closedSlots
+      for (let j = 0; j < maxBlocks; j++) {
+        if (j > dayEvents.length) {
+          break;
+        } else if (closedSlots.includes(j)) {
+          continue;
+        }
+        if (dayEvents[j].props.className.includes("isEvent")) {
+          closedSlots.push(j);
+        }
+      }
+    }
+
+    let chosenRow;
+    for (let i = 0; i <= maxBlocks; i++) {
+      if (!closedSlots.includes(i)) {
+        chosenRow = i;
+        break;
+      }
+    }
+
+    //fill in placeholders
+    for (let i = 0; i < length; i++) {
+      //placeholders
+      while (eventsEachDay[startDate - 1 + i].length <= chosenRow) {
+        eventsEachDay[startDate - 1 + i].push(<div className="event below placeholder"></div>);
+      }
+
+      //rest of event that is under the main banner
+      eventsEachDay[startDate - 1 + i][chosenRow] = <div className="isEvent event below"></div>;
+    }
+
+    //render event
+    eventsEachDay[startDate - 1][chosenRow] = <div className="isEvent" key={`multi-event-${chosenRow}`}><MultiEvent {...props} {...multiEventProps} editEvent={(e, id) => editEvent(e, id)} length={length} arrowLeft={arrowLeft} arrowRight={arrowRight} key={`multi-event-${gud()}`} /></div>;
+  }, [])
 
 
   // decides how to render events
@@ -82,7 +136,27 @@ function Calendar(props) {
       blockLength++;
       curDate.add(1, "day");
     }
-  }, [current])
+  }, [current, renderMultiEventBlock])
+
+  //attempts to render in a placeholder then at the end
+  const renderSingleEvent = useCallback((eventsEachDay, date, props) => {
+    let foundEmpty = false;
+    let nodes = eventsEachDay[date - 1];
+    console.log('renderSingleEven', { nodes, props })
+    for (let i = 0; i < nodes.length; i++) {
+      if (nodes[i].props.className.includes("event") && !nodes[i].props.className.includes("isEvent")) { //target only placeholders
+        props.foo = 1;
+        nodes[i] = <div className="isEvent" key={`single-event-${i}`}>
+          <Event {...props} editEvent={(e, id) => editEvent(e, id)} key={`single-event-${i}`} />
+        </div>;
+        foundEmpty = true;
+        break;
+      }
+    }
+    if (!foundEmpty) {
+      eventsEachDay[date - 1].push(<div className="isEvent" key={`single-event-${date - 1}`}><Event {...props} editEvent={(e, id) => editEvent(e, id)} /></div>)
+    }
+  }, [])
 
 
   //get array of arrays of length days in month containing the events in each day
@@ -201,7 +275,7 @@ function Calendar(props) {
     });
 
     return eventsEachDay;
-  }, [current, drawMultiEvent, props.startTime, props.styles])
+  }, [current, drawMultiEvent, props.startTime, renderSingleEvent, props.styles])
 
   //get easy to work with events and singleEvents from response
   const processEvents = useCallback((items, calendarName, color) => {
@@ -285,7 +359,7 @@ function Calendar(props) {
     });
 
     return { events, singleEvents };
-  }, [props.color])
+  }, [])
 
 
   useEffect(() => {
@@ -307,10 +381,6 @@ function Calendar(props) {
     //process events
     const { events, singleEvents } = processEvents(props.events, props.summary, props.color);
     // console.log('results of processEvents', { events, singleEvents })
-
-    //set state with calculated values
-    setEvents(events);
-    setSingleEvents(singleEvents);
 
     setEventsEachDay(getRenderEvents(events, singleEvents));
   }, [props.color, props.language, props.events, props.summary, getRenderEvents, processEvents])
@@ -391,82 +461,11 @@ function Calendar(props) {
   }, [current])
 
 
-  const editEvent = (id) => {
-    console.log('edit event', { id });
-  }
-
-  //TODO: refactor this too?
-  //handles rendering and proper stacking of individual blocks 
-  const renderMultiEventBlock = (eventsEachDay, startDate, length, props, arrowLeft, arrowRight) => {
-    let multiEventProps = {
-      tooltipStyles: props?.styles?.tooltip || {},//gets this.props.styles.tooltip if exists, else empty object
-      multiEventStyles: props?.styles?.multiEvent || {},
-    }
-
-    let maxBlocks = 0;
-    let closedSlots = []; //keep track of rows that the event can't be inserted into
-
-    for (let i = 0; i < length; i++) {
-      let dayEvents = eventsEachDay[startDate - 1 + i];
-      if (dayEvents.length > maxBlocks) {
-        maxBlocks = dayEvents.length;
-      }
-
-      //address rows that are not the last element in closedSlots
-      for (let j = 0; j < maxBlocks; j++) {
-        if (j > dayEvents.length) {
-          break;
-        } else if (closedSlots.includes(j)) {
-          continue;
-        }
-        if (dayEvents[j].props.className.includes("isEvent")) {
-          closedSlots.push(j);
-        }
-      }
-    }
-
-    let chosenRow;
-    for (let i = 0; i <= maxBlocks; i++) {
-      if (!closedSlots.includes(i)) {
-        chosenRow = i;
-        break;
-      }
-    }
-
-    //fill in placeholders
-    for (let i = 0; i < length; i++) {
-      //placeholders
-      while (eventsEachDay[startDate - 1 + i].length <= chosenRow) {
-        eventsEachDay[startDate - 1 + i].push(<div className="event below placeholder"></div>);
-      }
-
-      //rest of event that is under the main banner
-      eventsEachDay[startDate - 1 + i][chosenRow] = <div className="isEvent event below"></div>;
-    }
-
-    //render event
-    eventsEachDay[startDate - 1][chosenRow] = <div className="isEvent" key={`multi-event-${chosenRow}`}><MultiEvent {...props} {...multiEventProps} editEvent={(id) => editEvent(id)} length={length} arrowLeft={arrowLeft} arrowRight={arrowRight} key={`multi-event-${gud()}`} /></div>;
-  }
-
-
-  //attempts to render in a placeholder then at the end
-  const renderSingleEvent = (eventsEachDay, date, props) => {
-    let foundEmpty = false;
-    let nodes = eventsEachDay[date - 1];
-    console.log('renderSingleEven', { nodes, props })
-    for (let i = 0; i < nodes.length; i++) {
-      if (nodes[i].props.className.includes("event") && !nodes[i].props.className.includes("isEvent")) { //target only placeholders
-        props.foo = 1;
-        nodes[i] = <div className="isEvent" key={`single-event-${i}`}>
-          <Event {...props} editEvent={(id) => editEvent(id)} key={`single-event-${i}`} />
-        </div>;
-        foundEmpty = true;
-        break;
-      }
-    }
-    if (!foundEmpty) {
-      eventsEachDay[date - 1].push(<div className="isEvent" key={`single-event-${date - 1}`}><Event {...props} editEvent={(id) => editEvent(id)} /></div>)
-    }
+  const editEvent = (e, id) => {
+    e.stopPropagation();
+    setDisplayEditEvent(true);
+    setEditEventId(id);
+    // console.log('edit event', { id });
   }
 
   //get dates based on rrule string between dates
@@ -525,6 +524,12 @@ function Calendar(props) {
           selectedDate={selectedDate}
           setSelectedDate={setSelectedDate}
           foo={1}
+        />
+      }
+
+      {displayEditEvent &&
+        <EditEvent
+          id={editEventId}
         />
       }
     </div>

@@ -14,6 +14,7 @@ function MultiEvent(props) {
       className="event-big"
       tabIndex="0"
       style={{ width: `calc(${props.length}00% + ${props.length - 1}px)` }}
+      onClick={(e) => props.editEvent(e, props.id)}
     >
 
 

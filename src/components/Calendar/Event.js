@@ -13,7 +13,7 @@ function Event(props) {
     <div
       className="event"
       tabIndex="0"
-      onClick={() => props.editEvent(props.id)}
+      onClick={(e) => props.editEvent(e, props.id)}
     >
 
       <span className="event-text-span" style={{ color: props.color }}>
