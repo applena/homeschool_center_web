@@ -9,23 +9,31 @@ import MultiEvent from "./MultiEvent";
 import { isMultiEvent } from "../../lib/utils/helper";
 
 import gud from "gud";
+import { useSelector, useDispatch } from 'react-redux';
 
 import { Languages, availableLanguages } from "../../lib/utils/languages";
 
 import AddEvent from './AddEvent';
 
 import './calendar.scss';
-import EditEvent from "./EditEvent";
 
 function Calendar(props) {
   const [monthNames, setMonthNames] = useState([...Languages.EN.MONTHS]);
   const [days, setDays] = useState([...Languages.EN.DAYS]);
   const [current, setCurrent] = useState(moment().startOf("month").utc(true)); //current position on calendar (first day of month)
   const [eventsEachDay, setEventsEachDay] = useState([]);
-  const [displayEditEvent, setDisplayEditEvent] = useState(false);
-  const [editEventId, setEditEventId] = useState('');
-
+  const [editMode, setEditMode] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState({});
   const [selectedDate, setSelectedDate] = useState(false);
+
+  const events = useSelector((state) => state.events);
+
+  const editEvent = useCallback((e, id) => {
+    e.stopPropagation();
+    setEditMode(true);
+    const chosenEvent = events.find(event => event.id === id);
+    console.log('edit event', { chosenEvent, events, id });
+  }, [events])
 
   //TODO: refactor this too?
   //handles rendering and proper stacking of individual blocks 
@@ -76,9 +84,11 @@ function Calendar(props) {
       eventsEachDay[startDate - 1 + i][chosenRow] = <div className="isEvent event below"></div>;
     }
 
+    console.log('rendering mulit events', { props, multiEventProps })
+
     //render event
     eventsEachDay[startDate - 1][chosenRow] = <div className="isEvent" key={`multi-event-${chosenRow}`}><MultiEvent {...props} {...multiEventProps} editEvent={(e, id) => editEvent(e, id)} length={length} arrowLeft={arrowLeft} arrowRight={arrowRight} key={`multi-event-${gud()}`} /></div>;
-  }, [])
+  }, [editEvent])
 
 
   // decides how to render events
@@ -179,28 +189,20 @@ function Calendar(props) {
           let props;
           //update information if event has changed
           const changedEvent = event.changedEvents.find((changedEvent) => (changedEvent.originalStartTime.isSame(date, "day")));
+          let eventStart = moment.utc(date); //since rrule works with utc times
+          let eventEnd = moment(eventStart).add(duration);
+          props = {
+            name: event.name,
+            startTime: eventStart,
+            endTime: eventEnd,
+            description: event.description,
+            location: event.location,
+            calendarName: event.calendarName,
+            color: event.color,
+            id: event.id
+          };
           if (changedEvent) {
-            props = {
-              name: changedEvent.name,
-              startTime: changedEvent.newStartTime,
-              endTime: changedEvent.newEndTime,
-              description: changedEvent.description,
-              location: changedEvent.location,
-              calendarName: event.calendarName,
-              color: event.color
-            }
-          } else {
-            let eventStart = moment.utc(date); //since rrule works with utc times
-            let eventEnd = moment(eventStart).add(duration);
-            props = {
-              name: event.name,
-              startTime: eventStart,
-              endTime: eventEnd,
-              description: event.description,
-              location: event.location,
-              calendarName: event.calendarName,
-              color: event.color
-            };
+            props = { ...props, ...changedEvent }
           }
 
           drawMultiEvent(eventsEachDay, props);
@@ -208,7 +210,7 @@ function Calendar(props) {
       } else {
         //render event
         //check if event is in range
-        console.log('get Render Events', { event, current })
+        // console.log('get Render Events', { event, current })
         if (event.startTime.month() !== current.month() || event.startTime.year() !== current.year()) {
           if (event.endTime.month() !== current.month() || event.endTime.year() !== current.year()) {
             return;
@@ -460,14 +462,6 @@ function Calendar(props) {
     ];
   }, [current])
 
-
-  const editEvent = (e, id) => {
-    e.stopPropagation();
-    setDisplayEditEvent(true);
-    setEditEventId(id);
-    // console.log('edit event', { id });
-  }
-
   //get dates based on rrule string between dates
   const getDatesFromRRule = (str, eventStart, betweenStart, betweenEnd) => {
     //get recurrences using RRule
@@ -524,12 +518,9 @@ function Calendar(props) {
           selectedDate={selectedDate}
           setSelectedDate={setSelectedDate}
           foo={1}
-        />
-      }
+          editMode={editMode}
+          selectedEvent={selectedEvent}
 
-      {displayEditEvent &&
-        <EditEvent
-          id={editEventId}
         />
       }
     </div>
