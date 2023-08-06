@@ -41,6 +41,29 @@ function AddEvent(props) {
 
   const hICalendar = useSelector((state) => state.hICalendar);
 
+  // console.log('ADD EVENT', { props })
+
+  // creator: {email: 'applena@gmail.com'}
+  // end: {date: '2023-07-05'}
+  // htmlLink: "https://www.google.com/calendar/event?eid=NGJ2YWM4djRxb3FqazR1c2xyOWI3NzhraWdfMjAyMzA3MDQgYzk5ZDhuMW40dmxvbm4zYzF1Z2k4bzVzMmNAZw"
+  // iCalUID: "4bvac8v4qoqjk4uslr9b778kig@google.com"
+  // id: "4bvac8v4qoqjk4uslr9b778kig"
+  // kind: "calendar#event"
+  // recurrence: ['RRULE:FREQ=DAILY;BYDAY=MO,TU,WE,TH,FR']
+  // reminders: {useDefault: false, overrides: Array(2)}
+  // sequence: 0
+  // start: {date: '2023-07-04'}
+  // status: "confirmed"
+  // summary: "weekday test"
+  // updated: "2023-07-30T17:46:57.467Z"
+
+  useEffect(() => {
+    if (props.editMode) {
+      console.log('ADD EVENT - editMode = true', { props })
+      setName(props.selectedEvent.summary)
+
+    }
+  }, [props.editMode, props.selectedEvent])
 
   useEffect(() => {
     // console.log('selected date from index', props)

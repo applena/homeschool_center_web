@@ -4,7 +4,7 @@ export const signInSlice = createSlice({
   name: 'signInStatus',
   initialState: {
     signedIn: false,
-    credentialResponse: {},
+    credentialResponse: false,
     clientLoaded: false
   },
   reducers: {

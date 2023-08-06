@@ -29,10 +29,10 @@ function Calendar(props) {
   const events = useSelector((state) => state.events);
 
   const editEvent = useCallback((e, id) => {
-    e.stopPropagation();
+    // e.stopPropagation();
     setEditMode(true);
     const chosenEvent = events.find(event => event.id === id);
-    console.log('edit event', { chosenEvent, events, id });
+    setSelectedEvent(chosenEvent);
   }, [events])
 
   //TODO: refactor this too?
@@ -166,7 +166,7 @@ function Calendar(props) {
     if (!foundEmpty) {
       eventsEachDay[date - 1].push(<div className="isEvent" key={`single-event-${date - 1}`}><Event {...props} editEvent={(e, id) => editEvent(e, id)} /></div>)
     }
-  }, [])
+  }, [editEvent])
 
 
   //get array of arrays of length days in month containing the events in each day
@@ -205,6 +205,7 @@ function Calendar(props) {
             props = { ...props, ...changedEvent }
           }
 
+          console.log('!!!!', { event })
           drawMultiEvent(eventsEachDay, props);
         });
       } else {
@@ -520,7 +521,6 @@ function Calendar(props) {
           foo={1}
           editMode={editMode}
           selectedEvent={selectedEvent}
-
         />
       }
     </div>
