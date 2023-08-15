@@ -17,11 +17,16 @@ export const eventsSlice = createSlice({
       // return state.splie(index of event, 1)
     },
     modifyEvent: (state, action) => {
-      // action.payload = the event {start, end, title, id}
-      // find event with id via action.payload.id
-      // remove event
-      // add new event
+      // action.payload = the event 
+      console.log('REDUX - modify event', action.payload);
+      state = state.map(event => {
+        if (event.id === action.payload.id) {
+          event = action.payload;
+        }
+        return event;
+      })
       console.log('udpated event', action.payload, state);
+      return state;
     },
     setEvents: (state, action) => {
       console.log('setting events from google', action.payload)
@@ -32,6 +37,6 @@ export const eventsSlice = createSlice({
 })
 
 // Action creators are generated for each case reducer function
-export const { setEvents, removeEvent } = eventsSlice.actions
+export const { setEvents, removeEvent, modifyEvent } = eventsSlice.actions
 
 export default eventsSlice.reducer

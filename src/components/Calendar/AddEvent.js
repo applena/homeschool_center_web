@@ -18,7 +18,7 @@ function AddEvent(props) {
   const [description, setDescription] = useState(props?.selectedEvent?.description || '');
   const [eventType, setEventType] = useState('Select Event Type');
   const [subject, setSubject] = useState('Subject');
-  const [startDate, setStartDate] = useState(props.selectedEvent?.start?.date || props.selectedDate);
+  const [startDate, setStartDate] = useState(new Date(props.selectedEvent?.start?.date) || props.selectedDate);
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
   const [newSubject, setNewSubject] = useState(''); // TODO: make a new subject option
@@ -34,7 +34,6 @@ function AddEvent(props) {
     BYDAY: 'Day Of Week',
   });
 
-  console.log("!", props.selectedEvent)
   // booliean reveals repeating options
   const [repeats, setRepeats] = useState(props?.selectedEvent?.recurrence?.length ? true : false);
 
@@ -236,7 +235,7 @@ function AddEvent(props) {
       event['start']['dateTime'] = startDateTime;
       event['end']['dateTime'] = endDateTime;
     } else {
-      console.log('all day event', startDate, startDate.toISOString().substring(0, 10))
+      console.log('all day event', startDate)
       //"start": {"date": "2015-06-01"}
       const endDate = new Date(startDate)
       endDate.setDate(endDate.getDate() + 1);
@@ -258,7 +257,7 @@ function AddEvent(props) {
         console.log('creating RRULE', { rRuleObj })
       }
 
-      if (rRuleObj.BYDAY !== 'Day Of Week') {
+      if (rRuleObj.BYDAY !== 'Day Of Week' && rRuleObj.FREQ !== 'MONTHLY') {
         recurrence.push(`BYDAY=${rRuleObj.BYDAY}`);
         console.log('pushing repeatsOn', { rRuleObj })
       }
@@ -268,13 +267,29 @@ function AddEvent(props) {
 
     console.log({ event });
 
+    if (props.selectedEvent?.id) {
+      try {
+        await gapi.client.calendar.events.update({
+          'calendarId': hICalendar.id,
+          'eventId': props.selectedEvent.id,
+          'resource': event
+        })
+        console.log('event successfully updated');
+      } catch {
+        console.log('problem updating event');
+      }
+    } else {
+      try {
+        await gapi.client.calendar.events.insert({
+          'calendarId': hICalendar.id,
+          'resource': event
+        });
+        console.log('event added successfully');
+      } catch {
+        console.log('problem adding event');
+      }
 
-    const request = await gapi.client.calendar.events.insert({
-      'calendarId': hICalendar.id,
-      'resource': event
-    });
-
-    console.log({ request });
+    }
 
     // request.execute(function (event) {
     //   console.log('Event created: ' + event.htmlLink);
