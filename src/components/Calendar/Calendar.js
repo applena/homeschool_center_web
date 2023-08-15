@@ -22,15 +22,14 @@ function Calendar(props) {
   const [days, setDays] = useState([...Languages.EN.DAYS]);
   const [current, setCurrent] = useState(moment().startOf("month").utc(true)); //current position on calendar (first day of month)
   const [eventsEachDay, setEventsEachDay] = useState([]);
-  const [editMode, setEditMode] = useState(false);
-  const [selectedEvent, setSelectedEvent] = useState({});
+  const [selectedEvent, setSelectedEvent] = useState(false);
   const [selectedDate, setSelectedDate] = useState(false);
 
   const events = useSelector((state) => state.events);
 
   const editEvent = useCallback((e, id) => {
-    // e.stopPropagation();
-    setEditMode(true);
+    console.log('edit event', { id })
+    e.stopPropagation();
     const chosenEvent = events.find(event => event.id === id);
     setSelectedEvent(chosenEvent);
   }, [events])
@@ -84,7 +83,7 @@ function Calendar(props) {
       eventsEachDay[startDate - 1 + i][chosenRow] = <div className="isEvent event below"></div>;
     }
 
-    console.log('rendering mulit events', { props, multiEventProps })
+    // console.log('rendering mulit events', { props, multiEventProps })
 
     //render event
     eventsEachDay[startDate - 1][chosenRow] = <div className="isEvent" key={`multi-event-${chosenRow}`}><MultiEvent {...props} {...multiEventProps} editEvent={(e, id) => editEvent(e, id)} length={length} arrowLeft={arrowLeft} arrowRight={arrowRight} key={`multi-event-${gud()}`} /></div>;
@@ -205,7 +204,7 @@ function Calendar(props) {
             props = { ...props, ...changedEvent }
           }
 
-          console.log('!!!!', { event })
+          // console.log('!!!!', { event })
           drawMultiEvent(eventsEachDay, props);
         });
       } else {
@@ -288,6 +287,7 @@ function Calendar(props) {
     let cancelled = [];
 
     items.forEach((event) => {
+      // console.log('processEvent', { event })
       if (event.originalStartTime) { //cancelled or changed events
         if (event.status === "cancelled") { //cancelled events
           cancelled.push({
@@ -423,7 +423,7 @@ function Calendar(props) {
 
   //renders the blocks for the days of each month
   const renderDates = useCallback((eventsEachDay) => {
-    console.log('render dates', { eventsEachDay })
+    // console.log('render dates', { eventsEachDay })
     const days = [...Array(current.daysInMonth() + 1).keys()].slice(1); // create array from 1 to number of days in month
 
     const dayOfWeek = current.day(); //get day of week of first day in the month
@@ -477,7 +477,7 @@ function Calendar(props) {
   }
 
   let currentMonth = useMemo(() => monthNames[current.month()], [current, monthNames]);
-  console.log('calendar render', { selectedDate, current, currentMonth });
+  // console.log('calendar render', { selectedDate, current, currentMonth });
 
   return (
     <div
@@ -514,13 +514,13 @@ function Calendar(props) {
         </div>
       }
 
-      {selectedDate &&
+      {(selectedDate || selectedEvent) &&
         <AddEvent
           selectedDate={selectedDate}
           setSelectedDate={setSelectedDate}
           foo={1}
-          editMode={editMode}
           selectedEvent={selectedEvent}
+          setSelectedEvent={setSelectedEvent}
         />
       }
     </div>
