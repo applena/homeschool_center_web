@@ -1,5 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
 
+
 export const eventsSlice = createSlice({
   name: 'events',
   initialState: [],
@@ -11,8 +12,9 @@ export const eventsSlice = createSlice({
     },
     removeEvent: (state, action) => {
       //find event with id via action.payload
+      state = state.filter(item => item.id !== action.payload)
+      return state;
       // return state.splie(index of event, 1)
-      console.log('removed event', action.payload, state);
     },
     modifyEvent: (state, action) => {
       // action.payload = the event {start, end, title, id}
@@ -30,6 +32,6 @@ export const eventsSlice = createSlice({
 })
 
 // Action creators are generated for each case reducer function
-export const { setEvents } = eventsSlice.actions
+export const { setEvents, removeEvent } = eventsSlice.actions
 
 export default eventsSlice.reducer
