@@ -12,13 +12,15 @@ import "react-datepicker/dist/react-datepicker.css";
 import { gapi } from 'gapi-script';
 import { useSelector, useDispatch } from 'react-redux';
 import { setEvents, removeEvent } from '../../redux/eventsSlice';
+import { datetime, RRule, RRuleSet, rrulestr } from 'rrule';
+import moment from "moment-timezone";
 
 function AddEvent(props) {
   const [name, setName] = useState(props?.selectedEvent?.summary || '');
   const [description, setDescription] = useState(props?.selectedEvent?.description || '');
   const [eventType, setEventType] = useState('Select Event Type');
   const [subject, setSubject] = useState('Subject');
-  const [startDate, setStartDate] = useState(new Date(props.selectedEvent?.start?.date) || props.selectedDate);
+  const [startDate, setStartDate] = useState(new Date(props.selectedEvent?.start?.date || props.selectedDate));
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
   const [newSubject, setNewSubject] = useState(''); // TODO: make a new subject option
@@ -34,6 +36,8 @@ function AddEvent(props) {
     BYDAY: 'Day Of Week',
   });
 
+  // const [rRuleConfig, setRRuleConfig] = useState({});
+
   // booliean reveals repeating options
   const [repeats, setRepeats] = useState(props?.selectedEvent?.recurrence?.length ? true : false);
 
@@ -41,7 +45,7 @@ function AddEvent(props) {
   const dispatch = useDispatch();
   const hICalendar = useSelector((state) => state.hICalendar);
 
-  // console.log('ADD EVENT', { props, repeats })
+  console.log('ADD EVENT', { startDate, props })
 
   // creator: {email: 'applena@gmail.com'}
   // end: {date: '2023-07-05'}
@@ -65,7 +69,9 @@ function AddEvent(props) {
       if (props.selectedEvent.recurrence) {
         // ['RRULE:FREQ=DAILY;BYDAY=MO,TU,WE,TH,FR']
         // ['RRULE:FREQ=MONTHLY;BYDAY=1FR']
-
+        // let rstr = `DTSTART:${moment(startDate).utc(true).format('YYYYMMDDTHHmmss')}Z\n${props.selectedEvent.recurrence[0]}`;
+        // let rRule = RRule.fromString(rstr);
+        // console.log('rRule in edit', { rRule, rstr });
         const repeatObj = {};
         const recurrenceArr = props.selectedEvent.recurrence[0].split(':')[1].split(';');
         recurrenceArr.forEach(rule => {
@@ -98,7 +104,7 @@ function AddEvent(props) {
     const ordinals = ["", "first", "second", "third", "fourth", "fifth"];
     let date = props.selectedDate || new Date(props.selectedEvent?.start?.date) || new Date(props.selectedEvent?.startDate?.date) || new Date();
     let dateString = date + '';
-    console.log({ date })
+    // console.log({ date })
     // let tokens = date.split(/[ ,]/);
     let tokens = dateString.split(' ');
     const dayOfWeek = getTheDayOfWeek(tokens[0]);
@@ -197,6 +203,30 @@ function AddEvent(props) {
     }
   }
 
+  // helper function
+  const convertOrdinalToNumber = (ordinalStr) => {
+    const ordinal = ordinalStr.split(' ')[1];
+    switch (ordinal) {
+      case 'first':
+        return 1;
+
+      case 'second':
+        return 2;
+
+      case 'thrid':
+        return 3;
+
+      case 'fourth':
+        return 4;
+
+      case 'fifth':
+        return 5;
+
+      default:
+        return ''
+    }
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     props.setSelectedEvent(false);
@@ -245,10 +275,19 @@ function AddEvent(props) {
 
     // add recurrence
     if (repeats) {
+      // const rule = new RRule({
+      //   freq: RRule.WEEKLY,
+      //   interval: 5,
+      //   byweekday: [RRule.MO, RRule.FR],
+      //   dtstart: datetime(2012, 2, 1, 10, 30),
+      //   until: datetime(2012, 12, 31)
+      // })
+
       let recurrence = [];
       if (!['How Often'].includes(rRuleObj.FREQ)) {
         if (rRuleObj.FREQ === 'MONTHLY') {
-          recurrence.push(`RRULE:FREQ=${rRuleObj.FREQ};BYDAY=1${ordinalsOfMonth.split(' ')[2].substring(0, 2).toUpperCase()}`)
+          const ordinal = convertOrdinalToNumber(ordinalsOfMonth);
+          recurrence.push(`RRULE:FREQ=${rRuleObj.FREQ};BYDAY=${ordinal}${ordinalsOfMonth.split(' ')[2].substring(0, 2).toUpperCase()}`)
         } else if (rRuleObj.FREQ === 'Weekdays') {
           recurrence.push(`RRULE:FREQ=DAILY`);
         } else {

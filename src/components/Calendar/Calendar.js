@@ -86,7 +86,18 @@ function Calendar(props) {
     // console.log('rendering mulit events', { props, multiEventProps })
 
     //render event
-    eventsEachDay[startDate - 1][chosenRow] = <div className="isEvent" key={`multi-event-${chosenRow}`}><MultiEvent {...props} {...multiEventProps} editEvent={(e, id) => editEvent(e, id)} length={length} arrowLeft={arrowLeft} arrowRight={arrowRight} key={`multi-event-${gud()}`} /></div>;
+    eventsEachDay[startDate - 1][chosenRow] = <div
+      className="isEvent"
+      key={`multi-event-${chosenRow}`}>
+      <MultiEvent
+        {...props}
+        {...multiEventProps}
+        editEvent={(e, id) => editEvent(e, id)}
+        length={length}
+        arrowLeft={arrowLeft}
+        arrowRight={arrowRight}
+        key={`multi-event-${gud()}`} />
+    </div>;
   }, [editEvent])
 
 
@@ -178,6 +189,7 @@ function Calendar(props) {
         let duration = moment.duration(event.endTime.diff(event.startTime));
         let dates = getDatesFromRRule(event.recurrence[0], event.startTime, moment(current).subtract(duration), moment(current).add(1, "month"));
 
+        // console.log('recurrance found', event.name, event.recurrence, { duration, dates })
         //render recurrences
         dates.forEach((date) => {
           //don't render if it is cancelled
@@ -275,7 +287,7 @@ function Calendar(props) {
         renderSingleEvent(eventsEachDay, moment(event.startTime).date(), { ...event, ...eventProps });
       }
     });
-
+    // console.log({ eventsEachDay })
     return eventsEachDay;
   }, [current, drawMultiEvent, props.startTime, renderSingleEvent, props.styles])
 
@@ -473,6 +485,7 @@ function Calendar(props) {
     let begin = moment(betweenStart).utc(true).toDate();
     let end = moment(betweenEnd).utc(true).toDate();
     let dates = rruleSet.between(begin, end);
+    // console.log('getting dates from RRule', { begin, end, dates, rstr, rruleSet })
     return dates;
   }
 
