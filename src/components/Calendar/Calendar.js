@@ -9,7 +9,7 @@ import MultiEvent from "./MultiEvent";
 import { isMultiEvent } from "../../lib/utils/helper";
 
 import gud from "gud";
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 
 import { Languages, availableLanguages } from "../../lib/utils/languages";
 

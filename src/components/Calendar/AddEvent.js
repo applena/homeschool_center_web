@@ -12,8 +12,9 @@ import "react-datepicker/dist/react-datepicker.css";
 import { gapi } from 'gapi-script';
 import { useSelector, useDispatch } from 'react-redux';
 import { setEvents, removeEvent } from '../../redux/eventsSlice';
-import { datetime, RRule, RRuleSet, rrulestr } from 'rrule';
-import moment from "moment-timezone";
+// import { datetime, RRule, RRuleSet, rrulestr } from 'rrule';
+// import moment from "moment-timezone";
+const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
 function AddEvent(props) {
   const [name, setName] = useState(props?.selectedEvent?.summary || '');
@@ -29,12 +30,15 @@ function AddEvent(props) {
   const [month, setMonth] = useState(''); // used to display the month user selected
   const [day, setDay] = useState(''); // used to display the day of the month (ie - 28th)
   const [ordinalsOfMonth, setOrdinalsOfMonth] = useState('');
+  const [ordinalIndex, setOrdinalIndex] = useState(-1);
 
   // REPEATING RULES
   const [rRuleObj, setRRuleObj] = useState({
     FREQ: 'HowOften',
     BYDAY: 'Day Of Week',
   });
+
+  console.log({ rRuleObj })
 
   // const [rRuleConfig, setRRuleConfig] = useState({});
 
@@ -63,7 +67,7 @@ function AddEvent(props) {
 
   useEffect(() => {
     if (props.selectedEvent?.id) {
-      console.log('ADD EVENT - editMode = true', { props })
+      // console.log('ADD EVENT - editMode = true', { props })
       setName(props.selectedEvent.summary);
 
       if (props.selectedEvent.recurrence) {
@@ -103,12 +107,23 @@ function AddEvent(props) {
     //find and set the ordinals - ex: 'thrid thursday of the month'
     const ordinals = ["", "first", "second", "third", "fourth", "fifth"];
     let date = props.selectedDate || new Date(props.selectedEvent?.start?.date) || new Date(props.selectedEvent?.startDate?.date) || new Date();
+
+    // all day event - need to add in offset to make it not UTC
+    if (props.selectedEvent?.start?.date) {
+      date.setMinutes(date.getMinutes() + date.getTimezoneOffset())
+    }
     let dateString = date + '';
     // console.log({ date })
     // let tokens = date.split(/[ ,]/);
+    // dateString = 'Wed Aug 09 2023 00:00:00 GMT-0700 (Pacific Daylight Time)'
     let tokens = dateString.split(' ');
+    const ordinalIndex = Math.ceil(tokens[2] / 7);
+    setOrdinalIndex(ordinalIndex);
+    const ordinalString = ordinals[ordinalIndex];
     const dayOfWeek = getTheDayOfWeek(tokens[0]);
-    setOrdinalsOfMonth("the " + ordinals[Math.ceil(tokens[2] / 7)] + " " + dayOfWeek + " of the month");
+    // console.log('USE EFFECT - time zone offset', date.getTimezoneOffset())
+    console.log('USE EFFECT - day of week', { dayOfWeek, tokens, dateString, date })
+    setOrdinalsOfMonth("the " + ordinalString + " " + dayOfWeek + " of the month");
 
 
     //find and set the day of the week
@@ -173,7 +188,7 @@ function AddEvent(props) {
       case 'Tue':
         return 'Tuesday';
       case 'Wed':
-        return 'Wednesdday';
+        return 'Wednesday';
       case 'Thu':
         return 'Thursday';
       case 'Fri':
@@ -203,30 +218,6 @@ function AddEvent(props) {
     }
   }
 
-  // helper function
-  const convertOrdinalToNumber = (ordinalStr) => {
-    const ordinal = ordinalStr.split(' ')[1];
-    switch (ordinal) {
-      case 'first':
-        return 1;
-
-      case 'second':
-        return 2;
-
-      case 'thrid':
-        return 3;
-
-      case 'fourth':
-        return 4;
-
-      case 'fifth':
-        return 5;
-
-      default:
-        return ''
-    }
-  }
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     props.setSelectedEvent(false);
@@ -238,11 +229,11 @@ function AddEvent(props) {
       'summary': name,
       'description': description,
       'start': {
-        'timeZone': Intl.DateTimeFormat().resolvedOptions().timeZone
+        'timeZone': timeZone
 
       },
       'end': {
-        'timeZone': Intl.DateTimeFormat().resolvedOptions().timeZone
+        'timeZone': timeZone
       },
       'reminders': {
         'useDefault': false,
@@ -282,12 +273,13 @@ function AddEvent(props) {
       //   dtstart: datetime(2012, 2, 1, 10, 30),
       //   until: datetime(2012, 12, 31)
       // })
-
+      console.log('selected event recurrance', props.selectedEvent.recurrence)
       let recurrence = [];
       if (!['How Often'].includes(rRuleObj.FREQ)) {
         if (rRuleObj.FREQ === 'MONTHLY') {
-          const ordinal = convertOrdinalToNumber(ordinalsOfMonth);
-          recurrence.push(`RRULE:FREQ=${rRuleObj.FREQ};BYDAY=${ordinal}${ordinalsOfMonth.split(' ')[2].substring(0, 2).toUpperCase()}`)
+          console.log('!!', { ordinalIndex }, ordinalsOfMonth.split(' ')[2].substring(0, 2).toUpperCase())
+          recurrence.push(`RRULE:FREQ=${rRuleObj.FREQ};BYDAY=${ordinalIndex}${ordinalsOfMonth.split(' ')[2].substring(0, 2).toUpperCase()}`)
+          console.log('right after pushing', { recurrence })
         } else if (rRuleObj.FREQ === 'Weekdays') {
           recurrence.push(`RRULE:FREQ=DAILY`);
         } else {
@@ -301,10 +293,11 @@ function AddEvent(props) {
         console.log('pushing repeatsOn', { rRuleObj })
       }
 
+      console.log('final', { recurrence })
       event['recurrence'] = [recurrence.join(';')];
     }
 
-    console.log({ event });
+    // console.log({ event });
 
     if (props.selectedEvent?.id) {
       try {
@@ -333,6 +326,8 @@ function AddEvent(props) {
     // request.execute(function (event) {
     //   console.log('Event created: ' + event.htmlLink);
     // });
+
+    console.log('adding/editing event', { event })
 
 
     const events = await gapi.client.calendar.events.list({ calendarId: hICalendar.id })
