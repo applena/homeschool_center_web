@@ -38,10 +38,6 @@ function AddEvent(props) {
     BYDAY: 'Day Of Week',
   });
 
-  console.log({ rRuleObj })
-
-  // const [rRuleConfig, setRRuleConfig] = useState({});
-
   // booliean reveals repeating options
   const [repeats, setRepeats] = useState(props?.selectedEvent?.recurrence?.length ? true : false);
 
@@ -80,18 +76,7 @@ function AddEvent(props) {
         const recurrenceArr = props.selectedEvent.recurrence[0].split(':')[1].split(';');
         recurrenceArr.forEach(rule => {
           const rulePart = rule.split('=');
-          switch (rulePart[0]) {
-            case 'FREQ':
-              repeatObj.FREQ = rulePart[1];
-              break;
-
-            case 'BYDAY':
-              repeatObj.BYDAY = rulePart[1];
-              break;
-
-            default:
-              console.log('rule not found');
-          }
+          repeatObj[rulePart[0]] = rulePart[1];
         })
 
         setRRuleObj(repeatObj);
@@ -102,7 +87,15 @@ function AddEvent(props) {
   }, [props.selectedEvent])
 
   useEffect(() => {
-    // console.log('selected date from index', props)
+    const dayOfWeekString = {
+      Mon: 'Monday',
+      Tue: 'Tuesday',
+      Wed: 'Wednesday',
+      Thu: 'Thursday',
+      Fri: 'Friday',
+      Sat: 'Saturday',
+      Sun: 'Sunday'
+    }
 
     //find and set the ordinals - ex: 'thrid thursday of the month'
     const ordinals = ["", "first", "second", "third", "fourth", "fifth"];
@@ -113,94 +106,30 @@ function AddEvent(props) {
       date.setMinutes(date.getMinutes() + date.getTimezoneOffset())
     }
     let dateString = date + '';
-    // console.log({ date })
-    // let tokens = date.split(/[ ,]/);
     // dateString = 'Wed Aug 09 2023 00:00:00 GMT-0700 (Pacific Daylight Time)'
     let tokens = dateString.split(' ');
+
+    // finds the number for the ordinal - ie: 1, 2, 3, 4, or 5
     const ordinalIndex = Math.ceil(tokens[2] / 7);
     setOrdinalIndex(ordinalIndex);
     const ordinalString = ordinals[ordinalIndex];
-    const dayOfWeek = getTheDayOfWeek(tokens[0]);
-    // console.log('USE EFFECT - time zone offset', date.getTimezoneOffset())
-    console.log('USE EFFECT - day of week', { dayOfWeek, tokens, dateString, date })
+    const dayOfWeek = dayOfWeekString[tokens[0]];
     setOrdinalsOfMonth("the " + ordinalString + " " + dayOfWeek + " of the month");
-
 
     //find and set the day of the week
     let newStart = dateString.slice(0, 3);
-    const dayOWeek = getTheDayOfWeek(newStart);
+    const dayOWeek = dayOfWeekString[newStart];
     setDaySelected(dayOWeek);
 
-    // console.log('handle select', props.selectedDate);
     //find and set the Month selected
     let monthIndex = date.getMonth();
-    // console.log({ monthIndex });
-    switch (monthIndex) {
-      case 0:
-        setMonth('January');
-        break;
-      case 1:
-        setMonth('February');
-        break;
-      case 2:
-        setMonth('March');
-        break;
-      case 3:
-        setMonth('April');
-        break;
-      case 4:
-        setMonth('May');
-        break;
-      case 5:
-        setMonth('June');
-        break;
-      case 6:
-        setMonth('July');
-        break;
-      case 7:
-        setMonth('August');
-        break;
-      case 8:
-        setMonth('September');
-        break;
-      case 9:
-        setMonth('October');
-        break;
-      case 10:
-        setMonth('November');
-        break;
-      case 11:
-        setMonth('December');
-        break;
-      default:
-        setMonth('');
-    }
+    const getMonthByIndex = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'November', 'December'];
+    setMonth(getMonthByIndex[monthIndex]);
 
     //set the day selected
     setDay(date.getDate());
 
   }, [props.selectedDate, props.selectedEvent]);
-
-  const getTheDayOfWeek = (abrivation) => {
-    switch (abrivation) {
-      case 'Mon':
-        return 'Monday';
-      case 'Tue':
-        return 'Tuesday';
-      case 'Wed':
-        return 'Wednesday';
-      case 'Thu':
-        return 'Thursday';
-      case 'Fri':
-        return 'Friday';
-      case 'Sat':
-        return 'Saturday';
-      case 'Sun':
-        return ('Sunday');
-      default:
-        return ('');
-    }
-  }
 
   const deleteItem = async (e, id) => {
     e.preventDefault();
