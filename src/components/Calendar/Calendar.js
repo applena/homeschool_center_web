@@ -103,6 +103,7 @@ function Calendar(props) {
 
   // decides how to render events
   const drawMultiEvent = useCallback((eventsEachDay, props) => {
+    // console.log('draw multi event', { eventsEachDay });
     let startDrawDate;
     let blockLength = 1;
     let curDate;
@@ -160,6 +161,7 @@ function Calendar(props) {
 
   //attempts to render in a placeholder then at the end
   const renderSingleEvent = useCallback((eventsEachDay, date, props) => {
+    // console.log('renderSingleEvent', { eventsEachDay, date, props });
     let foundEmpty = false;
     let nodes = eventsEachDay[date - 1];
     console.log('renderSingleEven', { nodes, props })
@@ -241,55 +243,55 @@ function Calendar(props) {
     }
 
     singleEvents.forEach((event) => {
-      if (event.recurrence) {
-        let duration = moment.duration(event.endTime.diff(event.startTime));
-
-        //get recurrences using RRule
-        let dates = getDatesFromRRule(event.recurrence[0], event.startTime, moment(current), moment(current).add(1, "month"));
-
-        //render recurrences
-        dates.forEach((date) => {
-          //check if it is in cancelled
-          if (event.cancelledEvents.some((cancelledMoment) => (cancelledMoment.isSame(date, "day")))) {
-            return;
-          }
-
-          //if event has changed
-          const changedEvent = event.changedEvents.find((changedEvent) => (changedEvent.originalStartTime.isSame(date, "day")));
-          let attributes = changedEvent ? {
-            name: changedEvent.name,
-            startTime: changedEvent.newStartTime,
-            endTime: changedEvent.newEndTime,
-            description: changedEvent.description,
-            location: changedEvent.location,
-            calendarName: event.calendarName,
-            color: event.color
-          }
-            : {
-              name: event.name,
-              startTime: moment.utc(date), //avoid bad timezone conversions,
-              endTime: moment(moment.utc(date)).add(duration),
-              description: event.description,
-              location: event.location,
-              calendarName: event.calendarName,
-              color: event.color
-
-            }
-
-          renderSingleEvent(eventsEachDay, moment(props.startTime).date(), { ...attributes, ...eventProps });
-        });
-      } else {
+      if (!event.recurrence) {
         //check if event is in current month
         if (event.startTime.month() !== current.month() || event.startTime.year() !== current.year()) {
           return;
         }
 
         renderSingleEvent(eventsEachDay, moment(event.startTime).date(), { ...event, ...eventProps });
-      }
+        return;
+      };
+      let duration = moment.duration(event.endTime.diff(event.startTime));
+
+      //get recurrences using RRule
+      let dates = getDatesFromRRule(event.recurrence[0], event.startTime, moment(current), moment(current).add(1, "month"));
+
+      //render recurrences
+      dates.forEach((date) => {
+        //check if it is in cancelled
+        if (event.cancelledEvents.some((cancelledMoment) => (cancelledMoment.isSame(date, "day")))) {
+          return;
+        }
+
+        //if event has changed
+        const changedEvent = event.changedEvents.find((changedEvent) => (changedEvent.originalStartTime.isSame(date, "day")));
+        let attributes = changedEvent ? {
+          name: changedEvent.name,
+          startTime: changedEvent.newStartTime,
+          endTime: changedEvent.newEndTime,
+          description: changedEvent.description,
+          location: changedEvent.location,
+          calendarName: event.calendarName,
+          color: event.color
+        }
+          : {
+            name: event.name,
+            startTime: moment.utc(date), //avoid bad timezone conversions,
+            endTime: moment(moment.utc(date)).add(duration),
+            description: event.description,
+            location: event.location,
+            calendarName: event.calendarName,
+            color: event.color
+
+          }
+
+        renderSingleEvent(eventsEachDay, moment(date).date(), { ...attributes, ...eventProps });
+      });
     });
     // console.log({ eventsEachDay })
     return eventsEachDay;
-  }, [current, drawMultiEvent, props.startTime, renderSingleEvent, props.styles])
+  }, [current, drawMultiEvent, renderSingleEvent, props.styles])
 
   //get easy to work with events and singleEvents from response
   const processEvents = useCallback((items, calendarName, color) => {

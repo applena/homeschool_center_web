@@ -175,7 +175,7 @@ function AddEvent(props) {
 
     // add start and end date/time
     if (!allDay) {
-      console.log('Not all day', allDay, startDate)
+      console.log('Not all day', startDate)
       let startDateTime = new Date(startDate);
       startDateTime.setHours(startTime.split(':')[0], startTime.split(':')[1]);
 
@@ -202,7 +202,7 @@ function AddEvent(props) {
       //   dtstart: datetime(2012, 2, 1, 10, 30),
       //   until: datetime(2012, 12, 31)
       // })
-      console.log('selected event recurrance', props.selectedEvent.recurrence)
+      console.log('selected event recurrance', props.selectedEvent?.recurrence)
       let recurrence = [];
       if (!['How Often'].includes(rRuleObj.FREQ)) {
         if (rRuleObj.FREQ === 'MONTHLY') {
@@ -322,7 +322,7 @@ function AddEvent(props) {
             {repeats &&
               <DropdownButton title={rRuleObj.FREQ}>
                 <Dropdown.Item onClick={(e) => setRRuleObj({ ...rRuleObj, FREQ: 'DAILY' })}>Daily</Dropdown.Item>
-                <Dropdown.Item onClick={(e) => setRRuleObj({ ...rRuleObj, FREQ: 'WEEKLY' })}>Weekly on {daySelected}</Dropdown.Item>
+                <Dropdown.Item onClick={(e) => setRRuleObj({ ...rRuleObj, FREQ: 'WEEKLY', BYDAY: daySelected.substring(0, 2).toUpperCase() })}>Weekly on {daySelected}</Dropdown.Item>
                 <Dropdown.Item onClick={(e) => setRRuleObj({ ...rRuleObj, FREQ: 'MONTHLY' })}>Monthly on {ordinalsOfMonth}</Dropdown.Item>
                 <Dropdown.Item onClick={(e) => setRRuleObj({ ...rRuleObj, FREQ: 'YEARLY' })}>Annually on {month} {day}</Dropdown.Item>
                 <Dropdown.Item onClick={(e) => setRRuleObj({ ...rRuleObj, BYDAY: 'MO,TU,WE,TH,FR', FREQ: 'DAILY' })}>Every weekday (Monday to Friday)</Dropdown.Item>
