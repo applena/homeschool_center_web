@@ -7,7 +7,7 @@ import moment from "moment-timezone";
 
 function Event(props) {
   // const [showTooltip, setShowTooltip] = useState(false);
-  // console.log('EVENT', props)
+  console.log('EVENT', props)
 
   return (
     <div

@@ -167,7 +167,6 @@ function Calendar(props) {
     console.log('renderSingleEven', { nodes, props })
     for (let i = 0; i < nodes.length; i++) {
       if (nodes[i].props.className.includes("event") && !nodes[i].props.className.includes("isEvent")) { //target only placeholders
-        props.foo = 1;
         nodes[i] = <div className="isEvent" key={`single-event-${i}`}>
           <Event {...props} editEvent={(e, id) => editEvent(e, id)} key={`single-event-${i}`} />
         </div>;
@@ -273,7 +272,8 @@ function Calendar(props) {
           description: changedEvent.description,
           location: changedEvent.location,
           calendarName: event.calendarName,
-          color: event.color
+          color: event.color,
+          id: event.id
         }
           : {
             name: event.name,
@@ -282,8 +282,8 @@ function Calendar(props) {
             description: event.description,
             location: event.location,
             calendarName: event.calendarName,
-            color: event.color
-
+            color: event.color,
+            id: event.id
           }
 
         renderSingleEvent(eventsEachDay, moment(date).date(), { ...attributes, ...eventProps });
