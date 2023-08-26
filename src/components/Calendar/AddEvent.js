@@ -25,7 +25,7 @@ function AddEvent(props) {
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
   const [newSubject, setNewSubject] = useState(''); // TODO: make a new subject option
-  const [allDay, setAllDay] = useState(true);
+  const [allDay, setAllDay] = useState(props.selectedEvent?.start?.dateTime ? false : true);
   const [daySelected, setDaySelected] = useState(''); // used to display the day of week that a user seleced
   const [month, setMonth] = useState(''); // used to display the month user selected
   const [day, setDay] = useState(''); // used to display the day of the month (ie - 28th)
@@ -350,7 +350,7 @@ function AddEvent(props) {
               </label>
 
               <div className='flex'>
-                <input style={{ display: 'inline-block', width: 'auto', marginRight: '10px' }} onChange={() => setAllDay(!allDay)} type="checkbox" defaultChecked />
+                <input style={{ display: 'inline-block', width: 'auto', marginRight: '10px' }} onChange={() => setAllDay(!allDay)} type="checkbox" checked={allDay} />
                 <label>
                   All Day
                 </label>
