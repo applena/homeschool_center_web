@@ -12,7 +12,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import { gapi } from 'gapi-script';
 import { useSelector, useDispatch } from 'react-redux';
 import { setEvents, removeEvent } from '../../redux/eventsSlice';
-import updateConfig from '../Login/updateConfig';
+import { setHICalendarConfig } from '../../redux/config';
 import getConfig from '../Login/getConfig';
 // import { datetime, RRule, RRuleSet, rrulestr } from 'rrule';
 // import moment from "moment-timezone";
@@ -29,7 +29,6 @@ function AddEvent(props) {
   const [description, setDescription] = useState(props?.selectedEvent?.description || '');
   const [eventType, setEventType] = useState('Select Event Type');
   const [subject, setSubject] = useState(config.subjectList[0]);
-  const [subjectList, setSubjectList] = useState([]);
   const [startDate, setStartDate] = useState(new Date(props.selectedEvent?.start?.date || props.selectedDate));
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
@@ -49,15 +48,6 @@ function AddEvent(props) {
 
   // booliean reveals repeating options
   const [repeats, setRepeats] = useState(props?.selectedEvent?.recurrence?.length ? true : false);
-
-  useEffect(() => {
-    (async () => {
-      const configObj = await getConfig(hICalendar.id);
-
-      console.log('!', { configObj })
-      setSubjectList(configObj?.subjectList)
-    })();
-  }, [config?.subjectList, hICalendar.id])
 
   // console.log('ADD EVENT', { startDate, props })
 
@@ -149,10 +139,6 @@ function AddEvent(props) {
     setDay(date.getDate());
 
   }, [props.selectedDate, props.selectedEvent]);
-
-  // useEffect(() => {
-  //   const subjectList = JSON.parse()
-  // })
 
   const deleteItem = async (e, id) => {
     e.preventDefault();
@@ -299,21 +285,20 @@ function AddEvent(props) {
     setSubject(newSubject.toUpperCase());
     const newConfigObj = { ...config, subjectList: [...config.subjectList, newSubject.toUpperCase()] }
 
-    updateConfig(hICalendar.id, config.id, newConfigObj);
+    dispatch(setHICalendarConfig(newConfigObj));
     // console.log('config', { newConfigObj });
     setNewSubject('');
 
-  }, [newSubject, config, hICalendar.id])
+  }, [newSubject, config, dispatch])
 
   const deleteSubject = useCallback((subject) => {
-    const updatedSubjects = subjectList.filter(sub => sub !== subject);
-    setSubjectList(updatedSubjects);
+    const updatedSubjects = config.subjectList.filter(sub => sub !== subject);
     const newConfigObj = { ...config, subjectList: updatedSubjects }
-    updateConfig(hICalendar.id, config.id, newConfigObj);
+    dispatch(setHICalendarConfig(newConfigObj));
     setSubject(updatedSubjects[0]);
-  }, [config, hICalendar.id, subjectList])
+  }, [config, dispatch])
 
-  console.log('render Add Event', { name, subject, subjectList })
+  console.log('render Add Event', { name, subject })
 
   return (
     <div
@@ -341,7 +326,7 @@ function AddEvent(props) {
 
                 {eventType === 'Class' &&
                   <DropdownButton title={subject}>
-                    {subjectList.map((sub, i) => (
+                    {config.subjectList.map((sub, i) => (
                       <Dropdown.Item key={i + sub}>
                         <div className='flex subjects'>
                           <span onClick={(e) => setSubject(sub)}>{sub}</span>
@@ -350,11 +335,11 @@ function AddEvent(props) {
                       </Dropdown.Item>
                     ))}
                     <Dropdown.Divider />
-                    <Dropdown.Item onClick={(e) => e.stopPropagation()}>
-                      <input value={newSubject} type="text" name="Create a New Subject" onChange={(e) => setNewSubject(e.target.value)}>
+                    <div className="dropdown-item">
+                      <input value={newSubject} name="Create a New Subject" onChange={(e) => { e.stopPropagation(); setNewSubject(e.target.value) }}>
                       </input>
                       <button id='add-subject-button' onClick={(e) => addNewSubject(e)}>Add</button>
-                    </Dropdown.Item>
+                    </div>
                   </DropdownButton>
                 }
               </div>

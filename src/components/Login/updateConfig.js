@@ -2,7 +2,7 @@ import { gapi } from 'gapi-script';
 
 const updateConfig = async (hICalendarID, eventId, config) => {
   // create the event that we will use to store our preferences
-  const configObj = {
+  const eventObj = {
     calendarId: hICalendarID,
     eventId,
     resource: {
@@ -16,11 +16,10 @@ const updateConfig = async (hICalendarID, eventId, config) => {
     }
   }
 
-  return gapi.client.calendar.events.update(configObj
+  return gapi.client.calendar.events.update(eventObj
   ).then(function (response) {
-    console.log('config made', response);
-    configObj.id = response.result.id;
-    return configObj;
+    console.log('config updated', response);
+    return config;
   });
 }
 
