@@ -10,7 +10,11 @@ const getConfig = async (hiCalendarId) => {
     'orderBy': 'startTime'
   }).then(function (response) {
     if (!response.result.items.length) return false;
-    return response.result.items[0];
+    const configEvent = response.result.items[0];
+    console.log('got the config', configEvent)
+    const configObj = JSON.parse(configEvent.description);
+    configObj.id = configEvent.id
+    return configObj;
     // if (app.configEvent.description) {
     //   app.config = JSON.parse(app.configEvent.description);
     // }

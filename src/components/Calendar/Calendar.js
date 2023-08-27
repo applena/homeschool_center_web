@@ -168,17 +168,25 @@ function Calendar(props) {
     for (let i = 0; i < nodes.length; i++) {
       if (nodes[i].props.className.includes("event") && !nodes[i].props.className.includes("isEvent")) { //target only placeholders
         nodes[i] = <div className="isEvent" key={`single-event-${i}`}>
-          <Event {...props} editEvent={(e, id) => editEvent(e, id)} key={`single-event-${i}`} />
+          <Event
+            {...props}
+            editEvent={(e, id) => editEvent(e, id)} key={`single-event-${i}`}
+          />
         </div>;
         foundEmpty = true;
         break;
       }
     }
     if (!foundEmpty) {
-      eventsEachDay[date - 1].push(<div className="isEvent" key={`single-event-${date - 1}`}><Event {...props} editEvent={(e, id) => editEvent(e, id)} /></div>)
+      eventsEachDay[date - 1].push(
+        <div className="isEvent" key={`single-event-${date - 1}`}>
+          <Event
+            {...props}
+            editEvent={(e, id) => editEvent(e, id)}
+          />
+        </div>)
     }
   }, [editEvent])
-
 
   //get array of arrays of length days in month containing the events in each day
   const getRenderEvents = useCallback((events, singleEvents) => {
@@ -378,7 +386,6 @@ function Calendar(props) {
     return { events, singleEvents };
   }, [])
 
-
   useEffect(() => {
     if (
       Boolean(props.language) &&
@@ -413,15 +420,6 @@ function Calendar(props) {
     // console.log('next month', current.add(1, 'months'))
     setCurrent(moment(current.add(1, "months")));
   }
-
-  // const clearEvents = () => {
-  //   for (let i = 1; i <= current.daysInMonth(); i++) {
-  //     const node = document.getElementById("day-" + i);
-  //     while (node.lastElementChild) {
-  //       node.removeChild(node.lastElementChild);
-  //     }
-  //   }
-  // }
 
   //renders the day of week names
   const renderDays = () => {

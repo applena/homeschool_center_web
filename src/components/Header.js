@@ -27,7 +27,8 @@ const SCOPES = 'https://www.googleapis.com/auth/calendar';
 function Header(props) {
   const credentials = useSelector((state) => state.signInStatus.credentialResponse);
   const isSignedIn = useSelector((state) => state.signInStatus.signedIn);
-  const hICalendar = useSelector((state) => state.hICalendar)
+  const hICalendar = useSelector((state) => state.hICalendar);
+
   const dispatch = useDispatch();
 
   console.log({ hICalendar });
@@ -64,15 +65,15 @@ function Header(props) {
     dispatch(setEvents(events.result.items));
 
     // get the configEvent
-    let configEvent = await getConfig(hICalendar.id);
+    let configObject = await getConfig(hICalendar.id);
 
     // if no configEvent, make it
-    if (!configEvent) {
+    if (!configObject) {
       console.log('no config event found - making it');
       // make config object and save to redux
-      configEvent = await makeConfig(hICalendar.id);
-      dispatch(setHICalendarConfig(configEvent));
+      configObject = await makeConfig(hICalendar.id);
     }
+    dispatch(setHICalendarConfig(configObject));
   }, [dispatch])
 
   const getCalendars = useCallback(() => {
