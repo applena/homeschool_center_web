@@ -61,7 +61,9 @@ function Header(props) {
       return;
     }
     const events = await gapi.client.calendar.events.list({ calendarId: hICalendar.id })
+
     console.log({ events });
+
     dispatch(setEvents(events.result.items));
 
     // get the configEvent

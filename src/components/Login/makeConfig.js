@@ -1,12 +1,11 @@
 import { gapi } from 'gapi-script';
+import defalutConfig from '../../config/default';
 
 const makeConfig = async (hICalendarID) => {
   // create the event that we will use to store our preferences
   const configObj = {
-    portfolio: {},
-    transcript: {},
-    calendarId: hICalendarID,
-    subjectList: ['MATH', 'ELA', 'SCIENCE', 'HISTORY']
+    ...defalutConfig,
+    calendarId: hICalendarID
   }
 
   const eventObj = {

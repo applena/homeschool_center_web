@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useMemo } from 'react';
 import './addEvent.scss';
 import DropdownButton from 'react-bootstrap/DropdownButton';
 import Dropdown from 'react-bootstrap/Dropdown';
@@ -13,7 +13,6 @@ import { gapi } from 'gapi-script';
 import { useSelector, useDispatch } from 'react-redux';
 import { setEvents, removeEvent } from '../../redux/eventsSlice';
 import { setHICalendarConfig } from '../../redux/config';
-import getConfig from '../Login/getConfig';
 // import { datetime, RRule, RRuleSet, rrulestr } from 'rrule';
 // import moment from "moment-timezone";
 const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -23,12 +22,12 @@ function AddEvent(props) {
   const dispatch = useDispatch();
   const hICalendar = useSelector((state) => state.hICalendar);
   const config = useSelector((state) => state.config);
-  console.log('ADD EVENT', { config })
+  // console.log('ADD EVENT', { config })
 
   const [name, setName] = useState(props?.selectedEvent?.summary || '');
-  const [description, setDescription] = useState(props?.selectedEvent?.description || '');
+  const [description, setDescription] = useState('');
   const [eventType, setEventType] = useState('Select Event Type');
-  const [subject, setSubject] = useState(config.subjectList[0]);
+  const [subject, setSubject] = useState('');
   const [startDate, setStartDate] = useState(new Date(props.selectedEvent?.start?.date || props.selectedDate));
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
@@ -49,7 +48,7 @@ function AddEvent(props) {
   // booliean reveals repeating options
   const [repeats, setRepeats] = useState(props?.selectedEvent?.recurrence?.length ? true : false);
 
-  // console.log('ADD EVENT', { startDate, props })
+  console.log('ADD EVENT', { subject, config })
 
   // creator: {email: 'applena@gmail.com'}
   // end: {date: '2023-07-05'}
@@ -66,14 +65,16 @@ function AddEvent(props) {
   // updated: "2023-07-30T17:46:57.467Z"
 
   useEffect(() => {
+    const obj = JSON.parse(props.selectedEvent?.description || '{}');
+
+    setName(props.selectedEvent.summary);
+    setDescription(obj?.description);
+    setSubject(obj?.subject || config.subjectList[0]);
+  }, [props.selectedEvent, config.subjectList])
+
+  useEffect(() => {
     if (props.selectedEvent?.id) {
       // console.log('ADD EVENT - editMode = true', { props })
-      setName(props.selectedEvent.summary);
-
-      if (props.selectedEvent?.description) {
-        setDescription(JSON.parse(props.selectedEvent.description).description);
-        setSubject(JSON.parse(props.selectedEvent.description).subject);
-      }
 
       if (props.selectedEvent.recurrence) {
         // ['RRULE:FREQ=DAILY;BYDAY=MO,TU,WE,TH,FR']
@@ -329,14 +330,21 @@ function AddEvent(props) {
                     {config.subjectList.map((sub, i) => (
                       <Dropdown.Item key={i + sub}>
                         <div className='flex subjects'>
-                          <span onClick={(e) => setSubject(sub)}>{sub}</span>
+                          <span onClick={(e) => {
+                            console.log('setting subject', { sub });
+                            setSubject(sub);
+                          }}>{sub}</span>
                           <span onClick={() => deleteSubject(sub)}>x</span>
                         </div>
                       </Dropdown.Item>
                     ))}
                     <Dropdown.Divider />
                     <div className="dropdown-item">
-                      <input value={newSubject} name="Create a New Subject" onChange={(e) => { e.stopPropagation(); setNewSubject(e.target.value) }}>
+                      <input value={newSubject} name="Create a New Subject" onChange={(e) => {
+                        e.stopPropagation();
+                        setNewSubject(e.target.value)
+                        console.log('creating a new subject', e.target.value)
+                      }}>
                       </input>
                       <button id='add-subject-button' onClick={(e) => addNewSubject(e)}>Add</button>
                     </div>

@@ -1,4 +1,5 @@
 import { gapi } from 'gapi-script';
+import defaultConfig from '../../config/default';
 
 const getConfig = async (hiCalendarId) => {
   console.log('getting the config', hiCalendarId)
@@ -15,7 +16,8 @@ const getConfig = async (hiCalendarId) => {
     const configObj = JSON.parse(configEvent.description);
     configObj.id = configEvent.id;
     configObj.calendarId = hiCalendarId;
-    return configObj;
+
+    return { ...defaultConfig, ...configObj };
     // if (app.configEvent.description) {
     //   app.config = JSON.parse(app.configEvent.description);
     // }

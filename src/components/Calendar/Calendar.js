@@ -42,11 +42,17 @@ function Calendar(props) {
       multiEventStyles: props?.styles?.multiEvent || {},
     }
 
+    console.log('renderMultiEventBlock', { eventsEachDay })
+
     let maxBlocks = 0;
     let closedSlots = []; //keep track of rows that the event can't be inserted into
 
     for (let i = 0; i < length; i++) {
       let dayEvents = eventsEachDay[startDate - 1 + i];
+      console.log('dayEvents', { dayEvents })
+      // dayEvents.sort((a, b) => {
+      //   console.log('!!!1', { a })
+      // })
       if (dayEvents.length > maxBlocks) {
         maxBlocks = dayEvents.length;
       }
@@ -103,7 +109,7 @@ function Calendar(props) {
 
   // decides how to render events
   const drawMultiEvent = useCallback((eventsEachDay, props) => {
-    // console.log('draw multi event', { eventsEachDay });
+    console.log('draw multi event', { eventsEachDay });
     let startDrawDate;
     let blockLength = 1;
     let curDate;
@@ -164,13 +170,13 @@ function Calendar(props) {
     // console.log('renderSingleEvent', { eventsEachDay, date, props });
     let foundEmpty = false;
     let nodes = eventsEachDay[date - 1];
-    console.log('renderSingleEven', { nodes, props })
+    // console.log('renderSingleEven', { nodes, props })
     for (let i = 0; i < nodes.length; i++) {
       if (nodes[i].props.className.includes("event") && !nodes[i].props.className.includes("isEvent")) { //target only placeholders
-        nodes[i] = <div className="isEvent" key={`single-event-${i}`}>
+        nodes[i] = <div className="isEvent" key={`single-event-${i}-${props.id}`}>
           <Event
             {...props}
-            editEvent={(e, id) => editEvent(e, id)} key={`single-event-${i}`}
+            editEvent={(e, id) => editEvent(e, id)} key={`e-single-event-${i}-${props.id}`}
           />
         </div>;
         foundEmpty = true;
@@ -179,7 +185,7 @@ function Calendar(props) {
     }
     if (!foundEmpty) {
       eventsEachDay[date - 1].push(
-        <div className="isEvent" key={`single-event-${date - 1}`}>
+        <div className="isEvent" key={`single-event-${date - 1}-${props.id}`}>
           <Event
             {...props}
             editEvent={(e, id) => editEvent(e, id)}
@@ -192,7 +198,8 @@ function Calendar(props) {
   const getRenderEvents = useCallback((events, singleEvents) => {
     let eventsEachDay = [...Array(current.daysInMonth())].map((e) => []); //create array of empty arrays of length daysInMonth
 
-    // console.log('beginning of get render events', { events })
+
+    console.log('beginning of get render events', { events })
     events.forEach((event) => {
       if (event.recurrence) {
         let duration = moment.duration(event.endTime.diff(event.startTime));
@@ -234,6 +241,7 @@ function Calendar(props) {
         // console.log('get Render Events', { event, current })
         if (event.startTime.month() !== current.month() || event.startTime.year() !== current.year()) {
           if (event.endTime.month() !== current.month() || event.endTime.year() !== current.year()) {
+            console.log('event is out of range', { event })
             return;
           }
         }
@@ -248,6 +256,16 @@ function Calendar(props) {
       eventCircleStyles: props?.styles?.eventCircle || {},
       eventTextStyles: props?.styles?.eventText || {},
     }
+
+    singleEvents.sort((a, b) => {
+      const aTime = a.startTime.format('HH:mm');
+      const bTime = b.startTime.format('HH:mm');
+
+      const aDateTime = new Date(`2000-01-01T${aTime}:00Z`);
+      const bDateTime = new Date(`2000-01-01T${bTime}:00Z`);
+      return aDateTime > bDateTime ? 1 : -1;
+    });
+    console.log('single events', { singleEvents })
 
     singleEvents.forEach((event) => {
       if (!event.recurrence) {
