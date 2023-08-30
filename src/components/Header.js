@@ -152,7 +152,7 @@ function Header(props) {
   return (
     <div id="header">
       <img alt="homeschool center name" src={HSCLogo} />
-      <nav>
+      {/* <nav>
         <ul>
           <li>
             <Link to="/features">Features</Link>
@@ -164,8 +164,8 @@ function Header(props) {
             <Link to="/plans">Plans</Link>
           </li>
         </ul>
-      </nav>
-      {!isSignedIn ?
+      </nav> */}
+      {!isSignedIn &&
 
         <GoogleLogin
           onSuccess={response => {
@@ -180,14 +180,7 @@ function Header(props) {
           }}
           useOneTap
         />
-        :
-        <div>
-          <button className="button" onClick={() => {
-            console.log('tryin to logout');
-            googleLogout();
-            dispatch(credentialResponse(false));
-          }}>logout</button>
-        </div>
+
       }
 
     </div>

@@ -1,5 +1,9 @@
 import { useCallback, useEffect, useState, useMemo } from 'react';
 import './addEvent.scss';
+import DeleteItem from './DeleteItem';
+import UpdateItem from './UpdateItem';
+
+// external libraries
 import DropdownButton from 'react-bootstrap/DropdownButton';
 import Dropdown from 'react-bootstrap/Dropdown';
 import Button from 'react-bootstrap/Button';
@@ -10,11 +14,15 @@ import 'react-clock/dist/Clock.css';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { gapi } from 'gapi-script';
+
+// redux
 import { useSelector, useDispatch } from 'react-redux';
-import { setEvents, removeEvent } from '../../redux/eventsSlice';
-import { setHICalendarConfig } from '../../redux/config';
+import { setEvents } from '../../../redux/eventsSlice';
+import { setHICalendarConfig } from '../../../redux/config';
 // import { datetime, RRule, RRuleSet, rrulestr } from 'rrule';
 // import moment from "moment-timezone";
+
+// global variables
 const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
 function AddEvent(props) {
@@ -38,6 +46,7 @@ function AddEvent(props) {
   const [day, setDay] = useState(''); // used to display the day of the month (ie - 28th)
   const [ordinalsOfMonth, setOrdinalsOfMonth] = useState('');
   const [ordinalIndex, setOrdinalIndex] = useState(-1);
+  const [deleteRepeatingItem, setDeleteRepeatingItem] = useState(false);
 
   // REPEATING RULES
   const [rRuleObj, setRRuleObj] = useState({
@@ -48,7 +57,35 @@ function AddEvent(props) {
   // booliean reveals repeating options
   const [repeats, setRepeats] = useState(props?.selectedEvent?.recurrence?.length ? true : false);
 
-  console.log('ADD EVENT', { subject, config })
+  const metaData = {
+    description,
+    subject
+  };
+  // "2011-06-03T10:00:00.000-07:00" - GAPI
+
+  console.log('AddEvent - start', { props })
+
+  // construct the event obj
+  const event = {
+    'summary': name,
+    'description': JSON.stringify(metaData),
+    'start': {
+      'timeZone': timeZone
+
+    },
+    'end': {
+      'timeZone': timeZone
+    },
+    'reminders': {
+      'useDefault': false,
+      'overrides': [
+        { 'method': 'email', 'minutes': 24 * 60 },
+        { 'method': 'popup', 'minutes': 10 }
+      ]
+    }
+  };
+
+  // console.log('ADD EVENT', { subject, config })
 
   // creator: {email: 'applena@gmail.com'}
   // end: {date: '2023-07-05'}
@@ -141,60 +178,19 @@ function AddEvent(props) {
 
   }, [props.selectedDate, props.selectedEvent]);
 
-  const deleteItem = async (e, id) => {
-    e.preventDefault();
-    try {
-      dispatch(removeEvent(id));
-      await gapi.client.calendar.events.delete({
-        'calendarId': hICalendar.id,
-        'eventId': id
-      });
-      props.setSelectedDate(false);
-      props.setSelectedEvent(false);
-      console.log('sucessfully deleted')
-    } catch {
-      console.log('something went wrong with delete');
-    }
-  }
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     props.setSelectedEvent(false);
 
-    const metaData = {
-      description,
-      subject
-    };
-    // "2011-06-03T10:00:00.000-07:00" - GAPI
-
-    // construct the event obj
-    const event = {
-      'summary': name,
-      'description': JSON.stringify(metaData),
-      'start': {
-        'timeZone': timeZone
-
-      },
-      'end': {
-        'timeZone': timeZone
-      },
-      'reminders': {
-        'useDefault': false,
-        'overrides': [
-          { 'method': 'email', 'minutes': 24 * 60 },
-          { 'method': 'popup', 'minutes': 10 }
-        ]
-      }
-    };
-
     // add start and end date/time
     if (!allDay) {
-      console.log('Not all day', startDate)
       let startDateTime = new Date(startDate);
       startDateTime.setHours(startTime.split(':')[0], startTime.split(':')[1]);
 
       let endDateTime = new Date(startDate);
       endDateTime.setHours(endTime.split(':')[0], endTime.split(':')[1]);
+
+      // console.log('AddEvent-update', { endDateTime })
 
       event['start']['dateTime'] = startDateTime;
       event['end']['dateTime'] = endDateTime;
@@ -299,7 +295,7 @@ function AddEvent(props) {
     setSubject(updatedSubjects[0]);
   }, [config, dispatch])
 
-  console.log('render Add Event', { name, subject })
+  // console.log('render Add Event', { name, subject })
 
   return (
     <div
@@ -431,12 +427,44 @@ function AddEvent(props) {
             <Button
               onClick={(e) => handleSubmit(e)}
               variant="primary">Save changes</Button>
-            {props.selectedEvent?.id &&
+            {(props.selectedEvent?.id && !props.selectedEvent?.recurrence?.length) &&
+              <DeleteItem
+                setDeleteRepeatingItem={setDeleteRepeatingItem}
+                hICalendar={hICalendar}
+                setSelectedDate={props.setSelectedDate}
+                setSelectedEvent={props.setSelectedEvent}
+              />
+            }
+            {(props.selectedEvent?.id && props.selectedEvent?.recurrence?.length) &&
               <Button
-                onClick={(e) => deleteItem(e, props.selectedEvent.id)}
+                onClick={(e) => setDeleteRepeatingItem(true)}
               >
                 Delete
               </Button>
+            }
+            {deleteRepeatingItem &&
+              <div>
+                <Button
+                  onClick={(e) => UpdateItem(e, props.selectedEvent.id, 'today')}
+                >
+                  Just Today
+                </Button>
+
+                <UpdateItem
+                  text={'Today and All Future Events'}
+                  hICalendar={hICalendar}
+                  event={{ ...props.selectedEvent }}
+                  allDay={allDay}
+                  selectedEvent={props.selectedEvent}
+                />
+
+                <DeleteItem
+                  setDeleteRepeatingItem={setDeleteRepeatingItem}
+                  hICalendar={hICalendar}
+                  setSelectedDate={props.setSelectedDate}
+                  setSelectedEvent={props.setSelectedEvent}
+                />
+              </div>
             }
           </Modal.Footer>
         </form>

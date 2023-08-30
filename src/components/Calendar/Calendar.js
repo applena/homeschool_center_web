@@ -13,7 +13,7 @@ import { useSelector } from 'react-redux';
 
 import { Languages, availableLanguages } from "../../lib/utils/languages";
 
-import AddEvent from './AddEvent';
+import AddEvent from './AddEvent/AddEvent';
 
 import './calendar.scss';
 
@@ -27,10 +27,13 @@ function Calendar(props) {
 
   const events = useSelector((state) => state.events);
 
-  const editEvent = useCallback((e, id) => {
-    console.log('edit event', { id })
-    e.stopPropagation();
-    const chosenEvent = events.find(event => event.id === id);
+  const editEvent = useCallback((obj) => {
+    // console.log('edit event', { id })
+    obj.e.stopPropagation();
+    const chosenEvent = { ...events.find(event => event.id === obj.id) };
+    chosenEvent.activeDate = obj.current.toDate();
+    chosenEvent.activeDate.setDate(obj.date);
+    console.log('!', chosenEvent.activeDate)
     setSelectedEvent(chosenEvent);
   }, [events])
 
@@ -90,7 +93,7 @@ function Calendar(props) {
     }
 
     // console.log('rendering mulit events', { props, multiEventProps })
-
+    console.log('start date -1', startDate - 1)
     //render event
     eventsEachDay[startDate - 1][chosenRow] = <div
       className="isEvent"
@@ -98,7 +101,7 @@ function Calendar(props) {
       <MultiEvent
         {...props}
         {...multiEventProps}
-        editEvent={(e, id) => editEvent(e, id)}
+        editEvent={(e, id) => editEvent({ id, date: startDate, e, current })}
         length={length}
         arrowLeft={arrowLeft}
         arrowRight={arrowRight}
@@ -167,7 +170,7 @@ function Calendar(props) {
 
   //attempts to render in a placeholder then at the end
   const renderSingleEvent = useCallback((eventsEachDay, date, props) => {
-    // console.log('renderSingleEvent', { eventsEachDay, date, props });
+    console.log('ren derSingleEvent', { eventsEachDay, date, props });
     let foundEmpty = false;
     let nodes = eventsEachDay[date - 1];
     // console.log('renderSingleEven', { nodes, props })
@@ -176,7 +179,7 @@ function Calendar(props) {
         nodes[i] = <div className="isEvent" key={`single-event-${i}-${props.id}`}>
           <Event
             {...props}
-            editEvent={(e, id) => editEvent(e, id)} key={`e-single-event-${i}-${props.id}`}
+            editEvent={(e, id) => editEvent({ id, date, e, current })} key={`e-single-event-${i}-${props.id}`}
           />
         </div>;
         foundEmpty = true;
@@ -188,7 +191,7 @@ function Calendar(props) {
         <div className="isEvent" key={`single-event-${date - 1}-${props.id}`}>
           <Event
             {...props}
-            editEvent={(e, id) => editEvent(e, id)}
+            editEvent={(e, id) => editEvent({ id, date, e, current })}
           />
         </div>)
     }
@@ -257,6 +260,7 @@ function Calendar(props) {
       eventTextStyles: props?.styles?.eventText || {},
     }
 
+    // sorts events that are not all day so they render from earliest to lastest
     singleEvents.sort((a, b) => {
       const aTime = a.startTime.format('HH:mm');
       const bTime = b.startTime.format('HH:mm');
@@ -265,7 +269,7 @@ function Calendar(props) {
       const bDateTime = new Date(`2000-01-01T${bTime}:00Z`);
       return aDateTime > bDateTime ? 1 : -1;
     });
-    console.log('single events', { singleEvents })
+    // console.log('single events', { singleEvents })
 
     singleEvents.forEach((event) => {
       if (!event.recurrence) {
