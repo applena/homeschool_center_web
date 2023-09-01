@@ -30,7 +30,7 @@ function AddEvent(props) {
   const dispatch = useDispatch();
   const hICalendar = useSelector((state) => state.hICalendar);
   const config = useSelector((state) => state.config);
-  // console.log('ADD EVENT', { config })
+  console.log('ADD EVENT', props.selectedEvent)
 
   const [name, setName] = useState(props?.selectedEvent?.summary || '');
   const [description, setDescription] = useState('');

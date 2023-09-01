@@ -8,17 +8,18 @@ function UpdateItem(props) {
     e.preventDefault();
 
     if (props.text === 'Today and All Future Events') {
-      const endDateTime = new Date(props.selectedEvent.activeDate);
-      endDateTime.setDate(endDateTime.getDate() - 1);
-      console.log({ endDateTime })
-      const updatedSelectedEvent = { ...props.selectedEvent, end: { ...props.selectedEvent.end } };
+      const yesterday = new Date(props.selectedEvent.activeDate);
+      yesterday.setDate(yesterday.getDate() - 1);
 
-      // update endDate
-      if (!props.allDay) {
-        updatedSelectedEvent.end.dateTime = endDateTime.toISOString();
-      } else {
-        updatedSelectedEvent['end']['date'] = endDateTime.toISOString().substring(0, 10);
-      }
+      const until = yesterday.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+      console.log({ until });
+
+      const updatedSelectedEvent = { ...props.selectedEvent };
+
+      delete updatedSelectedEvent.activeDate;
+
+      updatedSelectedEvent.recurrence = [updatedSelectedEvent.recurrence[0].replace(/;UNTIL=.+Z/) + `;UNTIL=${until}`];
+      console.log('UpdateEvent', { updatedSelectedEvent })
 
       try {
         await gapi.client.calendar.events.update({

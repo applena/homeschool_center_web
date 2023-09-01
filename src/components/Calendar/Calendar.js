@@ -27,13 +27,17 @@ function Calendar(props) {
 
   const events = useSelector((state) => state.events);
 
+  console.log('current', { current })
+
   const editEvent = useCallback((obj) => {
-    // console.log('edit event', { id })
+    console.log('edit event', { obj })
     obj.e.stopPropagation();
     const chosenEvent = { ...events.find(event => event.id === obj.id) };
     chosenEvent.activeDate = obj.current.toDate();
+    chosenEvent.activeDate.setMinutes(chosenEvent.activeDate.getMinutes() + new Date().getTimezoneOffset());
+    console.log('current to date OBJ', chosenEvent.activeDate)
     chosenEvent.activeDate.setDate(obj.date);
-    console.log('!', chosenEvent.activeDate)
+    console.log('!', { chosenEvent, obj })
     setSelectedEvent(chosenEvent);
   }, [events])
 
@@ -170,7 +174,7 @@ function Calendar(props) {
 
   //attempts to render in a placeholder then at the end
   const renderSingleEvent = useCallback((eventsEachDay, date, props) => {
-    console.log('ren derSingleEvent', { eventsEachDay, date, props });
+    // console.log('ren derSingleEvent', { eventsEachDay, date, props });
     let foundEmpty = false;
     let nodes = eventsEachDay[date - 1];
     // console.log('renderSingleEven', { nodes, props })
@@ -195,7 +199,7 @@ function Calendar(props) {
           />
         </div>)
     }
-  }, [editEvent])
+  }, [editEvent, current])
 
   //get array of arrays of length days in month containing the events in each day
   const getRenderEvents = useCallback((events, singleEvents) => {
