@@ -268,7 +268,6 @@ function AddEvent(props) {
 
     console.log('adding/editing event', { event })
 
-
     const events = await gapi.client.calendar.events.list({ calendarId: hICalendar.id })
     console.log({ events });
     dispatch(setEvents(events.result.items));
@@ -456,6 +455,8 @@ function AddEvent(props) {
                   event={{ ...props.selectedEvent }}
                   allDay={allDay}
                   selectedEvent={props.selectedEvent}
+                  setSelectedDate={props.setSelectedDate}
+                  setSelectedEvent={props.setSelectedEvent}
                 />
 
                 <DeleteItem

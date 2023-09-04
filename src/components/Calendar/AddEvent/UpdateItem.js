@@ -2,8 +2,16 @@
 import { gapi } from 'gapi-script';
 import Button from 'react-bootstrap/Button';
 
+// redux
+import { useSelector, useDispatch } from 'react-redux';
+import { setEvents } from '../../../redux/eventsSlice';
+import { setHICalendarConfig } from '../../../redux/config';
+
 function UpdateItem(props) {
-  console.log('UpdateItem', { props })
+  // console.log('UpdateItem', { props })
+  const dispatch = useDispatch();
+  const hICalendar = useSelector((state) => state.hICalendar);
+
   const updateItem = async (e, id) => {
     e.preventDefault();
 
@@ -12,13 +20,15 @@ function UpdateItem(props) {
       yesterday.setDate(yesterday.getDate() - 1);
 
       const until = yesterday.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
-      console.log({ until });
+      // console.log({ until, yesterday });
 
       const updatedSelectedEvent = { ...props.selectedEvent };
 
       delete updatedSelectedEvent.activeDate;
 
-      updatedSelectedEvent.recurrence = [updatedSelectedEvent.recurrence[0].replace(/;UNTIL=.+Z/) + `;UNTIL=${until}`];
+      // console.log('UpdateItem', { updatedSelectedEvent })
+
+      updatedSelectedEvent.recurrence = [updatedSelectedEvent.recurrence[0].replace(/;UNTIL=.+Z/, '') + `;UNTIL=${until}`];
       console.log('UpdateEvent', { updatedSelectedEvent })
 
       try {
@@ -28,6 +38,13 @@ function UpdateItem(props) {
           'resource': updatedSelectedEvent
         })
         console.log('event successfully updated');
+
+        const events = await gapi.client.calendar.events.list({ calendarId: hICalendar.id })
+        // console.log({ events });
+        dispatch(setEvents(events.result.items));
+        props.setSelectedDate(false);
+        props.setSelectedEvent(false);
+
       } catch {
         console.log('problem updating event');
       }
