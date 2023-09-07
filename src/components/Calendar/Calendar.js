@@ -27,7 +27,7 @@ function Calendar(props) {
 
   const events = useSelector((state) => state.events);
 
-  console.log('current', { current })
+  // console.log('current', { current })
 
   const editEvent = useCallback((obj) => {
     console.log('edit event', { obj })
@@ -49,14 +49,14 @@ function Calendar(props) {
       multiEventStyles: props?.styles?.multiEvent || {},
     }
 
-    console.log('renderMultiEventBlock', { eventsEachDay })
+    // console.log('renderMultiEventBlock', { eventsEachDay })
 
     let maxBlocks = 0;
     let closedSlots = []; //keep track of rows that the event can't be inserted into
 
     for (let i = 0; i < length; i++) {
       let dayEvents = eventsEachDay[startDate - 1 + i];
-      console.log('dayEvents', { dayEvents })
+      // console.log('dayEvents', { dayEvents })
       // dayEvents.sort((a, b) => {
       //   console.log('!!!1', { a })
       // })
@@ -97,7 +97,7 @@ function Calendar(props) {
     }
 
     // console.log('rendering mulit events', { props, multiEventProps })
-    console.log('start date -1', startDate - 1)
+    // console.log('start date -1', startDate - 1)
     //render event
     eventsEachDay[startDate - 1][chosenRow] = <div
       className="isEvent"
@@ -111,12 +111,12 @@ function Calendar(props) {
         arrowRight={arrowRight}
         key={`multi-event-${gud()}`} />
     </div>;
-  }, [editEvent])
+  }, [editEvent, current])
 
 
   // decides how to render events
   const drawMultiEvent = useCallback((eventsEachDay, props) => {
-    console.log('draw multi event', { eventsEachDay });
+    // console.log('draw multi event', { eventsEachDay });
     let startDrawDate;
     let blockLength = 1;
     let curDate;
@@ -206,7 +206,7 @@ function Calendar(props) {
     let eventsEachDay = [...Array(current.daysInMonth())].map((e) => []); //create array of empty arrays of length daysInMonth
 
 
-    console.log('beginning of get render events', { events })
+    // console.log('beginning of get render events', { events })
     events.forEach((event) => {
       if (event.recurrence) {
         let duration = moment.duration(event.endTime.diff(event.startTime));

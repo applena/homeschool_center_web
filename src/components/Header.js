@@ -1,8 +1,8 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import './header.scss';
 import HSCLogo from '../assets/logo.png';
-import { BrowserRouter as Link } from "react-router-dom";
-import { GoogleLogin, googleLogout, hasGrantedAllScopesGoogle } from '@react-oauth/google';
+// import { BrowserRouter as Link } from "react-router-dom";
+import { GoogleLogin, hasGrantedAllScopesGoogle } from '@react-oauth/google';
 import { useSelector, useDispatch } from 'react-redux';
 import { credentialResponse, signIn } from '../redux/signInStatus';
 import getConfig from './Login/getConfig';

@@ -12,7 +12,7 @@ const getConfig = async (hiCalendarId) => {
   }).then(function (response) {
     if (!response.result.items.length) return false;
     const configEvent = response.result.items[0];
-    console.log('got the config', configEvent)
+    // console.log('got the config', configEvent)
     const configObj = JSON.parse(configEvent.description);
     configObj.id = configEvent.id;
     configObj.calendarId = hiCalendarId;

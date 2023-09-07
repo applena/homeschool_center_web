@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, useMemo } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import './addEvent.scss';
 import DeleteItem from './DeleteItem';
 import UpdateItem from './UpdateItem';
@@ -13,11 +13,13 @@ import 'react-datetime-picker/dist/DateTimePicker.css';
 import 'react-clock/dist/Clock.css';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { gapi } from 'gapi-script';
+
+// my libraries
+import gapi from '../../../lib/GAPI';
 
 // redux
 import { useSelector, useDispatch } from 'react-redux';
-import { setEvents } from '../../../redux/eventsSlice';
+import { addEvent, modifyEvent } from '../../../redux/eventsSlice';
 import { setHICalendarConfig } from '../../../redux/config';
 // import { datetime, RRule, RRuleSet, rrulestr } from 'rrule';
 // import moment from "moment-timezone";
@@ -29,16 +31,17 @@ function AddEvent(props) {
   // from redux
   const dispatch = useDispatch();
   const hICalendar = useSelector((state) => state.hICalendar);
+  // const events = useSelector((state) => state.events);
   const config = useSelector((state) => state.config);
-  console.log('ADD EVENT', props.selectedEvent)
+  const eventDate = props.selectedEvent?.start?.date || props.selectedEvent?.start?.dateTime || props.selectedDate;
 
   const [name, setName] = useState(props?.selectedEvent?.summary || '');
   const [description, setDescription] = useState('');
   const [eventType, setEventType] = useState('Select Event Type');
   const [subject, setSubject] = useState('');
-  const [startDate, setStartDate] = useState(new Date(props.selectedEvent?.start?.date || props.selectedDate));
-  const [startTime, setStartTime] = useState('');
-  const [endTime, setEndTime] = useState('');
+  const [startDate, setStartDate] = useState(eventDate ? new Date(eventDate) : '');
+  const [startTime, setStartTime] = useState(props.selectedEvent?.start?.dateTime ? props.selectedEvent?.start?.dateTime.split('T')[1].replace(':00Z', '') : '');
+  const [endTime, setEndTime] = useState(props.selectedEvent?.end?.dateTime ? props.selectedEvent?.end?.dateTime.split('T')[1].replace(':00Z', '') : '');
   const [newSubject, setNewSubject] = useState(''); // TODO: make a new subject option
   const [allDay, setAllDay] = useState(props.selectedEvent?.start?.dateTime ? false : true);
   const [daySelected, setDaySelected] = useState(''); // used to display the day of week that a user seleced
@@ -47,7 +50,10 @@ function AddEvent(props) {
   const [ordinalsOfMonth, setOrdinalsOfMonth] = useState('');
   const [ordinalIndex, setOrdinalIndex] = useState(-1);
   const [deleteRepeatingItem, setDeleteRepeatingItem] = useState(false);
+  const [modifiedEvent, setModifiedEvent] = useState({});
 
+  console.log('ADD EVENT', { startDate })
+  // console.log('AddEvent state', { startDate }, props.selectedEvent)
   // REPEATING RULES
   const [rRuleObj, setRRuleObj] = useState({
     FREQ: 'HowOften',
@@ -63,7 +69,7 @@ function AddEvent(props) {
   };
   // "2011-06-03T10:00:00.000-07:00" - GAPI
 
-  console.log('AddEvent - start', { props })
+  // console.log('AddEvent - start', { props })
 
   // construct the event obj
   const event = {
@@ -180,7 +186,6 @@ function AddEvent(props) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    props.setSelectedEvent(false);
 
     // add start and end date/time
     if (!allDay) {
@@ -190,10 +195,9 @@ function AddEvent(props) {
       let endDateTime = new Date(startDate);
       endDateTime.setHours(endTime.split(':')[0], endTime.split(':')[1]);
 
-      // console.log('AddEvent-update', { endDateTime })
-
       event['start']['dateTime'] = startDateTime;
       event['end']['dateTime'] = endDateTime;
+      console.log('start time', { startTime, startDate, startDateTime, event, endTime })
     } else {
       console.log('all day event', startDate)
       //"start": {"date": "2015-06-01"}
@@ -212,7 +216,7 @@ function AddEvent(props) {
       //   dtstart: datetime(2012, 2, 1, 10, 30),
       //   until: datetime(2012, 12, 31)
       // })
-      console.log('selected event recurrance', props.selectedEvent?.recurrence)
+      // console.log('selected event recurrance', props.selectedEvent?.recurrence)
       let recurrence = [];
       if (!['How Often'].includes(rRuleObj.FREQ)) {
         if (rRuleObj.FREQ === 'MONTHLY') {
@@ -236,43 +240,37 @@ function AddEvent(props) {
       event['recurrence'] = [recurrence.join(';')];
     }
 
-    // console.log({ event });
-
+    let createdEvent = {};
+    let updatedEvent = {};
+    setModifiedEvent(event);
+    console.log('event', { event })
     if (props.selectedEvent?.id) {
       try {
-        await gapi.client.calendar.events.update({
-          'calendarId': hICalendar.id,
-          'eventId': props.selectedEvent.id,
-          'resource': event
-        })
+        const response = await gapi.update(hICalendar.id, props.selectedEvent.id, event);
+        console.log('response from gapi', { response });
+        updatedEvent = response.result;
+        dispatch(modifyEvent(updatedEvent));
+        props.setSelectedDate(false);
+        props.setSelectedEvent(false);
         console.log('event successfully updated');
       } catch {
         console.log('problem updating event');
       }
     } else {
       try {
-        await gapi.client.calendar.events.insert({
-          'calendarId': hICalendar.id,
-          'resource': event
-        });
+        const response = await gapi.create(hICalendar.id, event);
+        console.log('response from gapi', { response })
+        createdEvent = response.result;
+        dispatch(addEvent(createdEvent));
+        props.setSelectedDate(false);
+        props.setSelectedEvent(false);
+
         console.log('event added successfully');
       } catch {
         console.log('problem adding event');
       }
 
     }
-
-    // request.execute(function (event) {
-    //   console.log('Event created: ' + event.htmlLink);
-    // });
-
-    console.log('adding/editing event', { event })
-
-    const events = await gapi.client.calendar.events.list({ calendarId: hICalendar.id })
-    console.log({ events });
-    dispatch(setEvents(events.result.items));
-    props.setSelectedDate(false);
-    props.setSelectedEvent(false);
   }
 
   const addNewSubject = useCallback((e) => {
@@ -349,8 +347,8 @@ function AddEvent(props) {
               <label style={{ display: 'block', width: '100%' }}>
                 <span style={{ marginRight: '8px' }}>Date</span>
                 <DatePicker
-                  selected={props.selectedDate}
-                  onChange={(startDate) => setStartDate(startDate)}
+                  selected={startDate}
+                  onChange={(newDate) => setStartDate(newDate)}
                 />
               </label>
             </div>
@@ -425,13 +423,16 @@ function AddEvent(props) {
             <Button onClick={() => { props.setSelectedDate(false); props.setSelectedEvent(false) }} variant="secondary">Close</Button>
             <Button
               onClick={(e) => handleSubmit(e)}
-              variant="primary">Save changes</Button>
+              variant="primary">Save Changes</Button>
+
             {(props.selectedEvent?.id && !props.selectedEvent?.recurrence?.length) &&
               <DeleteItem
                 setDeleteRepeatingItem={setDeleteRepeatingItem}
                 hICalendar={hICalendar}
                 setSelectedDate={props.setSelectedDate}
                 setSelectedEvent={props.setSelectedEvent}
+                text={'Delete'}
+                selectedEvent={props.selectedEvent}
               />
             }
             {(props.selectedEvent?.id && props.selectedEvent?.recurrence?.length) &&
@@ -443,16 +444,20 @@ function AddEvent(props) {
             }
             {deleteRepeatingItem &&
               <div>
-                <Button
-                  onClick={(e) => UpdateItem(e, props.selectedEvent.id, 'today')}
-                >
-                  Just Today
-                </Button>
+                <UpdateItem
+                  text={'Just Today'}
+                  hICalendar={hICalendar}
+                  event={modifiedEvent}
+                  allDay={allDay}
+                  selectedEvent={props.selectedEvent}
+                  setSelectedDate={props.setSelectedDate}
+                  setSelectedEvent={props.setSelectedEvent}
+                />
 
                 <UpdateItem
                   text={'Today and All Future Events'}
                   hICalendar={hICalendar}
-                  event={{ ...props.selectedEvent }}
+                  event={modifiedEvent}
                   allDay={allDay}
                   selectedEvent={props.selectedEvent}
                   setSelectedDate={props.setSelectedDate}
@@ -464,6 +469,8 @@ function AddEvent(props) {
                   hICalendar={hICalendar}
                   setSelectedDate={props.setSelectedDate}
                   setSelectedEvent={props.setSelectedEvent}
+                  text={'Delete All'}
+                  selectedEvent={props.selectedEvent}
                 />
               </div>
             }

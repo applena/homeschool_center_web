@@ -1,7 +1,9 @@
 
 // external libraries
-import { gapi } from 'gapi-script';
 import Button from 'react-bootstrap/Button';
+
+// my libraries
+import gapi from '../../../lib/GAPI';
 
 // redux
 import { removeEvent } from '../../../redux/eventsSlice';
@@ -10,20 +12,21 @@ import { useDispatch } from 'react-redux';
 const DeleteItem = (props) => {
   const dispatch = useDispatch();
 
+  console.log('DelteItem', props.selectedEvent)
+
   const deleteItem = async (e, id) => {
     props.setDeleteRepeatingItem(false);
     e.preventDefault();
     try {
       dispatch(removeEvent(id));
-      await gapi.client.calendar.events.delete({
-        'calendarId': props.hICalendar.id,
-        'eventId': id
-      });
+      console.log('DeleteItem', props.hICalendar.id, id, Object.keys(gapi))
+      await gapi.remove(props.hICalendar.id, id);
+
       props.setSelectedDate(false);
       props.setSelectedEvent(false);
       console.log('sucessfully deleted')
-    } catch {
-      console.log('something went wrong with delete');
+    } catch (e) {
+      console.log('something went wrong with delete', e.message);
     }
   }
 
@@ -31,7 +34,7 @@ const DeleteItem = (props) => {
     <Button
       onClick={(e) => deleteItem(e, props.selectedEvent.id)}
     >
-      Delete
+      {props.text}
     </Button>
   )
 }

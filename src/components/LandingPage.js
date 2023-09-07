@@ -1,5 +1,5 @@
 import Calendar from './Calendar/Calendar';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 
 function LandingPage(props) {
   const eventsData = useSelector((state) => state.events);

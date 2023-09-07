@@ -13,7 +13,7 @@ import TOS from './docs/TOS';
 // libs
 import { Route, Routes, BrowserRouter } from "react-router-dom";
 
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import LandingPage from './components/LandingPage';
 
 function App() {
