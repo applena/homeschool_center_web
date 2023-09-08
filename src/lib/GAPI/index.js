@@ -3,12 +3,12 @@ import getOne from './getOne';
 import update from './update';
 import remove from './remove';
 import create from './create';
-import instance from './instance';
+import instances from './instances';
 
 export const gapi = {
   get,
   getOne,
-  instance,
+  instances,
   create,
   update,
   remove

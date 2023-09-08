@@ -16,6 +16,8 @@ import { Languages, availableLanguages } from "../../lib/utils/languages";
 import AddEvent from './AddEvent/AddEvent';
 
 import './calendar.scss';
+import hICalendar from "../../redux/hICalendar";
+import gapi from '../../lib/GAPI';
 
 function Calendar(props) {
   const [monthNames, setMonthNames] = useState([...Languages.EN.MONTHS]);
@@ -26,6 +28,24 @@ function Calendar(props) {
   const [selectedDate, setSelectedDate] = useState(false);
 
   const events = useSelector((state) => state.events);
+  // const calendar = useSelector((state) => state.hICalendar);
+
+  // useEffect(() => {
+  //   console.log('are you there???')
+  //   events.forEach(async e => {
+
+  //     const found = e.status?.includes('cancelled') ? e : false;
+  //     if (!found) return false;
+  //     console.log('fetching events for ', e);
+  //     // try {
+  //     //   // const responseEvent = await gapi.instances(calendar.id, found.id);
+  //     //   // console.log('specific event', responseEvent)
+  //     // } catch (e) {
+  //     //   console.log('couldnt get event', e.message);
+  //     // }
+  //     return found;
+  //   });
+  // }, [events])
 
   // console.log('current', { current })
 
@@ -56,10 +76,7 @@ function Calendar(props) {
 
     for (let i = 0; i < length; i++) {
       let dayEvents = eventsEachDay[startDate - 1 + i];
-      // console.log('dayEvents', { dayEvents })
-      // dayEvents.sort((a, b) => {
-      //   console.log('!!!1', { a })
-      // })
+
       if (dayEvents.length > maxBlocks) {
         maxBlocks = dayEvents.length;
       }
@@ -216,6 +233,7 @@ function Calendar(props) {
         //render recurrences
         dates.forEach((date) => {
           //don't render if it is cancelled
+          // console.log('cancelledEvents', event.cancelledEvents)
           if (event.cancelledEvents.some((cancelledMoment) => (cancelledMoment.isSame(date, "day")))) {
             return;
           }
@@ -239,7 +257,6 @@ function Calendar(props) {
             props = { ...props, ...changedEvent }
           }
 
-          // console.log('!!!!', { event })
           drawMultiEvent(eventsEachDay, props);
         });
       } else {
@@ -503,6 +520,7 @@ function Calendar(props) {
 
   //get dates based on rrule string between dates
   const getDatesFromRRule = (str, eventStart, betweenStart, betweenEnd) => {
+    // console.log('RRULE string', { str })
     //get recurrences using RRule
     let rstr = `DTSTART:${moment(eventStart).utc(true).format('YYYYMMDDTHHmmss')}Z\n${str}`;
     let rruleSet = rrulestr(rstr, { forceset: true });

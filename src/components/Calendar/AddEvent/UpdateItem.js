@@ -83,7 +83,7 @@ function UpdateItem(props) {
       console.log('just today')
       try {
         // const response = await gapi.getOne(hICalendar.id, props.selectedEvent?.id)
-        const instance = await gapi.instance(hICalendar.id, props.selectedEvent?.id);
+        const instance = await gapi.instances(hICalendar.id, props.selectedEvent?.id);
 
         // console.log('just today', { instance }, instance.result.item, props.selectedEvent.activeDate)
 
@@ -97,8 +97,14 @@ function UpdateItem(props) {
 
         console.log('remove just today', specificEvent)
 
-        const response = gapi.remove(props.hICalendar.id, specificEvent.id);
+        try {
+          const response = await gapi.remove(props.hICalendar.id, specificEvent.id);
+          console.log('successfully removed event', { response });
+          dispatch(setEvents([...events, { recurringEventId: props.selectedEvent.id, originalStartTime: { ...specificEvent.start }, status: 'cancelled' }]));
 
+        } catch (e) {
+          console.log('problem removing event', e.message)
+        }
         // find the specific event in the redux's events and remove it
         // update redux with the removed event
 
