@@ -3,7 +3,6 @@ import { useSelector } from 'react-redux';
 
 function LandingPage(props) {
   const eventsData = useSelector((state) => state.events);
-  const hICalendar = useSelector((state) => state.hICalendar)
 
   console.log('landing page,', props.isSignedIn, eventsData.length)
 
@@ -12,8 +11,6 @@ function LandingPage(props) {
       {props.isSignedIn && eventsData.length &&
         <Calendar
           events={eventsData}
-          summary={hICalendar.summary}
-          color={hICalendar.backgroundColor}
         />
       }
     </div>

@@ -91,7 +91,7 @@ function UpdateItem(props) {
           const itemDate = new Date(item.start.date || item.start.dateTime);
           const offset = itemDate.getTimezoneOffset();
           itemDate.setMinutes(itemDate.getMinutes() + offset);
-          console.log(itemDate.getTime(), props.selectedEvent.activeDate.getTime())
+          console.log(itemDate.getTime(), props.selectedEvent.activeDate.getTime(), itemDate.toISOString())
           return itemDate.getTime() === props.selectedEvent?.activeDate.getTime();
         });
 

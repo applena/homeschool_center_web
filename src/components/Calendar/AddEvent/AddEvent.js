@@ -52,7 +52,7 @@ function AddEvent(props) {
   const [deleteRepeatingItem, setDeleteRepeatingItem] = useState(false);
   const [modifiedEvent, setModifiedEvent] = useState({});
 
-  console.log('ADD EVENT', { startDate })
+  // console.log('ADD EVENT', { startDate })
   // console.log('AddEvent state', { startDate }, props.selectedEvent)
   // REPEATING RULES
   const [rRuleObj, setRRuleObj] = useState({
