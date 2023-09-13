@@ -40,138 +40,161 @@ function Calendar(props) {
   // get array of arrays of length days in month containing the events in each day
   const getRenderEvents = useCallback((allEvents) => {
     console.log('getRenderEvents', { allEvents })
+    const repeatingEvents = [];
+    const nonRepeatingEvents = [];
+
     //create array of empty arrays of length daysInMonth
-    let eventsEachDay = [...Array(current.daysInMonth())].map((e) => []);
+    let emptyMonthArrays = [...Array(current.daysInMonth())].map((e) => []);
+
+    // separate repeating events and non-repeating events
+    allEvents.forEach(event => event.recurrence ? repeatingEvents.push(event) : nonRepeatingEvents.push(event))
+
+    renderNonRepeatingEvents(nonRepeatingEvents, emptyMonthArrays);
+
+    // renderAllDayAndLongerEvents()
+    // renderRepeatingEvents()
+    // renderSingleTimedNonRepeatingEvents()
 
     // this is only for all day events
-    allEvents.forEach((event) => {
-      if (!event.recurrence) return;
-      let duration = moment.duration(moment(event.endTime).diff(moment(event.startTime)));
+    // allEvents.forEach((event) => {
+    //   if (!event.recurrence) return;
+    //   let duration = moment.duration(moment(event.endTime).diff(moment(event.startTime)));
 
-      // gets an array of datesfor the month
-      // [Sun Sep 17 2023 11:00:00 GMT-0700 (Pacific Daylight Time)...]
-      let dates = getDatesFromRRule(event.recurrence[0], event.start, moment(current).subtract(duration), moment(current).add(1, "month"));
+    //   // gets an array of dates for the month
+    //   // [Sun Sep 17 2023 11:00:00 GMT-0700 (Pacific Daylight Time)...]
+    //   let dates = getDatesFromRRule(event.recurrence[0], event.start, moment(current).subtract(duration), moment(current).add(1, "month"));
 
-      console.log({ dates });
-      dates.forEach((date) => {
-        // turn event.cancelledEvent from an array of objects into an array of dates
-        const cancelledEvents = event.cancelledEvents.map(e => new Date(e.date || e.dateTime));
+    //   // console.log({ dates });
+    //   dates.forEach((date) => {
+    //     // turn event.cancelledEvent from an array of objects into an array of dates
+    //     const cancelledEvents = event.cancelledEvents.map(e => new Date(e.date || e.dateTime));
 
-        //don't render if it is cancelled
-        if (cancelledEvents.includes(date)) return;
+    //     //don't render if it is cancelled
+    //     if (cancelledEvents.includes(date)) return;
 
-        let props;
-        //update information if event has changed
-        const changedEvent = event.changedEvents.find((changedEvent) => (new Date(changedEvent.originalStartTime.date || changedEvent.originalStartTime.dateTime)) === date);
+    //     //update information if event has changed
+    //     const changedEvent = event.changedEvents.find((changedEvent) => {
+    //       const match = new Date(changedEvent.originalStartTime.date || changedEvent.originalStartTime.dateTime).getTime() === date.getTime()
+    //       return match;
+    //     });
 
-        console.log('changed event', { changedEvent })
-        // let eventStart = moment.utc(date); //since rrule works with utc times
-        // let eventEnd = moment(eventStart).add(duration);
-        // props = {
-        //   name: event.name,
-        //   startTime: eventStart,
-        //   endTime: eventEnd,
-        //   description: event.description,
-        //   location: event.location,
-        //   calendarName: event.calendarName,
-        //   color: event.color,
-        //   id: event.id
-        // };
-        // if (changedEvent) {
-        //   props = { ...props, ...changedEvent }
-        // }
+    //   if (!changedEvent) return; // all done
 
-        //   drawMultiEvent(eventsEachDay, props);
-      });
-      // } else {
-      //render event
-      //check if event is in range
-      // console.log('get Render Events', { event, current })
-      // if (event.startTime.month() !== current.month() || event.startTime.year() !== current.year()) {
-      //   if (event.endTime.month() !== current.month() || event.endTime.year() !== current.year()) {
-      //     console.log('event is out of range', { event })
-      //     return;
-      //   }
-      // }
+    //   // console.log('changed event', { changedEvent })
 
-      // drawMultiEvent(eventsEachDay, event);
-      // }
-    });
-
-    // let eventProps = {
-    //   tooltipStyles: props?.styles?.tooltip || {}, //gets this.props.styles.tooltip if exists, else empty object
-    //   eventStyles: props?.styles?.event || {},
-    //   eventCircleStyles: props?.styles?.eventCircle || {},
-    //   eventTextStyles: props?.styles?.eventText || {},
-    // }
-
-    // sorts events that are not all day so they render from earliest to lastest
-    // singleEvents.sort((a, b) => {
-    //   const aTime = a.startTime.format('HH:mm');
-    //   const bTime = b.startTime.format('HH:mm');
-
-    //   const aDateTime = new Date(`2000-01-01T${aTime}:00Z`);
-    //   const bDateTime = new Date(`2000-01-01T${bTime}:00Z`);
-    //   return aDateTime > bDateTime ? 1 : -1;
-    // });
-    // console.log('single events', { singleEvents })
-
-    // singleEvents.forEach((event) => {
-    //   if (!event.recurrence) {
-    //     //check if event is in current month
-    //     if (event.startTime.month() !== current.month() || event.startTime.year() !== current.year()) {
-    //       return;
-    //     }
-
-    // console.log('renderSingleEvent', event.name, event.startTime, moment(event.startTime).date())
-
-    //   renderSingleEvent(eventsEachDay, moment(event.startTime).utc(true).date(), { ...event, ...eventProps });
-    //   return;
-    // };
-    // let duration = moment.duration(event.endTime.diff(event.startTime));
-
-    //get recurrences using RRule
-    // console.log('single event get dates from rrule', event.name)
-    // let dates = getDatesFromRRule(event.recurrence[0], event.startTime, moment(current), moment(current).add(1, "month"), event.timeZone);
-
-    //render recurrences
-    // dates.forEach((date) => {
-    //   //check if it is in cancelled
-    //   if (event.cancelledEvents.some((cancelledMoment) => (cancelledMoment.isSame(date, "day")))) {
-    //     return;
-    //   }
-
-    //   //if event has changed
-    //   const changedEvent = event.changedEvents.find((changedEvent) => (changedEvent.originalStartTime.isSame(date, "day")));
-    //   let attributes = changedEvent ? {
-    //     name: changedEvent.name,
-    //     startTime: changedEvent.newStartTime,
-    //     endTime: changedEvent.newEndTime,
-    //     description: changedEvent.description,
-    //     location: changedEvent.location,
+    //   let props = {
+    //     summary: event.summary,
+    //     start: event.start,
+    //     end: event.end,
+    //     description: event.description,
+    //     location: event.location,
     //     calendarName: event.calendarName,
     //     color: event.color,
-    //     id: event.id
-    //   }
-    //     : {
-    //   name: event.name,
-    //   startTime: moment.utc(date), //avoid bad timezone conversions,
-    //   endTime: moment(moment.utc(date)).add(duration),
-    //   description: event.description,
-    //   location: event.location,
-    //   calendarName: event.calendarName,
-    //   color: event.color,
-    //   id: event.id
-    // }
+    //     id: event.id,
+    //     ...changedEvent
+    //   };
 
-    // console.log('renderSingleEvent', event.name, event.startTime, attributes.startTime, date, event.recurrence)
+    //   console.log('updated event info', { props, event })
 
-    // renderSingleEvent(eventsEachDay, moment(date).date(), { ...attributes, ...eventProps });
-    //   });
+    //   // eventsEachDay is an array of empty arrays at this point
+    //   drawMultiEvent(eventsEachDay, props);
     // });
-    // console.log({ eventsEachDay })
-    // return eventsEachDay;
-  }, [current])
+
+
+    // drawMultiEvent(eventsEachDay, event);
+
+  });
+
+  const renderNonRepeatingEvents = (nonRepeatingEvents, emptyMonthArrays) => {
+    let i = emptyMonthArrays.length;
+    // find events in current month
+    // look at end date
+    nonRepeatingEvents.filter(e => {
+      let end = e.end.date || e.end.dateTime;
+      const month = new Date(end).getMonth();
+      console.log({ end, month });
+      return e.end.date || e.end.dateTime
+    })
+    while (i > 0) {
+      console.log(emptyMonthArrays[i])
+      i--;
+    }
+  }
+
+  // let eventProps = {
+  //   tooltipStyles: props?.styles?.tooltip || {}, //gets this.props.styles.tooltip if exists, else empty object
+  //   eventStyles: props?.styles?.event || {},
+  //   eventCircleStyles: props?.styles?.eventCircle || {},
+  //   eventTextStyles: props?.styles?.eventText || {},
+  // }
+
+  // sorts events that are not all day so they render from earliest to lastest
+  // singleEvents.sort((a, b) => {
+  //   const aTime = a.startTime.format('HH:mm');
+  //   const bTime = b.startTime.format('HH:mm');
+
+  //   const aDateTime = new Date(`2000-01-01T${aTime}:00Z`);
+  //   const bDateTime = new Date(`2000-01-01T${bTime}:00Z`);
+  //   return aDateTime > bDateTime ? 1 : -1;
+  // });
+  // console.log('single events', { singleEvents })
+
+  // singleEvents.forEach((event) => {
+  //   if (!event.recurrence) {
+  //     //check if event is in current month
+  //     if (event.startTime.month() !== current.month() || event.startTime.year() !== current.year()) {
+  //       return;
+  //     }
+
+  // console.log('renderSingleEvent', event.name, event.startTime, moment(event.startTime).date())
+
+  //   renderSingleEvent(eventsEachDay, moment(event.startTime).utc(true).date(), { ...event, ...eventProps });
+  //   return;
+  // };
+  // let duration = moment.duration(event.endTime.diff(event.startTime));
+
+  //get recurrences using RRule
+  // console.log('single event get dates from rrule', event.name)
+  // let dates = getDatesFromRRule(event.recurrence[0], event.startTime, moment(current), moment(current).add(1, "month"), event.timeZone);
+
+  //render recurrences
+  // dates.forEach((date) => {
+  //   //check if it is in cancelled
+  //   if (event.cancelledEvents.some((cancelledMoment) => (cancelledMoment.isSame(date, "day")))) {
+  //     return;
+  //   }
+
+  //   //if event has changed
+  //   const changedEvent = event.changedEvents.find((changedEvent) => (changedEvent.originalStartTime.isSame(date, "day")));
+  //   let attributes = changedEvent ? {
+  //     name: changedEvent.name,
+  //     startTime: changedEvent.newStartTime,
+  //     endTime: changedEvent.newEndTime,
+  //     description: changedEvent.description,
+  //     location: changedEvent.location,
+  //     calendarName: event.calendarName,
+  //     color: event.color,
+  //     id: event.id
+  //   }
+  //     : {
+  //   name: event.name,
+  //   startTime: moment.utc(date), //avoid bad timezone conversions,
+  //   endTime: moment(moment.utc(date)).add(duration),
+  //   description: event.description,
+  //   location: event.location,
+  //   calendarName: event.calendarName,
+  //   color: event.color,
+  //   id: event.id
+  // }
+
+  // console.log('renderSingleEvent', event.name, event.startTime, attributes.startTime, date, event.recurrence)
+
+  // renderSingleEvent(eventsEachDay, moment(date).date(), { ...attributes, ...eventProps });
+  //   });
+  // });
+  // console.log({ eventsEachDay })
+  // return eventsEachDay;
+  // }, [current])
 
   // this function creates two arrays - singleEvents and allDayEvents
   // it puts all the changed and cancelled events into an array on the original event so that all events have a changedEvents and cancelledEvent array with any events that have been cancelled or changed.
@@ -259,145 +282,135 @@ function Calendar(props) {
     // setEventsEachDay(getRenderEvents(events, singleEvents));
   }, [current, events, hICalendar.summary, hICalendar.backgroundColor, processEvents])
 
-  // const editEvent = useCallback((obj) => {
-  //   // console.log('edit event', { obj })
-  //   obj.e.stopPropagation();
-  //   const chosenEvent = { ...events.find(event => event.id === obj.id) };
-  //   chosenEvent.activeDate = obj.current.toDate();
-  //   chosenEvent.activeDate.setMinutes(chosenEvent.activeDate.getMinutes() + new Date().getTimezoneOffset());
-  //   // console.log('current to date OBJ', chosenEvent.activeDate)
-  //   chosenEvent.activeDate.setDate(obj.date);
-  //   console.log('!', { chosenEvent, obj })
-  //   setSelectedEvent(chosenEvent);
-  // }, [events])
+  const editEvent = useCallback((obj) => {
+    // console.log('edit event', { obj })
+    obj.e.stopPropagation();
+    const chosenEvent = { ...events.find(event => event.id === obj.id) };
+    chosenEvent.activeDate = obj.current.toDate();
+    chosenEvent.activeDate.setMinutes(chosenEvent.activeDate.getMinutes() + new Date().getTimezoneOffset());
+    // console.log('current to date OBJ', chosenEvent.activeDate)
+    chosenEvent.activeDate.setDate(obj.date);
+    console.log('!', { chosenEvent, obj })
+    setSelectedEvent(chosenEvent);
+  }, [events])
 
   // //TODO: refactor this too?
-  // //handles rendering and proper stacking of individual blocks 
-  // const renderMultiEventBlock = useCallback((eventsEachDay, startDate, length, props, arrowLeft, arrowRight) => {
-  //   let multiEventProps = {
-  //     tooltipStyles: props?.styles?.tooltip || {},//gets this.props.styles.tooltip if exists, else empty object
-  //     multiEventStyles: props?.styles?.multiEvent || {},
-  //   }
+  //handles rendering and proper stacking of individual blocks 
+  const renderMultiEventBlock = useCallback((eventsEachDay, startDate, length, props) => {
+    let multiEventProps = {
+      tooltipStyles: props?.styles?.tooltip || {},//gets this.props.styles.tooltip if exists, else empty object
+      multiEventStyles: props?.styles?.multiEvent || {},
+    }
 
-  //   // console.log('renderMultiEventBlock', { eventsEachDay })
+    // console.log('renderMultiEventBlock', { eventsEachDay })
 
-  //   let maxBlocks = 0;
-  //   let closedSlots = []; //keep track of rows that the event can't be inserted into
+    let maxBlocks = 0;
+    let closedSlots = []; //keep track of rows that the event can't be inserted into
 
-  //   for (let i = 0; i < length; i++) {
-  //     let dayEvents = eventsEachDay[startDate - 1 + i];
+    for (let i = 0; i < length; i++) {
+      let dayEvents = eventsEachDay[startDate - 1 + i];
 
-  //     if (dayEvents.length > maxBlocks) {
-  //       maxBlocks = dayEvents.length;
-  //     }
+      if (dayEvents.length > maxBlocks) {
+        maxBlocks = dayEvents.length;
+      }
 
-  //     //address rows that are not the last element in closedSlots
-  //     for (let j = 0; j < maxBlocks; j++) {
-  //       if (j > dayEvents.length) {
-  //         break;
-  //       } else if (closedSlots.includes(j)) {
-  //         continue;
-  //       }
-  //       if (dayEvents[j].props.className.includes("isEvent")) {
-  //         closedSlots.push(j);
-  //       }
-  //     }
-  //   }
+      //address rows that are not the last element in closedSlots
+      for (let j = 0; j < maxBlocks; j++) {
+        if (j > dayEvents.length) {
+          break;
+        } else if (closedSlots.includes(j)) {
+          continue;
+        }
+        if (dayEvents[j].props.className.includes("isEvent")) {
+          closedSlots.push(j);
+        }
+      }
+    }
 
-  //   let chosenRow;
-  //   for (let i = 0; i <= maxBlocks; i++) {
-  //     if (!closedSlots.includes(i)) {
-  //       chosenRow = i;
-  //       break;
-  //     }
-  //   }
+    let chosenRow;
+    for (let i = 0; i <= maxBlocks; i++) {
+      if (!closedSlots.includes(i)) {
+        chosenRow = i;
+        break;
+      }
+    }
 
-  //   //fill in placeholders
-  //   for (let i = 0; i < length; i++) {
-  //     //placeholders
-  //     while (eventsEachDay[startDate - 1 + i].length <= chosenRow) {
-  //       eventsEachDay[startDate - 1 + i].push(<div className="event below placeholder"></div>);
-  //     }
+    //fill in placeholders
+    for (let i = 0; i < length; i++) {
+      //placeholders
+      while (eventsEachDay[startDate - 1 + i].length <= chosenRow) {
+        eventsEachDay[startDate - 1 + i].push(<div className="event below placeholder"></div>);
+      }
 
-  //     //rest of event that is under the main banner
-  //     eventsEachDay[startDate - 1 + i][chosenRow] = <div className="isEvent event below"></div>;
-  //   }
+      //rest of event that is under the main banner
+      eventsEachDay[startDate - 1 + i][chosenRow] = <div className="isEvent event below"></div>;
+    }
 
-  //   // console.log('rendering mulit events', { props, multiEventProps })
-  //   // console.log('start date -1', startDate - 1)
-  //   //render event
-  //   eventsEachDay[startDate - 1][chosenRow] = <div
-  //     className="isEvent"
-  //     key={`multi-event-${chosenRow}`}>
-  //     <MultiEvent
-  //       {...props}
-  //       {...multiEventProps}
-  //       editEvent={(e, id) => editEvent({ id, date: startDate, e, current })}
-  //       length={length}
-  //       arrowLeft={arrowLeft}
-  //       arrowRight={arrowRight}
-  //       key={`multi-event-${gud()}`} />
-  //   </div>;
-  // }, [editEvent, current])
+    // console.log('rendering mulit events', { props, multiEventProps })
+    // console.log('start date -1', startDate - 1)
+    //render event
+    eventsEachDay[startDate - 1][chosenRow] = <div
+      className="isEvent"
+      key={`multi-event-${chosenRow}`}>
+      <MultiEvent
+        {...props}
+        {...multiEventProps}
+        editEvent={(e, id) => editEvent({ id, date: startDate, e, current })}
+        length={length}
+        key={`multi-event-${gud()}`} />
+    </div>;
+  }, [editEvent, current])
 
 
-  // // decides how to render events
-  // const drawMultiEvent = useCallback((eventsEachDay, props) => {
-  //   // console.log('draw multi event', { eventsEachDay });
-  //   let startDrawDate;
-  //   let blockLength = 1;
-  //   let curDate;
-  //   let endDate;
+  // decides how to render events
+  const drawMultiEvent = useCallback((eventsEachDay, props) => {
+    // console.log('draw multi event', { eventsEachDay });
+    let startDrawDate;
+    let blockLength = 1;
+    let curDate;
+    let endDate;
 
-  //   let arrowLeft = false;
-  //   let arrowRight = false;
+    // if it is an event that ends at 12am, then set the endDate to be the day before
+    if (moment(props.end.date || props.end.dateTime).isSame(moment(props.endTime).startOf("day"), "second")) {
+      endDate = moment(props.end.date || props.end.dateTime).utc().subtract(1, "day");
+    } else {
+      endDate = moment(props.end.date || props.end.dateTime).utc();
+    }
+    // console.log('end date', { endDate })
 
-  //   if (props.endTime.isSame(moment(props.endTime).startOf("day"), "second")) {
-  //     endDate = moment(props.endTime).utc(true).subtract(1, "day");
-  //   } else {
-  //     endDate = moment(props.endTime).utc(true);
-  //   }
+    // if the start date is before the beginning of the month, then startDrawDate is 1 and currDate is the beginning of the month otherwise, it is the start date
+    if (moment(props.start.date || props.start.dateTime).utc().isBefore(current)) {
+      startDrawDate = 1;
+      curDate = moment(current).utc();
+    } else {
+      startDrawDate = moment(props.start.date || props.start.dateTime).date();
+      curDate = moment(props.start.date || props.start.dateTime).utc();
+    }
 
-  //   if (moment(props.startTime).utc(true).isBefore(current)) {
-  //     if (props.showArrow) {
-  //       arrowLeft = true;
-  //     }
+    while (curDate.isSameOrBefore(endDate, "day")) {
+      // if
+      if (curDate.date() === current.daysInMonth() && !endDate.isSame(current, 'month')) {
 
-  //     startDrawDate = 1;
-  //     curDate = moment(current).utc(true);
-  //   } else {
-  //     startDrawDate = props.startTime.date();
-  //     curDate = moment(props.startTime).utc(true);
-  //   }
+        //draw then quit
+        renderMultiEventBlock(eventsEachDay, startDrawDate, blockLength, props);
+        break;
+      }
+      if (curDate.date() === current.daysInMonth() || curDate.isSame(endDate, "day")) {
+        //draw then quit
+        renderMultiEventBlock(eventsEachDay, startDrawDate, blockLength, props);
+        break;
+      }
+      if (curDate.day() === 6) {
+        //draw then reset
+        renderMultiEventBlock(eventsEachDay, startDrawDate, blockLength, props);
+        startDrawDate = moment(curDate).add(1, "day").date();
+        blockLength = 0;
+      }
 
-  //   while (curDate.isSameOrBefore(endDate, "day")) {
-  //     if (curDate.date() === current.daysInMonth() && !endDate.isSame(current, 'month')) {
-  //       if (props.showArrow) {
-  //         arrowRight = true;
-  //       }
-
-  //       //draw then quit
-  //       renderMultiEventBlock(eventsEachDay, startDrawDate, blockLength, props, arrowLeft, arrowRight);
-  //       break;
-  //     }
-  //     if (curDate.date() === current.daysInMonth() || curDate.isSame(endDate, "day")) {
-  //       //draw then quit
-  //       renderMultiEventBlock(eventsEachDay, startDrawDate, blockLength, props, arrowLeft, arrowRight);
-  //       break;
-  //     }
-  //     if (curDate.day() === 6) {
-  //       //draw then reset
-  //       renderMultiEventBlock(eventsEachDay, startDrawDate, blockLength, props, arrowLeft, arrowRight);
-  //       startDrawDate = moment(curDate).add(1, "day").date();
-  //       blockLength = 0;
-  //       arrowLeft = false;
-  //       arrowRight = false;
-  //     }
-
-  //     blockLength++;
-  //     curDate.add(1, "day");
-  //   }
-  // }, [current, renderMultiEventBlock])
+      blockLength++;
+      curDate.add(1, "day");
+    }
+  }, [current])
 
   // //attempts to render in a placeholder then at the end
   // const renderSingleEvent = useCallback((eventsEachDay, date, props) => {
