@@ -22,20 +22,30 @@ import './calendar.scss';
 function Calendar(props) {
   const [monthNames, setMonthNames] = useState([...Languages.EN.MONTHS]);
   const [days, setDays] = useState([...Languages.EN.DAYS]);
-  const [current, setCurrent] = useState(moment().startOf("month").utc(true)); //current position on calendar (first day of month) in UTC time
+  const [currentDay, setCurrentDay] = useState(new Date());
+
+  const [activeYear, setActiveYear] = useState(new Date().getFullYear());
+  const [activeMonth, setActiveMonth] = useState(new Date().getMonth() + 1);
   const [eventsEachDay, setEventsEachDay] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(false);
   const [selectedDate, setSelectedDate] = useState(false);
   // create array from 1 to number of days in month [1, 2, 3...]
   const [daysArr, setDaysArr] = useState([]);
-  //get day of week of first day in the month (ie 5 = friday)
-  const [dayOfWeek, setDayOfWeek] = useState(current.day());
-  //number of days to fill out the last row 
-  const [padDays, setPadDays] = useState((((-current.daysInMonth() - current.day()) % 7) + 7) % 7);
+
+  // console.log({ activeMonth })
 
   // redux
   const events = useSelector((state) => state.events);
   const hICalendar = useSelector((state) => state.hICalendar);
+
+  const daysInMonth = useMemo(() => new Date(activeYear, activeMonth + 1, 0).getDate(), [activeYear, activeMonth]);
+
+  const firstDayOfCurrentMonth = useMemo(() => (new Date(`${activeYear}-${`${activeMonth}`.padStart(2, '0')}-01`)), [activeYear, activeMonth]);
+
+  const dayIdx = firstDayOfCurrentMonth.getUTCDay();
+
+  // empty days at the end of the month
+  const padDays = useMemo(() => ((((-daysInMonth - currentDay) % 7) + 7) % 7), [daysInMonth, currentDay])
 
   // get array of arrays of length days in month containing the events in each day
   const getRenderEvents = useCallback((allEvents) => {
@@ -44,7 +54,9 @@ function Calendar(props) {
     const nonRepeatingEvents = [];
 
     //create array of empty arrays of length daysInMonth
-    let emptyMonthArrays = [...Array(current.daysInMonth())].map((e) => []);
+    // let emptyMonthArrays = [...Array(current.daysInMonth())].map((e) => []);
+    let emptyMonthArrays = [...Array(daysInMonth)].map(day => []);
+    console.log({ emptyMonthArrays })
 
     // separate repeating events and non-repeating events
     allEvents.forEach(event => event.recurrence ? repeatingEvents.push(event) : nonRepeatingEvents.push(event))
@@ -106,19 +118,14 @@ function Calendar(props) {
   });
 
   const renderNonRepeatingEvents = (nonRepeatingEvents, emptyMonthArrays) => {
-    let i = emptyMonthArrays.length;
-    // find events in current month
-    // look at end date
+    // find events that end in the current month
     nonRepeatingEvents.filter(e => {
       let end = e.end.date || e.end.dateTime;
       const month = new Date(end).getMonth();
       console.log({ end, month });
       return e.end.date || e.end.dateTime
     })
-    while (i > 0) {
-      console.log(emptyMonthArrays[i])
-      i--;
-    }
+
   }
 
   // let eventProps = {
@@ -273,14 +280,14 @@ function Calendar(props) {
   }, [])
 
   useEffect(() => {
-    setDaysArr([...Array(current.daysInMonth() + 1).keys()].slice(1));
+    setDaysArr([...Array(daysInMonth + 1).keys()].slice(1));
 
     // console.log({ allDayEvents, singleEvents })
 
-    getRenderEvents(processEvents(events, hICalendar.summary, hICalendar.backgroundColor));
+    // getRenderEvents(processEvents(events, hICalendar.summary, hICalendar.backgroundColor));
 
     // setEventsEachDay(getRenderEvents(events, singleEvents));
-  }, [current, events, hICalendar.summary, hICalendar.backgroundColor, processEvents])
+  }, [daysInMonth, events, hICalendar.summary, hICalendar.backgroundColor, processEvents])
 
   const editEvent = useCallback((obj) => {
     // console.log('edit event', { obj })
@@ -355,62 +362,62 @@ function Calendar(props) {
       <MultiEvent
         {...props}
         {...multiEventProps}
-        editEvent={(e, id) => editEvent({ id, date: startDate, e, current })}
+        editEvent={(e, id) => editEvent({ id, date: startDate, e, currentDay })}
         length={length}
         key={`multi-event-${gud()}`} />
     </div>;
-  }, [editEvent, current])
+  }, [editEvent, currentDay])
 
 
   // decides how to render events
-  const drawMultiEvent = useCallback((eventsEachDay, props) => {
-    // console.log('draw multi event', { eventsEachDay });
-    let startDrawDate;
-    let blockLength = 1;
-    let curDate;
-    let endDate;
+  // const drawMultiEvent = useCallback((eventsEachDay, props) => {
+  //   // console.log('draw multi event', { eventsEachDay });
+  //   let startDrawDate;
+  //   let blockLength = 1;
+  //   let curDate;
+  //   let endDate;
 
-    // if it is an event that ends at 12am, then set the endDate to be the day before
-    if (moment(props.end.date || props.end.dateTime).isSame(moment(props.endTime).startOf("day"), "second")) {
-      endDate = moment(props.end.date || props.end.dateTime).utc().subtract(1, "day");
-    } else {
-      endDate = moment(props.end.date || props.end.dateTime).utc();
-    }
-    // console.log('end date', { endDate })
+  //   // if it is an event that ends at 12am, then set the endDate to be the day before
+  //   if (moment(props.end.date || props.end.dateTime).isSame(moment(props.endTime).startOf("day"), "second")) {
+  //     endDate = moment(props.end.date || props.end.dateTime).utc().subtract(1, "day");
+  //   } else {
+  //     endDate = moment(props.end.date || props.end.dateTime).utc();
+  //   }
+  //   // console.log('end date', { endDate })
 
-    // if the start date is before the beginning of the month, then startDrawDate is 1 and currDate is the beginning of the month otherwise, it is the start date
-    if (moment(props.start.date || props.start.dateTime).utc().isBefore(current)) {
-      startDrawDate = 1;
-      curDate = moment(current).utc();
-    } else {
-      startDrawDate = moment(props.start.date || props.start.dateTime).date();
-      curDate = moment(props.start.date || props.start.dateTime).utc();
-    }
+  //   // if the start date is before the beginning of the month, then startDrawDate is 1 and currDate is the beginning of the month otherwise, it is the start date
+  //   if (moment(props.start.date || props.start.dateTime).utc().isBefore(current)) {
+  //     startDrawDate = 1;
+  //     curDate = moment(current).utc();
+  //   } else {
+  //     startDrawDate = moment(props.start.date || props.start.dateTime).date();
+  //     curDate = moment(props.start.date || props.start.dateTime).utc();
+  //   }
 
-    while (curDate.isSameOrBefore(endDate, "day")) {
-      // if
-      if (curDate.date() === current.daysInMonth() && !endDate.isSame(current, 'month')) {
+  //   while (curDate.isSameOrBefore(endDate, "day")) {
+  //     // if
+  //     if (curDate.date() === current.daysInMonth() && !endDate.isSame(current, 'month')) {
 
-        //draw then quit
-        renderMultiEventBlock(eventsEachDay, startDrawDate, blockLength, props);
-        break;
-      }
-      if (curDate.date() === current.daysInMonth() || curDate.isSame(endDate, "day")) {
-        //draw then quit
-        renderMultiEventBlock(eventsEachDay, startDrawDate, blockLength, props);
-        break;
-      }
-      if (curDate.day() === 6) {
-        //draw then reset
-        renderMultiEventBlock(eventsEachDay, startDrawDate, blockLength, props);
-        startDrawDate = moment(curDate).add(1, "day").date();
-        blockLength = 0;
-      }
+  //       //draw then quit
+  //       renderMultiEventBlock(eventsEachDay, startDrawDate, blockLength, props);
+  //       break;
+  //     }
+  //     if (curDate.date() === current.daysInMonth() || curDate.isSame(endDate, "day")) {
+  //       //draw then quit
+  //       renderMultiEventBlock(eventsEachDay, startDrawDate, blockLength, props);
+  //       break;
+  //     }
+  //     if (curDate.day() === 6) {
+  //       //draw then reset
+  //       renderMultiEventBlock(eventsEachDay, startDrawDate, blockLength, props);
+  //       startDrawDate = moment(curDate).add(1, "day").date();
+  //       blockLength = 0;
+  //     }
 
-      blockLength++;
-      curDate.add(1, "day");
-    }
-  }, [current])
+  //     blockLength++;
+  //     curDate.add(1, "day");
+  //   }
+  // }, [current])
 
   // //attempts to render in a placeholder then at the end
   // const renderSingleEvent = useCallback((eventsEachDay, date, props) => {
@@ -443,14 +450,22 @@ function Calendar(props) {
 
   //sets current month to previous month
   const lastMonth = () => {
-    // console.log('last month', current.subtract(1, 'months'))
-    setCurrent(moment(current.subtract(1, "months")));
+    const newMonth = activeMonth - 1 > 0 ? activeMonth - 1 : 12;
+    setActiveMonth(newMonth);
+
+    if (newMonth === 12) {
+      setActiveYear(activeYear - 1);
+    }
   }
 
   //sets current month to following month
   const nextMonth = () => {
-    // console.log('next month', current.add(1, 'months'))
-    setCurrent(moment(current.add(1, "months")));
+    const newMonth = activeMonth + 1 < 13 ? activeMonth + 1 : 0;
+    setActiveMonth(newMonth);
+
+    if (newMonth === 0) {
+      setActiveYear(activeYear + 1);
+    }
   }
 
   //renders the day of week names ('SUN', 'MON'...) at the top of the calendar
@@ -465,12 +480,12 @@ function Calendar(props) {
     ));
   }
 
-  const handleDayClick = useCallback((day) => {
-    // in local time
-    const selectedDateObj = new Date(`${current.year()}-${current.month() + 1}-${`${day}`.padStart(2, '0')}`)
-    setSelectedDate(selectedDateObj);
+  // const handleDayClick = useCallback((day) => {
+  //   // in local time
+  //   const selectedDateObj = new Date(`${current.year()}-${current.month() + 1}-${`${day}`.padStart(2, '0')}`)
+  //   setSelectedDate(selectedDateObj);
 
-  }, [current])
+  // }, [current])
 
   // //get dates based on rrule string between dates
   const getDatesFromRRule = (str, eventStart, betweenStart, betweenEnd) => {
@@ -491,7 +506,7 @@ function Calendar(props) {
     return dates;
   }
 
-  let currentMonth = useMemo(() => monthNames[current.month()], [current, monthNames]);
+  let localCurrentMonthName = useMemo(() => monthNames[activeMonth - 1], [monthNames, activeMonth]);
 
   return (
     <div
@@ -506,7 +521,7 @@ function Calendar(props) {
         </div>
         <div>
           <h2 className="calendar-title">
-            {currentMonth + " " + current.year()}
+            {localCurrentMonthName + " " + activeYear}
           </h2>
         </div>
         <div
@@ -521,7 +536,7 @@ function Calendar(props) {
         {renderDays()}
 
         {/* renders the empty days at the beginning of the month */}
-        {[...Array(dayOfWeek)].map((day, i) => (
+        {[...Array(dayIdx)].map((day, i) => (
           <div
             className="day test"
             key={"empty-day-" + i}
@@ -533,7 +548,8 @@ function Calendar(props) {
           <div
             className="day"
             key={"day-" + day}
-            onClick={(e) => { handleDayClick(day) }}>
+          // onClick={(e) => { handleDayClick(day) }}
+          >
             {/* renders the numbers */}
             <span className="day-span">
               {day}
