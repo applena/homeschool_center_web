@@ -19,114 +19,169 @@ import { useSelector } from 'react-redux';
 // styles
 import './calendar.scss';
 
+// global variables
+const monthNames = [...Languages.EN.MONTHS];
+const days = [...Languages.EN.DAYS];
+
 function Calendar(props) {
-  const [monthNames, setMonthNames] = useState([...Languages.EN.MONTHS]);
-  const [days, setDays] = useState([...Languages.EN.DAYS]);
-  const [currentDay, setCurrentDay] = useState(new Date());
+  // const [currentDay, setCurrentDay] = useState(new Date());
 
   const [activeYear, setActiveYear] = useState(new Date().getFullYear());
   const [activeMonth, setActiveMonth] = useState(new Date().getMonth() + 1);
-  const [eventsEachDay, setEventsEachDay] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(false);
   const [selectedDate, setSelectedDate] = useState(false);
   // create array from 1 to number of days in month [1, 2, 3...]
   const [daysArr, setDaysArr] = useState([]);
-
-  // console.log({ activeMonth })
+  const [renderableEvents, setRenderableEvents] = useState([]);
+  const [eventsEachDay, setEventsEachDay] = useState([]);
 
   // redux
   const events = useSelector((state) => state.events);
   const hICalendar = useSelector((state) => state.hICalendar);
 
-  const daysInMonth = useMemo(() => new Date(activeYear, activeMonth + 1, 0).getDate(), [activeYear, activeMonth]);
+  // memos
+  const daysInMonth = useMemo(() => new Date(activeYear, activeMonth, 0).getDate(), [activeYear, activeMonth]);
+
+  const processedEvents = useMemo(() => {
+    const allProcessedEvents = []
+    const changed = [];
+    const cancelled = [];
+
+    // events only have an originalStartTime if they are changed or cancelled
+    renderableEvents.forEach((event) => {
+      if (event.originalStartTime) {
+        // 'cancelled' events into the cancelled array
+        if (event.status === "cancelled") {
+          cancelled.push(event);
+          // changed events go into the changed array
+        } else if (event.status === "confirmed") { //changed events
+          changed.push(event);
+        } else {
+          console.log("Not categorized: ", event);
+        }
+
+        //unchanged events
+      } else if (event.status === "confirmed") {
+        let newEvent = {
+          ...event,
+          changedEvents: [],
+          cancelledEvents: [],
+          calendarName: hICalendar.summary,
+          color: hICalendar.backgroundColor
+        }
+
+        allProcessedEvents.push(newEvent);
+
+      } else {
+        console.log("Not categorized: ", event);
+      }
+    });
+
+    // add changed events and cancelled events to corresponding event object
+    allProcessedEvents.forEach((event, idx, arr) => {
+      if (!event.recurrence) return;
+      // reduce the changed array to only ones that match the event id
+      // pushing the changed events into the changedEvents array on the event itself
+      changed.filter(change => change.recurringEventId === event.id).forEach((changedEvent) => {
+        arr[idx].changedEvents.push(changedEvent);
+      });
+
+      // finding all the canceled events that match the event.id
+      // push each of those canceled events into the cancelledEvent arry on the event itself
+      cancelled.filter(cancel => cancel.recurringEventId === event.id).forEach((cancel) => {
+        arr[idx].cancelledEvents.push(cancel.originalStartTime);
+      });
+
+    });
+
+    return allProcessedEvents
+  }, [renderableEvents, hICalendar.summary, hICalendar.backgroundColor]);
 
   const firstDayOfCurrentMonth = useMemo(() => (new Date(`${activeYear}-${`${activeMonth}`.padStart(2, '0')}-01`)), [activeYear, activeMonth]);
 
   const dayIdx = firstDayOfCurrentMonth.getUTCDay();
 
   // empty days at the end of the month
-  const padDays = useMemo(() => ((((-daysInMonth - currentDay) % 7) + 7) % 7), [daysInMonth, currentDay])
+  const padDays = useMemo(() => ((((-daysInMonth - firstDayOfCurrentMonth) % 7) + 7) % 7), [daysInMonth, firstDayOfCurrentMonth]);
 
-  // get array of arrays of length days in month containing the events in each day
-  const getRenderEvents = useCallback((allEvents) => {
-    console.log('getRenderEvents', { allEvents })
+  let localCurrentMonthName = useMemo(() => monthNames[activeMonth - 1], [activeMonth]);
+
+  useEffect(() => {
+    console.log('getRenderEvents', { processedEvents });
     const repeatingEvents = [];
     const nonRepeatingEvents = [];
 
-    //create array of empty arrays of length daysInMonth
     // let emptyMonthArrays = [...Array(current.daysInMonth())].map((e) => []);
-    let emptyMonthArrays = [...Array(daysInMonth)].map(day => []);
-    console.log({ emptyMonthArrays })
+    let emptyDaysArraysForMonth = [...Array(daysInMonth)].map(day => []);
 
     // separate repeating events and non-repeating events
-    allEvents.forEach(event => event.recurrence ? repeatingEvents.push(event) : nonRepeatingEvents.push(event))
+    processedEvents.forEach(event => event.recurrence ? repeatingEvents.push(event) : nonRepeatingEvents.push(event))
 
-    renderNonRepeatingEvents(nonRepeatingEvents, emptyMonthArrays);
-
-    // renderAllDayAndLongerEvents()
-    // renderRepeatingEvents()
-    // renderSingleTimedNonRepeatingEvents()
-
-    // this is only for all day events
-    // allEvents.forEach((event) => {
-    //   if (!event.recurrence) return;
-    //   let duration = moment.duration(moment(event.endTime).diff(moment(event.startTime)));
-
-    //   // gets an array of dates for the month
-    //   // [Sun Sep 17 2023 11:00:00 GMT-0700 (Pacific Daylight Time)...]
-    //   let dates = getDatesFromRRule(event.recurrence[0], event.start, moment(current).subtract(duration), moment(current).add(1, "month"));
-
-    //   // console.log({ dates });
-    //   dates.forEach((date) => {
-    //     // turn event.cancelledEvent from an array of objects into an array of dates
-    //     const cancelledEvents = event.cancelledEvents.map(e => new Date(e.date || e.dateTime));
-
-    //     //don't render if it is cancelled
-    //     if (cancelledEvents.includes(date)) return;
-
-    //     //update information if event has changed
-    //     const changedEvent = event.changedEvents.find((changedEvent) => {
-    //       const match = new Date(changedEvent.originalStartTime.date || changedEvent.originalStartTime.dateTime).getTime() === date.getTime()
-    //       return match;
-    //     });
-
-    //   if (!changedEvent) return; // all done
-
-    //   // console.log('changed event', { changedEvent })
-
-    //   let props = {
-    //     summary: event.summary,
-    //     start: event.start,
-    //     end: event.end,
-    //     description: event.description,
-    //     location: event.location,
-    //     calendarName: event.calendarName,
-    //     color: event.color,
-    //     id: event.id,
-    //     ...changedEvent
-    //   };
-
-    //   console.log('updated event info', { props, event })
-
-    //   // eventsEachDay is an array of empty arrays at this point
-    //   drawMultiEvent(eventsEachDay, props);
-    // });
-
-
-    // drawMultiEvent(eventsEachDay, event);
-
-  });
-
-  const renderNonRepeatingEvents = (nonRepeatingEvents, emptyMonthArrays) => {
-    // find events that end in the current month
-    nonRepeatingEvents.filter(e => {
-      let end = e.end.date || e.end.dateTime;
-      const month = new Date(end).getMonth();
-      console.log({ end, month });
-      return e.end.date || e.end.dateTime
+    nonRepeatingEvents.forEach((event, i) => {
+      new Date(event.dateStart)
     })
 
-  }
+
+  }, [processedEvents])
+
+  // get array of arrays of length days in month containing the events in each day
+  // const getRenderEvents = useCallback((allEvents) => {
+
+
+
+  // renderAllDayAndLongerEvents()
+  // renderRepeatingEvents()
+  // renderSingleTimedNonRepeatingEvents()
+
+  // this is only for all day events
+  // allEvents.forEach((event) => {
+  //   if (!event.recurrence) return;
+  //   let duration = moment.duration(moment(event.endTime).diff(moment(event.startTime)));
+
+  //   // gets an array of dates for the month
+  //   // [Sun Sep 17 2023 11:00:00 GMT-0700 (Pacific Daylight Time)...]
+  //   let dates = getDatesFromRRule(event.recurrence[0], event.start, moment(current).subtract(duration), moment(current).add(1, "month"));
+
+  //   // console.log({ dates });
+  //   dates.forEach((date) => {
+  //     // turn event.cancelledEvent from an array of objects into an array of dates
+  //     const cancelledEvents = event.cancelledEvents.map(e => new Date(e.date || e.dateTime));
+
+  //     //don't render if it is cancelled
+  //     if (cancelledEvents.includes(date)) return;
+
+  //     //update information if event has changed
+  //     const changedEvent = event.changedEvents.find((changedEvent) => {
+  //       const match = new Date(changedEvent.originalStartTime.date || changedEvent.originalStartTime.dateTime).getTime() === date.getTime()
+  //       return match;
+  //     });
+
+  //   if (!changedEvent) return; // all done
+
+  //   // console.log('changed event', { changedEvent })
+
+  //   let props = {
+  //     summary: event.summary,
+  //     start: event.start,
+  //     end: event.end,
+  //     description: event.description,
+  //     location: event.location,
+  //     calendarName: event.calendarName,
+  //     color: event.color,
+  //     id: event.id,
+  //     ...changedEvent
+  //   };
+
+  //   console.log('updated event info', { props, event })
+
+  //   // eventsEachDay is an array of empty arrays at this point
+  //   drawMultiEvent(eventsEachDay, props);
+  // });
+
+
+  // drawMultiEvent(eventsEachDay, event);
+
+  // });
 
   // let eventProps = {
   //   tooltipStyles: props?.styles?.tooltip || {}, //gets this.props.styles.tooltip if exists, else empty object
@@ -203,91 +258,30 @@ function Calendar(props) {
   // return eventsEachDay;
   // }, [current])
 
-  // this function creates two arrays - singleEvents and allDayEvents
-  // it puts all the changed and cancelled events into an array on the original event so that all events have a changedEvents and cancelledEvent array with any events that have been cancelled or changed.
-  const processEvents = useCallback((allEvents, calendarName, color) => {
-    let processedEvents = []
-    let changed = [];
-    let cancelled = [];
-
-    // events only have an originalStartTime if they are changed or cancelled
-    allEvents.forEach((event) => {
-      if (event.originalStartTime) {
-        // 'cancelled' events into the cancelled array
-        if (event.status === "cancelled") {
-          cancelled.push({
-            recurringEventId: event.recurringEventId,
-            originalStartTime: event.originalStartTime
-          });
-          // changed events go into the changed array
-        } else if (event.status === "confirmed") { //changed events
-          changed.push({
-            recurringEventId: event.recurringEventId,
-            summary: event.summary,
-            description: event.description,
-            location: event.location,
-            originalStartTime: event.originalStartTime,
-            newStart: event.start,  // object {date: '2023-09-17', timeZone: "America/Los_Angeles"} or {dateTime: '2023-09-17T18:00:00Z', timeZone: "America/Los_Angeles"}
-            newEnd: event.end, // same format as start
-            timeZone: event.start.timeZone
-          });
-        } else {
-          console.log("Not categorized: ", event);
-        }
-
-        //unchanged events
-      } else if (event.status === "confirmed") {
-        let newEvent = {
-          id: event.id,
-          summary: event.summary,
-          start: event.start,
-          end: event.end,
-          description: event.description,
-          location: event.location,
-          recurrence: event.recurrence,
-          changedEvents: [],
-          cancelledEvents: [],
-          calendarName: calendarName,
-          color: color,
-          timeZone: event.start.timeZone
-        }
-
-        processedEvents.push(newEvent);
-
-      } else {
-        console.log("Not categorized: ", event);
-      }
-    });
-
-    // add changed events and cancelled events to corresponding event object
-    processedEvents.forEach((event, idx, arr) => {
-      if (!event.recurrence) return;
-      // reduce the changed array to only ones that match the event id
-      // pushing the changed events into the changedEvents array on the event itself
-      changed.filter(change => change.recurringEventId === event.id).forEach((changedEvent) => {
-        arr[idx].changedEvents.push(changedEvent);
-      });
-
-      // finding all the canceled events that match the event.id
-      // push each of those canceled events into the cancelledEvent arry on the event itself
-      cancelled.filter(cancel => cancel.recurringEventId === event.id).forEach((cancel) => {
-        arr[idx].cancelledEvents.push(cancel.originalStartTime);
-      });
-
-    });
-
-    return processedEvents;
-  }, [])
-
   useEffect(() => {
+    // sets the days
     setDaysArr([...Array(daysInMonth + 1).keys()].slice(1));
 
-    // console.log({ allDayEvents, singleEvents })
+    // find all the events that are in the active month
+    setRenderableEvents(events.filter(e => {
 
-    // getRenderEvents(processEvents(events, hICalendar.summary, hICalendar.backgroundColor));
+      const st = e.start?.date || e.start?.dateTime;
+      const et = e.end?.date || e.end?.dateTime;
+
+      e.dateEnd = et ? new Date(et) : undefined;
+      e.dateStart = st ? new Date(st) : undefined;
+      e.dateStartTZ = e.start?.timeZone;
+      e.dateEndTZ = e.end?.timeZone;
+
+      const endMonth = e.dateEnd ? e.dateEnd.getMonth() : undefined;
+      const startMonth = e.dateStart ? e.dateStart.getMonth() : undefined;
+      console.log({ endMonth, startMonth });
+
+      return endMonth + 1 === activeMonth || startMonth + 1 === activeMonth;
+    }))
 
     // setEventsEachDay(getRenderEvents(events, singleEvents));
-  }, [daysInMonth, events, hICalendar.summary, hICalendar.backgroundColor, processEvents])
+  }, [daysInMonth, events, activeMonth])
 
   const editEvent = useCallback((obj) => {
     // console.log('edit event', { obj })
@@ -303,70 +297,70 @@ function Calendar(props) {
 
   // //TODO: refactor this too?
   //handles rendering and proper stacking of individual blocks 
-  const renderMultiEventBlock = useCallback((eventsEachDay, startDate, length, props) => {
-    let multiEventProps = {
-      tooltipStyles: props?.styles?.tooltip || {},//gets this.props.styles.tooltip if exists, else empty object
-      multiEventStyles: props?.styles?.multiEvent || {},
-    }
+  // const renderMultiEventBlock = useCallback((eventsEachDay, startDate, length, props) => {
+  //   let multiEventProps = {
+  //     tooltipStyles: props?.styles?.tooltip || {},//gets this.props.styles.tooltip if exists, else empty object
+  //     multiEventStyles: props?.styles?.multiEvent || {},
+  //   }
 
-    // console.log('renderMultiEventBlock', { eventsEachDay })
+  //   // console.log('renderMultiEventBlock', { eventsEachDay })
 
-    let maxBlocks = 0;
-    let closedSlots = []; //keep track of rows that the event can't be inserted into
+  //   let maxBlocks = 0;
+  //   let closedSlots = []; //keep track of rows that the event can't be inserted into
 
-    for (let i = 0; i < length; i++) {
-      let dayEvents = eventsEachDay[startDate - 1 + i];
+  //   for (let i = 0; i < length; i++) {
+  //     let dayEvents = eventsEachDay[startDate - 1 + i];
 
-      if (dayEvents.length > maxBlocks) {
-        maxBlocks = dayEvents.length;
-      }
+  //     if (dayEvents.length > maxBlocks) {
+  //       maxBlocks = dayEvents.length;
+  //     }
 
-      //address rows that are not the last element in closedSlots
-      for (let j = 0; j < maxBlocks; j++) {
-        if (j > dayEvents.length) {
-          break;
-        } else if (closedSlots.includes(j)) {
-          continue;
-        }
-        if (dayEvents[j].props.className.includes("isEvent")) {
-          closedSlots.push(j);
-        }
-      }
-    }
+  //     //address rows that are not the last element in closedSlots
+  //     for (let j = 0; j < maxBlocks; j++) {
+  //       if (j > dayEvents.length) {
+  //         break;
+  //       } else if (closedSlots.includes(j)) {
+  //         continue;
+  //       }
+  //       if (dayEvents[j].props.className.includes("isEvent")) {
+  //         closedSlots.push(j);
+  //       }
+  //     }
+  //   }
 
-    let chosenRow;
-    for (let i = 0; i <= maxBlocks; i++) {
-      if (!closedSlots.includes(i)) {
-        chosenRow = i;
-        break;
-      }
-    }
+  //   let chosenRow;
+  //   for (let i = 0; i <= maxBlocks; i++) {
+  //     if (!closedSlots.includes(i)) {
+  //       chosenRow = i;
+  //       break;
+  //     }
+  //   }
 
-    //fill in placeholders
-    for (let i = 0; i < length; i++) {
-      //placeholders
-      while (eventsEachDay[startDate - 1 + i].length <= chosenRow) {
-        eventsEachDay[startDate - 1 + i].push(<div className="event below placeholder"></div>);
-      }
+  //   //fill in placeholders
+  //   for (let i = 0; i < length; i++) {
+  //     //placeholders
+  //     while (eventsEachDay[startDate - 1 + i].length <= chosenRow) {
+  //       eventsEachDay[startDate - 1 + i].push(<div className="event below placeholder"></div>);
+  //     }
 
-      //rest of event that is under the main banner
-      eventsEachDay[startDate - 1 + i][chosenRow] = <div className="isEvent event below"></div>;
-    }
+  //     //rest of event that is under the main banner
+  //     eventsEachDay[startDate - 1 + i][chosenRow] = <div className="isEvent event below"></div>;
+  //   }
 
-    // console.log('rendering mulit events', { props, multiEventProps })
-    // console.log('start date -1', startDate - 1)
-    //render event
-    eventsEachDay[startDate - 1][chosenRow] = <div
-      className="isEvent"
-      key={`multi-event-${chosenRow}`}>
-      <MultiEvent
-        {...props}
-        {...multiEventProps}
-        editEvent={(e, id) => editEvent({ id, date: startDate, e, currentDay })}
-        length={length}
-        key={`multi-event-${gud()}`} />
-    </div>;
-  }, [editEvent, currentDay])
+  //   // console.log('rendering mulit events', { props, multiEventProps })
+  //   // console.log('start date -1', startDate - 1)
+  //   //render event
+  //   eventsEachDay[startDate - 1][chosenRow] = <div
+  //     className="isEvent"
+  //     key={`multi-event-${chosenRow}`}>
+  //     <MultiEvent
+  //       {...props}
+  //       {...multiEventProps}
+  //       editEvent={(e, id) => editEvent({ id, date: startDate, e, firstDayOfCurrentMonth })}
+  //       length={length}
+  //       key={`multi-event-${gud()}`} />
+  //   </div>;
+  // }, [editEvent, firstDayOfCurrentMonth])
 
 
   // decides how to render events
@@ -378,20 +372,20 @@ function Calendar(props) {
   //   let endDate;
 
   //   // if it is an event that ends at 12am, then set the endDate to be the day before
-  //   if (moment(props.end.date || props.end.dateTime).isSame(moment(props.endTime).startOf("day"), "second")) {
-  //     endDate = moment(props.end.date || props.end.dateTime).utc().subtract(1, "day");
+  //   if (moment(props.dateEnd).isSame(moment(props.endTime).startOf("day"), "second")) {
+  //     endDate = moment(props.dateEnd).utc().subtract(1, "day");
   //   } else {
-  //     endDate = moment(props.end.date || props.end.dateTime).utc();
+  //     endDate = moment(props.dateEnd).utc();
   //   }
   //   // console.log('end date', { endDate })
 
   //   // if the start date is before the beginning of the month, then startDrawDate is 1 and currDate is the beginning of the month otherwise, it is the start date
-  //   if (moment(props.start.date || props.start.dateTime).utc().isBefore(current)) {
+  //   if (moment(props.dateStart).utc().isBefore(current)) {
   //     startDrawDate = 1;
   //     curDate = moment(current).utc();
   //   } else {
-  //     startDrawDate = moment(props.start.date || props.start.dateTime).date();
-  //     curDate = moment(props.start.date || props.start.dateTime).utc();
+  //     startDrawDate = moment(props.dateStart).date();
+  //     curDate = moment(props.dateStart).utc();
   //   }
 
   //   while (curDate.isSameOrBefore(endDate, "day")) {
@@ -460,10 +454,10 @@ function Calendar(props) {
 
   //sets current month to following month
   const nextMonth = () => {
-    const newMonth = activeMonth + 1 < 13 ? activeMonth + 1 : 0;
+    const newMonth = activeMonth === 12 ? 1 : activeMonth + 1;
     setActiveMonth(newMonth);
 
-    if (newMonth === 0) {
+    if (newMonth === 1) {
       setActiveYear(activeYear + 1);
     }
   }
@@ -505,8 +499,6 @@ function Calendar(props) {
 
     return dates;
   }
-
-  let localCurrentMonthName = useMemo(() => monthNames[activeMonth - 1], [monthNames, activeMonth]);
 
   return (
     <div
@@ -555,7 +547,7 @@ function Calendar(props) {
               {day}
             </span>
             <div className="innerDay" id={"day-" + day}>
-              {eventsEachDay[day - 1]}
+              {/* {eventsEachDay[day - 1]} */}
             </div>
           </div>
         )

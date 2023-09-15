@@ -88,7 +88,7 @@ function UpdateItem(props) {
         // console.log('just today', { instance }, instance.result.item, props.selectedEvent.activeDate)
 
         const specificEvent = instance.result.items.find(item => {
-          const itemDate = new Date(item.start.date || item.start.dateTime);
+          const itemDate = new Date(item.dateStart);
           const offset = itemDate.getTimezoneOffset();
           itemDate.setMinutes(itemDate.getMinutes() + offset);
           console.log(itemDate.getTime(), props.selectedEvent.activeDate.getTime(), itemDate.toISOString())
