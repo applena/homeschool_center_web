@@ -18,6 +18,7 @@ import { useSelector } from 'react-redux';
 
 // styles
 import './calendar.scss';
+import { end } from "@popperjs/core";
 
 // global variables
 const monthNames = [...Languages.EN.MONTHS];
@@ -106,32 +107,71 @@ function Calendar(props) {
 
   let localCurrentMonthName = useMemo(() => monthNames[activeMonth - 1], [activeMonth]);
 
+  console.log({ eventsEachDay })
+
+  // useEffects
   useEffect(() => {
-    console.log('getRenderEvents', { processedEvents });
-    const repeatingEvents = [];
-    const nonRepeatingEvents = [];
 
-    // let emptyMonthArrays = [...Array(current.daysInMonth())].map((e) => []);
-    let emptyDaysArraysForMonth = [...Array(daysInMonth)].map(day => []);
+    let daysArray = [...Array(daysInMonth)].map(day => []);
 
-    // separate repeating events and non-repeating events
-    processedEvents.forEach(event => event.recurrence ? repeatingEvents.push(event) : nonRepeatingEvents.push(event))
+    // put non-repeating events in the right buckets
+    processedEvents.forEach((event, i) => {
+      const startDate = event.dateStart.getUTCDate();
+      const endDate = event.dateEnd.getUTCDate();
+      if (startDate - 1 < 0) return;
 
-    nonRepeatingEvents.forEach((event, i) => {
-      new Date(event.dateStart)
+      if (event.recurrence && startDate !== endDate) {
+        //deal with recurring events that span multiple days
+      } else if (event.recurrence && startDate === endDate) {
+        // deal with recurring events that don't span mulitple days
+      } else if (!event.recurrence && startDate !== endDate) {
+        // deal with non-recurring events that span multiple days
+      } else if (!event.recurrence && startDate === endDate) {
+        // deal with non-repeating events that don't span multiple days
+        daysArray[startDate - 1].push(event);
+      }
+
     })
 
+    // put repeating events in the right bucket
 
-  }, [processedEvents])
+    console.log({ daysArray })
+    setEventsEachDay(daysArray);
 
-  // get array of arrays of length days in month containing the events in each day
-  // const getRenderEvents = useCallback((allEvents) => {
+  }, [processedEvents, daysInMonth, daysArr])
+
+  useEffect(() => {
+    // sets the days
+    setDaysArr([...Array(daysInMonth + 1).keys()].slice(1));
+
+    // fix the gapi object so that start and end have one value
+    const formattedEvents = events.map(e => {
+      const st = e.start?.date || e.start?.dateTime;
+      const et = e.end?.date || e.end?.dateTime;
+      return {
+        ...e,
+        dateEnd: et ? new Date(et) : undefined,
+        dateStart: st ? new Date(st) : undefined,
+        dateStartTZ: e.start?.timeZone,
+        dateEndTZ: e.end?.timeZone
+      }
+    })
+
+    // filters all the events to just the ones that start or end in the active month
+    const filteredEvents = formattedEvents.filter(e => {
+
+      const endMonth = e.dateEnd ? e.dateEnd.getMonth() : undefined;
+      const startMonth = e.dateStart ? e.dateStart.getMonth() : undefined;
+      // console.log({ endMonth, startMonth });
+
+      return endMonth + 1 === activeMonth || startMonth + 1 === activeMonth;
+    });
+
+    setRenderableEvents(filteredEvents)
+
+  }, [daysInMonth, events, activeMonth])
 
 
-
-  // renderAllDayAndLongerEvents()
-  // renderRepeatingEvents()
-  // renderSingleTimedNonRepeatingEvents()
 
   // this is only for all day events
   // allEvents.forEach((event) => {
@@ -258,35 +298,6 @@ function Calendar(props) {
   // return eventsEachDay;
   // }, [current])
 
-  useEffect(() => {
-    // sets the days
-    setDaysArr([...Array(daysInMonth + 1).keys()].slice(1));
-
-    const formattedEvents = events.map(e => {
-      const st = e.start?.date || e.start?.dateTime;
-      const et = e.end?.date || e.end?.dateTime;
-      return {
-        ...e,
-        dateEnd: et ? new Date(et) : undefined,
-        dateStart: st ? new Date(st) : undefined,
-        dateStartTZ: e.start?.timeZone,
-        dateEndTZ: e.end?.timeZone
-      }
-    })
-    const filteredEvents = formattedEvents.filter(e => {
-
-      const endMonth = e.dateEnd ? e.dateEnd.getMonth() : undefined;
-      const startMonth = e.dateStart ? e.dateStart.getMonth() : undefined;
-      console.log({ endMonth, startMonth });
-
-      return endMonth + 1 === activeMonth || startMonth + 1 === activeMonth;
-    });
-
-    // find all the events that are in the active month
-    setRenderableEvents(filteredEvents)
-
-    // setEventsEachDay(getRenderEvents(events, singleEvents));
-  }, [daysInMonth, events, activeMonth])
 
   const editEvent = useCallback((obj) => {
     // console.log('edit event', { obj })
@@ -551,12 +562,17 @@ function Calendar(props) {
             <span className="day-span">
               {day}
             </span>
-            <div className="innerDay" id={"day-" + day}>
-              {/* {eventsEachDay[day - 1]} */}
-            </div>
+            {eventsEachDay[day - 1].length ? eventsEachDay[day - 1].map(event => (
+              <div className="innerDay" id={"day-" + day}>
+                {event.summary}
+              </div>
+            ))
+              :
+              <div></div>
+            }
           </div>
-        )
-        )}
+        ))}
+
 
         {/* renders the empty days at the end of the month */}
         {[...Array(padDays)].map((x, i) => (
