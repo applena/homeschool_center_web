@@ -262,23 +262,28 @@ function Calendar(props) {
     // sets the days
     setDaysArr([...Array(daysInMonth + 1).keys()].slice(1));
 
-    // find all the events that are in the active month
-    setRenderableEvents(events.filter(e => {
-
+    const formattedEvents = events.map(e => {
       const st = e.start?.date || e.start?.dateTime;
       const et = e.end?.date || e.end?.dateTime;
-
-      e.dateEnd = et ? new Date(et) : undefined;
-      e.dateStart = st ? new Date(st) : undefined;
-      e.dateStartTZ = e.start?.timeZone;
-      e.dateEndTZ = e.end?.timeZone;
+      return {
+        ...e,
+        dateEnd: et ? new Date(et) : undefined,
+        dateStart: st ? new Date(st) : undefined,
+        dateStartTZ: e.start?.timeZone,
+        dateEndTZ: e.end?.timeZone
+      }
+    })
+    const filteredEvents = formattedEvents.filter(e => {
 
       const endMonth = e.dateEnd ? e.dateEnd.getMonth() : undefined;
       const startMonth = e.dateStart ? e.dateStart.getMonth() : undefined;
       console.log({ endMonth, startMonth });
 
       return endMonth + 1 === activeMonth || startMonth + 1 === activeMonth;
-    }))
+    });
+
+    // find all the events that are in the active month
+    setRenderableEvents(filteredEvents)
 
     // setEventsEachDay(getRenderEvents(events, singleEvents));
   }, [daysInMonth, events, activeMonth])
