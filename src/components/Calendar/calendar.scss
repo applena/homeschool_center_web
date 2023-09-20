@@ -47,7 +47,7 @@ html {
 
 .day {
   text-align: right;
-  padding: 14px 0px;
+  padding: 14px 5px 14px 2px;
   font-size: 14px;
   border-bottom: 1px solid;
   border-right: 1px solid;
@@ -63,9 +63,17 @@ html {
 }
 
 .innerDay {
-  display: flex;
-  flex-direction: column;
+  margin: 1px 20px 1px 4px;
+  text-align: left;
+  overflow: hidden;
   width: 100%;
+  border-radius: 8px;
+
+  .event-name {
+    overflow: hidden;
+    margin: 0 11px 0 6px;
+    height: 20px;
+  }
 }
 
 .day:nth-of-type(7n) {

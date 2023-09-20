@@ -114,7 +114,7 @@ function Calendar(props) {
 
     let daysArray = [...Array(daysInMonth)].map(day => []);
 
-    // put non-repeating events in the right buckets
+    // put events in the right buckets
     processedEvents.forEach((event, i) => {
       const startDate = event.dateStart.getUTCDate();
       const endDate = event.dateEnd.getUTCDate();
@@ -126,6 +126,12 @@ function Calendar(props) {
         // deal with recurring events that don't span mulitple days
       } else if (!event.recurrence && startDate !== endDate) {
         // deal with non-recurring events that span multiple days
+        // TODO: need to deal with events that span into the next month
+        const duration = endDate - startDate;
+        for (let i = 0; i < duration; i++) {
+          daysArray[startDate - 1 + i].push(event);
+        }
+
       } else if (!event.recurrence && startDate === endDate) {
         // deal with non-repeating events that don't span multiple days
         daysArray[startDate - 1].push(event);
@@ -133,7 +139,12 @@ function Calendar(props) {
 
     })
 
-    // put repeating events in the right bucket
+    // put events in order from earliest to lastest
+    daysArray.forEach(day => {
+      day.sort((a, b) => {
+        return a.dateStart > b.dateStart ? 1 : -1;
+      })
+    })
 
     console.log({ daysArray })
     setEventsEachDay(daysArray);
@@ -150,6 +161,7 @@ function Calendar(props) {
       const et = e.end?.date || e.end?.dateTime;
       return {
         ...e,
+        allDay: e.start?.date ? true : false,
         dateEnd: et ? new Date(et) : undefined,
         dateStart: st ? new Date(st) : undefined,
         dateStartTZ: e.start?.timeZone,
@@ -563,8 +575,14 @@ function Calendar(props) {
               {day}
             </span>
             {eventsEachDay[day - 1].length ? eventsEachDay[day - 1].map(event => (
-              <div className="innerDay" id={"day-" + day}>
-                {event.summary}
+              <div style={event.allDay ? { backgroundColor: hICalendar.backgroundColor, color: 'white' } : { color: '#333', border: `1px solid ${hICalendar.backgroundColor}` }} className="innerDay flex" id={"day-" + day}>
+                {!event.allDay &&
+                  <div>
+                    <span style={{ color: hICalendar.backgroundColor }} className="event-text-span ">●</span>
+                    <span>{`${event.dateStart.toLocaleTimeString().split(':')[0]}:${event.dateStart.toLocaleTimeString().split(':')[1]}`}</span>
+                  </div>
+                }
+                <span className="event-name">{event.summary}</span>
               </div>
             ))
               :
