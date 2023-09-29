@@ -1,9 +1,7 @@
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 
 // external libraries
-import moment from "moment-timezone";
 import { rrulestr, datetime } from "rrule";
-import gud from "gud";
 
 // internal libraries
 import gapi from '../../lib/GAPI';
@@ -22,10 +20,13 @@ import { setEvents } from "../../redux/eventsSlice";
 
 // styles
 import './calendar.scss';
+import { current } from "@reduxjs/toolkit";
 
 // global variables
 const monthNames = [...Languages.EN.MONTHS];
 const days = [...Languages.EN.DAYS];
+
+// let renders = 0;
 
 function Calendar(props) {
   // const [currentDay, setCurrentDay] = useState(new Date());
@@ -34,19 +35,30 @@ function Calendar(props) {
   const [activeMonth, setActiveMonth] = useState(new Date().getMonth() + 1);
   const [selectedEvent, setSelectedEvent] = useState(false);
   const [selectedDate, setSelectedDate] = useState(false);
-  // create array from 1 to number of days in month [1, 2, 3...]
-  const [daysArr, setDaysArr] = useState([]);
-  const [renderableEvents, setRenderableEvents] = useState([]);
-  const [eventsEachDay, setEventsEachDay] = useState([]);
 
   // redux
   const events = useSelector((state) => state.events);
   const hICalendar = useSelector((state) => state.hICalendar);
 
+  // memos
+  const daysInMonth = useMemo(() => new Date(activeYear, activeMonth, 0).getDate(), [activeYear, activeMonth]);
+
+  // creates an array: [1, 2, 3, 4, ...]
+  const daysArr = useMemo(() => [...Array(daysInMonth + 1).keys()].slice(1), [daysInMonth]);
+
+  const firstDayOfCurrentMonth = useMemo(() => (new Date(`${activeYear}-${`${activeMonth}`.padStart(2, '0')}-01`)), [activeYear, activeMonth]);
+
+  const dayIdx = firstDayOfCurrentMonth.getUTCDay();
+
+  // empty days at the end of the month
+  const padDays = useMemo(() => ((((-daysInMonth - firstDayOfCurrentMonth) % 7) + 7) % 7), [daysInMonth, firstDayOfCurrentMonth]);
+
+  const localCurrentMonthName = useMemo(() => monthNames[activeMonth - 1], [activeMonth]);
+
   // functions 
   // //get dates based on rrule string between dates
   const getDatesFromRRule = useCallback((str, eventStart, betweenStart, betweenEnd) => {
-    // console.log('getDatesFromRRule', { str, eventStart, betweenStart, betweenEnd });
+    console.log('getDatesFromRRule', { str, eventStart, betweenStart, betweenEnd });
 
     const strActiveMonth = activeMonth + ''
 
@@ -65,21 +77,29 @@ function Calendar(props) {
     return dates;
   }, [activeMonth, activeYear])
 
-  // memos
-  const daysInMonth = useMemo(() => new Date(activeYear, activeMonth, 0).getDate(), [activeYear, activeMonth]);
+  const monthlyEvents = useMemo(() => {
+    console.log('in getCurrentMonthEvents')
 
-  const processedEvents = useMemo(() => {
-    const allProcessedEvents = []
-    const changed = [];
-    const cancelled = [];
+    // fix the gapi object so that start and end have one value
+    const formattedEvents = events.map(e => {
+      const st = e.start?.date || e.start?.dateTime;
+      const et = e.end?.date || e.end?.dateTime;
+      return {
+        ...e,
+        allDay: e.start?.date ? true : false,
+        dateEnd: et ? new Date(et) : undefined,
+        dateStart: st ? new Date(st) : undefined,
+        dateStartTZ: e.start?.timeZone,
+        dateEndTZ: e.end?.timeZone
+      }
+    })
 
-    // QUESTIONS:
-    // 1. what info does an event give us when it is cancelled to tell us what day it was cancelled on
-    // 2. how can i find the end dates/times of a reucrring event
+    let currentEvents = [];
+    let cancelled = [];
+    let changed = [];
 
-    // events only have an originalStartTime if they are changed or cancelled
-    renderableEvents.forEach((event) => {
-
+    // loop through all events
+    formattedEvents.forEach(event => {
       if (event.originalStartTime) {
         // 'cancelled' events into the cancelled array
         if (event.status === "cancelled") {
@@ -90,12 +110,9 @@ function Calendar(props) {
         } else {
           console.log("Not categorized: ", event);
         }
-      }
-
-      // non recurring events
-      if (!event.recurrence?.length && !event.originalStartTime) {
+        // non recurring events
+      } else if (!event.recurrence?.length) {
         console.log('found a non-repeating event', { event })
-        //unchanged events
         if (event.status === "confirmed") {
           let newEvent = {
             ...event,
@@ -104,18 +121,15 @@ function Calendar(props) {
             calendarName: hICalendar.summary,
             color: hICalendar.backgroundColor
           }
-          allProcessedEvents.push(newEvent);
+          currentEvents.push(newEvent);
         }
-
         // recurring events
-      } else if (event.recurrence && !event.originalStartTime) {
-        // gets all the dates for the event in the active month
+      } else if (event.recurrence?.length) {
         let dates = getDatesFromRRule(event.recurrence[0], event.dateStart, activeMonth, activeMonth + 1, event.timeZone);
 
         console.log({ dates })
 
         dates.forEach(day => {
-
           const duration = event.dateEnd - event.dateStart
           //unchanged events
           let newEvent = {
@@ -130,14 +144,13 @@ function Calendar(props) {
             dateEnd: new Date(day + duration)
           }
           console.log('found a repeating event', { newEvent })
-          allProcessedEvents.push(newEvent);
-
+          currentEvents.push(newEvent);
         })
       }
-    });
+    })
 
     // add changed events and cancelled events to corresponding event object
-    allProcessedEvents.forEach((event, idx, arr) => {
+    currentEvents.forEach((event, idx, arr) => {
       if (!event.recurrence) return;
       // reduce the changed array to only ones that match the event id
       // pushing the changed events into the changedEvents array on the event itself
@@ -151,30 +164,28 @@ function Calendar(props) {
         arr[idx].cancelledEvents.push(cancel.originalStartTime);
       });
 
+    })
+
+    // filters all the events to just the ones that start or end in the active month
+    const filteredEvents = currentEvents.filter(e => {
+
+      const endMonth = e.dateEnd ? e.dateEnd.getMonth() + 1 : undefined;
+      const startMonth = e.dateStart ? e.dateStart.getMonth() + 1 : undefined;
+      console.log(`${e.summary}`, { endMonth, startMonth, activeMonth, e })
+      // console.log({ endMonth, startMonth });
+
+      return endMonth < activeMonth || startMonth > activeMonth ? false : true;
     });
-    console.log({ allProcessedEvents })
 
-    return allProcessedEvents
-  }, [renderableEvents, hICalendar.summary, hICalendar.backgroundColor, activeMonth, getDatesFromRRule]);
+    console.log({ filteredEvents })
 
-  const firstDayOfCurrentMonth = useMemo(() => (new Date(`${activeYear}-${`${activeMonth}`.padStart(2, '0')}-01`)), [activeYear, activeMonth]);
+    return filteredEvents;
+  }, [activeMonth, getDatesFromRRule, hICalendar, events])
 
-  const dayIdx = firstDayOfCurrentMonth.getUTCDay();
-
-  // empty days at the end of the month
-  const padDays = useMemo(() => ((((-daysInMonth - firstDayOfCurrentMonth) % 7) + 7) % 7), [daysInMonth, firstDayOfCurrentMonth]);
-
-  let localCurrentMonthName = useMemo(() => monthNames[activeMonth - 1], [activeMonth]);
-
-  // console.log({ eventsEachDay })
-
-  // useEffects
-  useEffect(() => {
-
-    let daysArray = [...Array(daysInMonth)].map(day => []);
-
-    // put events in the right buckets
-    processedEvents.forEach((event, i) => {
+  const eventsEachDay = useMemo(() => {
+    console.log('in putEventsInDayBucket');
+    const daysArray = [...Array(daysInMonth)].map(day => []);
+    monthlyEvents.forEach((event) => {
       let startDate = event.dateStart.getUTCDate();
       let endDate = event.dateEnd.getUTCDate();
 
@@ -200,8 +211,9 @@ function Calendar(props) {
           daysArray[startDate - 1 + i].push(event);
         }
       }
-
     })
+
+    console.log({ daysArray })
 
     // put events in order from earliest to lastest
     daysArray.forEach(day => {
@@ -210,44 +222,9 @@ function Calendar(props) {
       })
     })
 
-    console.log({ daysArray })
-    setEventsEachDay(daysArray);
+    return daysArray;
 
-  }, [processedEvents, daysInMonth, daysArr, activeMonth])
-
-  useEffect(() => {
-    // sets the days
-    setDaysArr([...Array(daysInMonth + 1).keys()].slice(1));
-
-    // fix the gapi object so that start and end have one value
-    const formattedEvents = events.map(e => {
-      const st = e.start?.date || e.start?.dateTime;
-      const et = e.end?.date || e.end?.dateTime;
-      return {
-        ...e,
-        allDay: e.start?.date ? true : false,
-        dateEnd: et ? new Date(et) : undefined,
-        dateStart: st ? new Date(st) : undefined,
-        dateStartTZ: e.start?.timeZone,
-        dateEndTZ: e.end?.timeZone
-      }
-    })
-
-    // console.log({ formattedEvents })
-    // filters all the events to just the ones that start or end in the active month
-    const filteredEvents = formattedEvents.filter(e => {
-
-      const endMonth = e.dateEnd ? e.dateEnd.getMonth() + 1 : undefined;
-      const startMonth = e.dateStart ? e.dateStart.getMonth() + 1 : undefined;
-      console.log(`${e.summary}`, { endMonth, startMonth, activeMonth, e })
-      // console.log({ endMonth, startMonth });
-
-      return endMonth < activeMonth || startMonth > activeMonth ? false : true;
-    });
-
-    setRenderableEvents(filteredEvents)
-
-  }, [daysInMonth, events, activeMonth])
+  }, [activeMonth, daysInMonth, monthlyEvents])
 
 
   const editEvent = useCallback((obj) => {
@@ -263,7 +240,7 @@ function Calendar(props) {
   }, [events])
 
   //sets current month to previous month
-  const lastMonth = () => {
+  const lastMonth = useCallback(() => {
     const newMonth = activeMonth - 1 > 0 ? activeMonth - 1 : 12;
     setActiveMonth(newMonth);
 
@@ -271,18 +248,17 @@ function Calendar(props) {
     if (newMonth === 12) {
       setActiveYear(activeYear - 1);
     }
-
-  }
+  }, [activeMonth, activeYear])
 
   //sets current month to following month
-  const nextMonth = () => {
+  const nextMonth = useCallback(() => {
     const newMonth = activeMonth === 12 ? 1 : activeMonth + 1;
     setActiveMonth(newMonth);
 
     if (newMonth === 1) {
       setActiveYear(activeYear + 1);
     }
-  }
+  }, [activeMonth, activeYear])
 
   //renders the day of week names ('SUN', 'MON'...) at the top of the calendar
   const renderDays = () => {
@@ -303,6 +279,10 @@ function Calendar(props) {
 
   // }, [current])
 
+  console.log({ eventsEachDay, daysArr })
+
+  // renders++;
+  // if (renders > 50) return;
   return (
     <div
       className="calendar"
@@ -349,7 +329,7 @@ function Calendar(props) {
             <span className="day-span">
               {day}
             </span>
-            {eventsEachDay[day - 1].length ? eventsEachDay[day - 1].map((event, i) => (
+            {eventsEachDay[day - 1]?.length ? eventsEachDay[day - 1].map((event, i) => (
               <div
                 style={event.allDay ? { backgroundColor: hICalendar.backgroundColor, color: 'white' } : { color: '#333', border: `1px solid ${hICalendar.backgroundColor}` }} className="innerDay flex" id={"day-" + day}
                 key={`eventsEachDay-${i}`}
