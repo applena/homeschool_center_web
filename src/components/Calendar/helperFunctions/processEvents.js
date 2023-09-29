@@ -52,7 +52,8 @@ const processEvents = (formattedEvents, hICalendar, activeMonth, activeYear) => 
       console.log({ dates })
 
       dates.forEach(day => {
-        const duration = event.dateEnd - event.dateStart
+        const duration = event.dateEnd - event.dateStart;
+        console.log({ duration })
         //unchanged events
         let newEvent = {
           ...event,
@@ -63,7 +64,7 @@ const processEvents = (formattedEvents, hICalendar, activeMonth, activeYear) => 
           calendarName: hICalendar.summary,
           color: hICalendar.backgroundColor,
           dateStart: day,
-          dateEnd: new Date(day + duration)
+          dateEnd: new Date(day.getTime() + duration)
         }
         console.log('found a repeating event', { newEvent })
         currentEvents.push(newEvent);
