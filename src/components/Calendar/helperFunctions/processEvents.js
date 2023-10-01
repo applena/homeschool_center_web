@@ -72,6 +72,7 @@ const processEvents = (formattedEvents, hICalendar, activeMonth, activeYear) => 
     }
   })
 
+  // console.log({ cancelled })
   return { currentEvents, cancelled, changed };
 }
 

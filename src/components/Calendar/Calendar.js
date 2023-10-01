@@ -56,7 +56,7 @@ function Calendar(props) {
   const localCurrentMonthName = useMemo(() => monthNames[activeMonth - 1], [activeMonth]);
 
   const monthlyEvents = useMemo(() => {
-    console.log('in getCurrentMonthEvents')
+    // console.log('in getCurrentMonthEvents')
 
     const formattedEvents = formatEvents(events);
     const { currentEvents, cancelled, changed } = processEvents(formattedEvents, hICalendar, activeMonth, activeYear);
