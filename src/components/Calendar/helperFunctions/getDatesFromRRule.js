@@ -16,12 +16,12 @@ returns: // ['2012-05-01T10:30:00.000Z', '2012-07-01T10:30:00.000Z']
 */
 //get dates based on rrule string between dates
 const getDatesFromRRule = (str, eventStart, betweenStart, betweenEnd, activeMonth, activeYear) => {
-  console.log('getDatesFromRRule', { str, eventStart, betweenStart, betweenEnd, activeMonth, activeYear });
+  // console.log('getDatesFromRRule', { str, eventStart, betweenStart, betweenEnd, activeMonth, activeYear });
 
   const rstrArr = eventStart.toISOString().split(/[-:.]/);
   delete rstrArr[5];
   let rstr = `DTSTART:${rstrArr.join('')}Z\n${str}`;
-  console.log('getDAtesFromRRule, rstr', { rstr })
+  // console.log('getDAtesFromRRule, rstr', { rstr })
 
   let rruleSet = rrulestr(rstr, { forceset: true });
 

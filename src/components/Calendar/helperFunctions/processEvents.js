@@ -28,7 +28,17 @@ const processEvents = (formattedEvents, hICalendar, activeMonth, activeYear) => 
         cancelled.push(event);
         // changed events go into the changed array
       } else if (event.status === "confirmed") { //changed events
-        changed.push(event);
+        const duration = event.dateEnd - event.dateStart;
+        let newEvent = {
+          ...event,
+          dateStartTZ: event.dateStartTZ || `Etc/UTC`,
+          dateEndTZ: event.dateEndTZ || 'Etc/UTC',
+          calendarName: hICalendar.summary,
+          color: hICalendar.backgroundColor,
+          dateStart: event.dateStart,
+          dateEnd: new Date(event.dateStart.getTime() + duration)
+        }
+        changed.push(newEvent);
       } else {
         console.log("Not categorized: ", event);
       }
@@ -53,7 +63,6 @@ const processEvents = (formattedEvents, hICalendar, activeMonth, activeYear) => 
 
       dates.forEach(day => {
         const duration = event.dateEnd - event.dateStart;
-        console.log({ duration })
         //unchanged events
         let newEvent = {
           ...event,
@@ -66,7 +75,7 @@ const processEvents = (formattedEvents, hICalendar, activeMonth, activeYear) => 
           dateStart: day,
           dateEnd: new Date(day.getTime() + duration)
         }
-        console.log('found a repeating event', { newEvent })
+        // console.log('found a repeating event', { newEvent })
         currentEvents.push(newEvent);
       })
     }

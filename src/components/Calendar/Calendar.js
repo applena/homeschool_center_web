@@ -15,6 +15,7 @@ import formatEvents from "./helperFunctions/formatEvents";
 import addCancelledChanged from "./helperFunctions/addCancelledChanged";
 import filterEvents from './helperFunctions/filterEvents';
 import addEventsEachDay from "./helperFunctions/addEventsEachDay";
+import updateChangedEvents from "./helperFunctions/updateChangedEvents";
 
 // redux
 import { useSelector } from 'react-redux';
@@ -61,7 +62,9 @@ function Calendar(props) {
     const formattedEvents = formatEvents(events);
     const { currentEvents, cancelled, changed } = processEvents(formattedEvents, hICalendar, activeMonth, activeYear);
     const allCurrentEvents = addCancelledChanged(currentEvents, cancelled, changed);
-    const filteredEvents = filterEvents(allCurrentEvents, activeMonth);
+    const processedCurrentEvents = updateChangedEvents(allCurrentEvents);
+    const filteredEvents = filterEvents(processedCurrentEvents, activeMonth, activeYear);
+    console.log({ filteredEvents })
 
     return filteredEvents;
   }, [activeMonth, activeYear, hICalendar, events])
