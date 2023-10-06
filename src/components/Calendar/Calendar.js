@@ -23,6 +23,7 @@ import { useSelector } from 'react-redux';
 
 // styles
 import './calendar.scss';
+import { act } from "react-dom/test-utils";
 
 // global variables
 const monthNames = [...Languages.EN.MONTHS];
@@ -123,12 +124,12 @@ function Calendar(props) {
     ));
   }
 
-  // const handleDayClick = useCallback((day) => {
-  //   // in local time
-  //   const selectedDateObj = new Date(`${current.year()}-${current.month() + 1}-${`${day}`.padStart(2, '0')}`)
-  //   setSelectedDate(selectedDateObj);
+  const handleDayClick = useCallback((day) => {
+    // in local time
+    const selectedDateObj = new Date(`${activeYear}-${activeMonth + 1}-${`${day}`.padStart(2, '0')}`)
+    setSelectedDate(selectedDateObj);
 
-  // }, [current])
+  }, [activeYear, activeMonth])
 
   console.log({ eventsEachDay, daysArr })
 
@@ -174,7 +175,7 @@ function Calendar(props) {
           <div
             className="day"
             key={"day-" + day}
-          // onClick={(e) => { handleDayClick(day) }}
+            onClick={(e) => { handleDayClick(day) }}
           >
             {/* renders the numbers */}
             <span className="day-span">
