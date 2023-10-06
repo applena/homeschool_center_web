@@ -22,13 +22,13 @@ const processEvents = (formattedEvents, hICalendar, activeMonth, activeYear) => 
 
   // loop through all events
   formattedEvents.forEach(event => {
+    const duration = event.dateEnd - event.dateStart;
     if (event.originalStartTime) {
       // 'cancelled' events into the cancelled array
       if (event.status === "cancelled") {
         cancelled.push(event);
         // changed events go into the changed array
       } else if (event.status === "confirmed") { //changed events
-        const duration = event.dateEnd - event.dateStart;
         let newEvent = {
           ...event,
           dateStartTZ: event.dateStartTZ || `Etc/UTC`,
@@ -44,20 +44,23 @@ const processEvents = (formattedEvents, hICalendar, activeMonth, activeYear) => 
       }
       // non recurring events
     } else if (!event.recurrence?.length) {
-      console.log('found a non-repeating event', { event })
       if (event.status === "confirmed") {
         let newEvent = {
           ...event,
           changedEvents: [],
           cancelledEvents: [],
           calendarName: hICalendar.summary,
-          color: hICalendar.backgroundColor
+          color: hICalendar.backgroundColor,
+          dateEnd: new Date(event.dateStart.getTime() + duration)
         }
+        console.log('found a non-repeating event', { newEvent })
         currentEvents.push(newEvent);
       }
       // recurring events
     } else if (event.recurrence?.length) {
-      let dates = getDatesFromRRule(event.recurrence[0], event.dateStart, activeMonth, activeMonth + 1, activeMonth, activeYear);
+      const nextMonth = activeMonth < 12 ? activeMonth + 1 : 1;
+
+      let dates = getDatesFromRRule(event.recurrence[0], event.dateStart, activeMonth, nextMonth, activeMonth, activeYear);
 
       console.log({ dates })
 

@@ -16,7 +16,8 @@ returns: // ['2012-05-01T10:30:00.000Z', '2012-07-01T10:30:00.000Z']
 */
 //get dates based on rrule string between dates
 const getDatesFromRRule = (str, eventStart, betweenStart, betweenEnd, activeMonth, activeYear) => {
-  // console.log('getDatesFromRRule', { str, eventStart, betweenStart, betweenEnd, activeMonth, activeYear });
+  const endYear = betweenEnd === 1 ? activeYear + 1 : activeYear;
+
 
   const rstrArr = eventStart.toISOString().split(/[-:.]/);
   delete rstrArr[5];
@@ -25,8 +26,12 @@ const getDatesFromRRule = (str, eventStart, betweenStart, betweenEnd, activeMont
 
   let rruleSet = rrulestr(rstr, { forceset: true });
 
+  const previousYear = activeMonth === 1 ? activeYear - 1 : activeYear;
+  const previousMonth = activeMonth === 1 ? 12 : activeMonth - 1;
+
+  // console.log('getDatesFromRRule', { str, eventStart, betweenStart, betweenEnd, activeMonth, activeYear, endYear, previousMonth, previousYear });
   //get dates
-  let dates = rruleSet.between(datetime(activeYear, activeMonth, 1), datetime(activeYear, activeMonth, 31));
+  let dates = rruleSet.between(datetime(previousYear, previousMonth, 1), datetime(endYear, betweenEnd, 1));
 
   return dates;
 }

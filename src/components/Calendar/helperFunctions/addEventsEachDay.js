@@ -4,7 +4,7 @@ const addEventsEachDay = (monthlyEvents, daysInMonth, activeMonth) => {
     let startDate = event.dateStart.getUTCDate();
     let endDate = event.dateEnd.getUTCDate();
 
-    console.log('addEventsEachDay', { startDate, endDate }, daysArray.length)
+    // console.log('addEventsEachDay', { startDate, endDate }, daysArray.length)
     if (startDate - 1 < 0) return;
 
     if (startDate === endDate) {
@@ -17,17 +17,17 @@ const addEventsEachDay = (monthlyEvents, daysInMonth, activeMonth) => {
       if (event.dateEnd.getUTCMonth() + 1 !== activeMonth) {
         endDate = daysArray.length + 1;
         duration = daysArray.length + 1 - startDate; // TODO: this is wierd and not right - not sure what to do instead
-        console.log('events ends in a later month', { duration })
+        // console.log('events ends in a later month', { duration })
       }
 
       // if the event started in a prior month
       if (event.dateStart.getUTCMonth() + 1 !== activeMonth) {
         startDate = 1;
         duration = endDate - 1;
-        console.log('events starts in a prior month', { duration })
+        // console.log('events starts in a prior month', { duration })
       }
 
-      console.log({ duration })
+      // console.log({ duration })
 
       for (let i = 0; i < duration; i++) {
         daysArray[startDate - 1 + i].push(event);

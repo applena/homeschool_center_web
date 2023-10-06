@@ -64,7 +64,7 @@ function Calendar(props) {
     const allCurrentEvents = addCancelledChanged(currentEvents, cancelled, changed);
     const processedCurrentEvents = updateChangedEvents(allCurrentEvents);
     const filteredEvents = filterEvents(processedCurrentEvents, activeMonth, activeYear);
-    console.log({ filteredEvents })
+    console.log({ filteredEvents, processedCurrentEvents, allCurrentEvents, currentEvents, formattedEvents })
 
     return filteredEvents;
   }, [activeMonth, activeYear, hICalendar, events])

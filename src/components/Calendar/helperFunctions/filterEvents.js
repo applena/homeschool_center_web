@@ -2,16 +2,24 @@
 const filterEvents = (allCurrentEvents, activeMonth, activeYear) => {
   return allCurrentEvents.filter(e => {
 
-    const endMonth = e.dateEnd ? e.dateEnd.getMonth() + 1 : undefined;
+    let endMonth = e.dateEnd ? e.dateEnd.getMonth() + 1 : undefined;
     const startMonth = e.dateStart ? e.dateStart.getMonth() + 1 : undefined;
     const startYear = e.dateStart ? e.dateStart.getFullYear() : undefined;
     const endYear = e.dateEnd ? e.dateEnd.getFullYear() : undefined;
 
-    console.log({ allCurrentEvents, endMonth, startMonth, activeMonth, startYear, endYear, activeYear })
-    if (endYear < activeYear) { console.log('ends before activeYear'); return false; }
-    if (startYear > activeYear) { console.log('begins after activeYear', { startYear, activeYear }); return false };
+    console.log('FilterEvents', { allCurrentEvents, endMonth, startMonth, activeMonth, startYear, endYear, activeYear })
 
-    return (startMonth <= activeMonth && endMonth >= activeMonth) ? true : false;
+    if (endYear < activeYear) return false;
+    if (startYear > activeYear) return false;
+
+    // deal with endMonth = 1 and startMonth = 12
+    if (endYear === startYear + 1) endMonth = 13;
+
+    if (startYear === endYear) {
+      return (startMonth <= activeMonth && endMonth >= activeMonth) ? true : false;
+    } else {
+      return true;
+    }
   });
 }
 
