@@ -1,33 +1,52 @@
 import React from "react";
 
-import moment from "moment-timezone";
-
-// import FiberManualRecordIcon from "./svg/fiberManualRecord";
-
 
 function Event(props) {
   // const [showTooltip, setShowTooltip] = useState(false);
   // console.log('EVENT', props)
 
   return (
-    <div
-      className="event"
-      tabIndex="0"
-      onClick={(e) => props.editEvent(e, props.id)}
-    >
-
-      <span className="event-text-span" style={{ color: props.color }}>
-        &bull;
-      </span>
-      <span>
-        {moment(props.startTime).format("h:mma ").replace(':00', '')}
-      </span>
-      <span style={{ fontWeight: "500" }}>
-        {props.name}
-      </span>
-
-
-    </div>
+    !props.event.allDay ?
+      <div
+        className="event"
+        onClick={(e) => props.editEvent(e, props.id)}
+      >
+        <span className="event-text-span" style={{ color: props.color }}>
+          &bull;
+        </span>
+        <span style={{ marginRight: '7px' }}>
+          {`${props.event.dateStart.toLocaleTimeString('en-US').split(':')[0]}:${props.event.dateStart.toLocaleTimeString('en-US').split(':')[1]} ${props.event.dateStart.toLocaleTimeString('en-US').split(':')[2].split(' ')[1]}`}
+        </span>
+        <span style={{ fontWeight: "500" }}>
+          {props.event.summary}
+        </span>
+      </div>
+      :
+      <div
+        className="event-big"
+        onClick={(e) => props.editEvent(e, props.id)}
+      >
+        <div style={{
+          width: '100%',
+          borderRadius: '3px',
+          border: `1px solid ${props.color}`,
+          height: '26px',
+          background: props.event.color
+        }}
+        >
+          <div
+            className="event-text-one"
+            style={{
+              marginLeft: '5px',
+              marginRight: '5px',
+            }}
+          >
+            <span style={{ fontWeight: "500" }}>
+              {props.event.summary}
+            </span>
+          </div>
+        </div>
+      </div>
   )
 }
 

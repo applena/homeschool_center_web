@@ -1,11 +1,7 @@
 import React, { useState, useCallback, useMemo } from "react";
 
-// internal libraries
-// import gapi from '../../lib/GAPI';
-
 // components
-// import Event from "./Event";
-// import MultiEvent from "./MultiEvent";
+import Event from "./Event";
 import AddEvent from './AddEvent/AddEvent';
 
 // helper functions
@@ -23,7 +19,6 @@ import { useSelector } from 'react-redux';
 
 // styles
 import './calendar.scss';
-import { act } from "react-dom/test-utils";
 
 // global variables
 const monthNames = [...Languages.EN.MONTHS];
@@ -183,16 +178,15 @@ function Calendar(props) {
             </span>
             {eventsEachDay[day - 1]?.length ? eventsEachDay[day - 1].map((event, i) => (
               <div
-                style={event.allDay ? { backgroundColor: hICalendar.backgroundColor, color: 'white' } : { color: '#333', border: `1px solid ${hICalendar.backgroundColor}` }} className="innerDay flex" id={"day-" + day}
+                style={event.allDay ? { backgroundColor: hICalendar.backgroundColor, color: 'white' } : { color: '#333', border: `1px solid ${hICalendar.backgroundColor}` }}
+                className="innerDay flex" id={"day-" + day}
                 key={`eventsEachDay-${i}`}
               >
-                {!event.allDay &&
-                  <div>
-                    <span style={{ color: hICalendar.backgroundColor }} className="event-text-span ">●</span>
-                    <span>{`${event.dateStart.toLocaleTimeString().split(':')[0]}:${event.dateStart.toLocaleTimeString().split(':')[1]}`}</span>
-                  </div>
-                }
-                <span className="event-name">{event.summary}</span>
+                <Event
+                  editEvent={editEvent}
+                  color={hICalendar.backgroundColor}
+                  event={event}
+                />
               </div>
             ))
               :

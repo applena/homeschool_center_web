@@ -68,6 +68,8 @@ html {
   overflow: hidden;
   width: 100%;
   border-radius: 8px;
+  display: flex;
+  align-items: baseline;
 
   .event-name {
     overflow: hidden;
@@ -92,9 +94,7 @@ html {
 
 .event {
   box-sizing: border-box;
-  margin: 1px 0px;
   font-size: 15px;
-  height: 26px;
   position: relative;
 
 
@@ -113,7 +113,6 @@ html {
 
   color: #51565d;
   padding: 0px 0px 3px px;
-  margin-right: 5px;
   overflow-x: hidden;
   white-space: nowrap;
   position: relative;
