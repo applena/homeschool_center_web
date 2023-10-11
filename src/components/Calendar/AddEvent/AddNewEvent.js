@@ -21,30 +21,29 @@ import gapi from '../../../lib/GAPI';
 import { useSelector, useDispatch } from 'react-redux';
 import { addEvent, modifyEvent } from '../../../redux/eventsSlice';
 import { setHICalendarConfig } from '../../../redux/config';
+// import { datetime, RRule, RRuleSet, rrulestr } from 'rrule';
+// import moment from "moment-timezone";
 
 // global variables
 const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-function AddEvent(props) {
+function AddNewEvent(props) {
   // from redux
   const dispatch = useDispatch();
   const hICalendar = useSelector((state) => state.hICalendar);
   // const events = useSelector((state) => state.events);
   const config = useSelector((state) => state.config);
+  const eventDate = props.selectedEvent?.start?.date || props.selectedEvent?.start?.dateTime || props.selectedDate;
 
-  // global variables
-  // const eventDate = props.selectedEvent?.start?.date || props.selectedEvent?.start?.dateTime || props.selectedDate;
-
-  // state
-  const [name, setName] = useState('');
+  const [name, setName] = useState(props?.selectedEvent?.summary || '');
   const [description, setDescription] = useState('');
   const [eventType, setEventType] = useState('Select Event Type');
-  const [subject, setSubject] = useState(config.subjectList[0]);
-  const [startDate, setStartDate] = useState(props.selectedDate);
-  const [startTime, setStartTime] = useState('');
-  const [endTime, setEndTime] = useState('');
+  const [subject, setSubject] = useState('');
+  const [startDate, setStartDate] = useState(eventDate ? new Date(eventDate) : '');
+  const [startTime, setStartTime] = useState(props.selectedEvent?.start?.dateTime ? props.selectedEvent?.start?.dateTime.split('T')[1].replace(':00Z', '') : '');
+  const [endTime, setEndTime] = useState(props.selectedEvent?.end?.dateTime ? props.selectedEvent?.end?.dateTime.split('T')[1].replace(':00Z', '') : '');
   const [newSubject, setNewSubject] = useState(''); // TODO: make a new subject option
-  const [allDay, setAllDay] = useState(true);
+  const [allDay, setAllDay] = useState(props.selectedEvent?.start?.dateTime ? false : true);
   const [daySelected, setDaySelected] = useState(''); // used to display the day of week that a user seleced
   const [month, setMonth] = useState(''); // used to display the month user selected
   const [day, setDay] = useState(''); // used to display the day of the month (ie - 28th)
@@ -53,8 +52,8 @@ function AddEvent(props) {
   const [deleteRepeatingItem, setDeleteRepeatingItem] = useState(false);
   const [modifiedEvent, setModifiedEvent] = useState({});
 
-  console.log('AddEvent state', { startDate }, props.selectedEvent);
-
+  // console.log('ADD EVENT', { startDate })
+  console.log('AddEvent state', { startDate }, props.selectedEvent)
   // REPEATING RULES
   const [rRuleObj, setRRuleObj] = useState({
     FREQ: 'HowOften',
@@ -62,7 +61,7 @@ function AddEvent(props) {
   });
 
   // booliean reveals repeating options
-  const [repeats, setRepeats] = useState(false);
+  const [repeats, setRepeats] = useState(props?.selectedEvent?.recurrence?.length ? true : false);
 
   const metaData = {
     description,
@@ -108,6 +107,38 @@ function AddEvent(props) {
   // updated: "2023-07-30T17:46:57.467Z"
 
   useEffect(() => {
+    const obj = JSON.parse(props.selectedEvent?.description || '{}');
+
+    setName(props.selectedEvent.summary);
+    setDescription(obj?.description);
+    setSubject(obj?.subject || config.subjectList[0]);
+  }, [props.selectedEvent, config.subjectList])
+
+  useEffect(() => {
+    if (props.selectedEvent?.id) {
+      // console.log('ADD EVENT - editMode = true', { props })
+
+      if (props.selectedEvent.recurrence) {
+        // ['RRULE:FREQ=DAILY;BYDAY=MO,TU,WE,TH,FR']
+        // ['RRULE:FREQ=MONTHLY;BYDAY=1FR']
+        // let rstr = `DTSTART:${moment(startDate).utc(true).format('YYYYMMDDTHHmmss')}Z\n${props.selectedEvent.recurrence[0]}`;
+        // let rRule = RRule.fromString(rstr);
+        // console.log('rRule in edit', { rRule, rstr });
+        const repeatObj = {};
+        const recurrenceArr = props.selectedEvent.recurrence[0].split(':')[1].split(';');
+        recurrenceArr.forEach(rule => {
+          const rulePart = rule.split('=');
+          repeatObj[rulePart[0]] = rulePart[1];
+        })
+
+        setRRuleObj(repeatObj);
+
+      }
+
+    }
+  }, [props.selectedEvent])
+
+  useEffect(() => {
     const dayOfWeekString = {
       Mon: 'Monday',
       Tue: 'Tuesday',
@@ -120,9 +151,13 @@ function AddEvent(props) {
 
     //find and set the ordinals - ex: 'thrid thursday of the month'
     const ordinals = ["", "first", "second", "third", "fourth", "fifth"];
+    let date = props.selectedDate || new Date(props.selectedEvent?.start?.date) || new Date(props.selectedEvent?.startDate?.date) || new Date();
 
-    let dateString = props.selectedDate.toDateString();
-
+    // all day event - need to add in offset to make it not UTC
+    if (props.selectedEvent?.start?.date) {
+      date.setMinutes(date.getMinutes() + date.getTimezoneOffset())
+    }
+    let dateString = date + '';
     // dateString = 'Wed Aug 09 2023 00:00:00 GMT-0700 (Pacific Daylight Time)'
     let tokens = dateString.split(' ');
 
@@ -130,7 +165,6 @@ function AddEvent(props) {
     const ordinalIndex = Math.ceil(tokens[2] / 7);
     setOrdinalIndex(ordinalIndex);
     const ordinalString = ordinals[ordinalIndex];
-    console.log({ ordinalString })
     const dayOfWeek = dayOfWeekString[tokens[0]];
     setOrdinalsOfMonth("the " + ordinalString + " " + dayOfWeek + " of the month");
 
@@ -140,14 +174,14 @@ function AddEvent(props) {
     setDaySelected(dayOWeek);
 
     //find and set the Month selected
-    let monthIndex = props.selectedDate.getMonth();
+    let monthIndex = date.getMonth();
     const getMonthByIndex = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'November', 'December'];
     setMonth(getMonthByIndex[monthIndex]);
 
     //set the day selected
-    setDay(props.selectedDate.getDate());
+    setDay(date.getDate());
 
-  }, [props.selectedDate]);
+  }, [props.selectedDate, props.selectedEvent]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -265,7 +299,7 @@ function AddEvent(props) {
       style={{ display: 'block', position: 'initial' }}
     >
       <Modal.Dialog>
-        <Modal.Header onHide={() => { props.setSelectedDate(false) }} closeButton>
+        <Modal.Header onHide={() => { props.setSelectedDate(false); props.setSelectedEvent(false) }} closeButton>
           <Modal.Title>Add Event</Modal.Title>
         </Modal.Header>
 
@@ -312,7 +346,7 @@ function AddEvent(props) {
               <label style={{ display: 'block', width: '100%' }}>
                 <span style={{ marginRight: '8px' }}>Date</span>
                 <DatePicker
-                  selected={new Date(startDate.toUTCString())}
+                  selected={startDate}
                   onChange={(newDate) => setStartDate(newDate)}
                 />
               </label>
@@ -446,4 +480,4 @@ function AddEvent(props) {
   )
 }
 
-export default AddEvent;
+export default AddNewEvent;

@@ -7,7 +7,7 @@ const filterEvents = (allCurrentEvents, activeMonth, activeYear) => {
     const startYear = e.dateStart ? e.dateStart.getFullYear() : undefined;
     const endYear = e.dateEnd ? e.dateEnd.getFullYear() : undefined;
 
-    console.log('FilterEvents', { allCurrentEvents, endMonth, startMonth, activeMonth, startYear, endYear, activeYear })
+    // console.log('FilterEvents', { allCurrentEvents, endMonth, startMonth, activeMonth, startYear, endYear, activeYear })
     if (e.dateEnd.getTime() < new Date(`${activeYear}-${activeMonth}-01`)) return false;
     if (e.dateStart.getTime() > new Date(`${activeYear}-${activeMonth + 1}-1`)) return false;
 

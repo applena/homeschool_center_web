@@ -13,7 +13,8 @@ const updateChangedEvents = (allEvents) => {
     let cancelled = false;
     if (event.cancelledEvents?.length) {
       event.cancelledEvents.forEach(ce => {
-        if (new Date(ce.date).toISOString() === event.dateStart.toISOString()) {
+        // console.log({ ce })
+        if ((ce.date || ce.dateTime) === event.dateStart.toISOString()) {
           cancelled = true;
         }
       })

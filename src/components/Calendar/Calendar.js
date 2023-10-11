@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useMemo } from "react";
+import { zonedTimeToUtc, utcToZonedTime, format } from 'date-fns-tz';
 
 // components
 import Event from "./Event";
@@ -66,7 +67,7 @@ function Calendar(props) {
   }, [activeMonth, activeYear, hICalendar, events])
 
   const eventsEachDay = useMemo(() => {
-    console.log('in eventsEachDay');
+    // console.log('in eventsEachDay');
     const daysArray = addEventsEachDay(monthlyEvents, daysInMonth, activeMonth);
 
     return daysArray;
@@ -120,13 +121,17 @@ function Calendar(props) {
   }
 
   const handleDayClick = useCallback((day) => {
+    const timeZoneString = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+    const utcDate = zonedTimeToUtc(`${activeYear}-${activeMonth}-${day} 00:00:00`, `${timeZoneString}`)
     // in local time
-    const selectedDateObj = new Date(`${activeYear}-${activeMonth + 1}-${`${day}`.padStart(2, '0')}`)
+    const selectedDateObj = new Date(utcDate);
+    console.log({ selectedDateObj, utcDate })
     setSelectedDate(selectedDateObj);
 
   }, [activeYear, activeMonth])
 
-  console.log({ eventsEachDay, daysArr })
+  // console.log({ eventsEachDay, daysArr })
 
   // renders++;
   // if (renders > 50) return;
@@ -209,9 +214,6 @@ function Calendar(props) {
         <AddEvent
           selectedDate={selectedDate}
           setSelectedDate={setSelectedDate}
-          foo={1}
-          selectedEvent={selectedEvent}
-          setSelectedEvent={setSelectedEvent}
         />
       }
     </div>

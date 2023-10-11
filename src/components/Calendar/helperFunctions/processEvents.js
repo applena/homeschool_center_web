@@ -53,7 +53,7 @@ const processEvents = (formattedEvents, hICalendar, activeMonth, activeYear) => 
           color: hICalendar.backgroundColor,
           dateEnd: new Date(event.dateStart.getTime() + duration)
         }
-        console.log('found a non-repeating event', { newEvent })
+        // console.log('found a non-repeating event', { newEvent })
         currentEvents.push(newEvent);
       }
       // recurring events
@@ -62,7 +62,7 @@ const processEvents = (formattedEvents, hICalendar, activeMonth, activeYear) => 
 
       let dates = getDatesFromRRule(event.recurrence[0], event.dateStart, activeMonth, nextMonth, activeMonth, activeYear);
 
-      console.log({ dates })
+      // console.log({ dates })
 
       dates.forEach(day => {
         const duration = event.dateEnd - event.dateStart;
