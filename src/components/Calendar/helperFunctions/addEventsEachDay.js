@@ -4,8 +4,7 @@ const addEventsEachDay = (monthlyEvents, daysInMonth, activeMonth) => {
     let startDate = event.dateStart.getDate();
     let endDate = event.dateEnd.getDate();
 
-    // console.log('addEventsEachDay', { startDate, endDate }, daysArray.length)
-    if (startDate - 1 < 0) return;
+    console.log('addEventsEachDay', { startDate, endDate, event })
 
     if (startDate === endDate) {
       // deal with events that don't span multiple days

@@ -53,7 +53,7 @@ function AddEvent(props) {
   const [deleteRepeatingItem, setDeleteRepeatingItem] = useState(false);
   const [modifiedEvent, setModifiedEvent] = useState({});
 
-  console.log('AddEvent state', { startDate }, props.selectedEvent);
+  // console.log('AddEvent state', { startDate }, props.selectedEvent);
 
   // REPEATING RULES
   const [rRuleObj, setRRuleObj] = useState({
@@ -151,6 +151,7 @@ function AddEvent(props) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    // console.log({ startDate })
 
     // add start and end date/time
     if (!allDay) {
