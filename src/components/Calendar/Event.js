@@ -9,7 +9,7 @@ function Event(props) {
     !props.event.allDay ?
       <div
         className="event"
-        onClick={(e) => props.editEvent(e, props.id)}
+        onClick={(e) => props.editEvent(e, props.event.id)}
       >
         <span className="event-text-span" style={{ color: props.color }}>
           &bull;
@@ -24,7 +24,7 @@ function Event(props) {
       :
       <div
         className="event-big"
-        onClick={(e) => props.editEvent(e, props.id)}
+        onClick={(e) => props.editEvent(e, props.event.id)}
       >
         <div style={{
           width: '100%',

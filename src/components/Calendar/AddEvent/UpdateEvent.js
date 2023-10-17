@@ -1,4 +1,10 @@
+import AddEditModal from './AddEditModal';
+
 // external libraries
+import Modal from 'react-bootstrap/Modal';
+import 'react-datetime-picker/dist/DateTimePicker.css';
+import 'react-clock/dist/Clock.css';
+import "react-datepicker/dist/react-datepicker.css";
 import Button from 'react-bootstrap/Button';
 
 // my libraries
@@ -14,8 +20,10 @@ function UpdateItem(props) {
   const hICalendar = useSelector((state) => state.hICalendar);
   const events = useSelector((state) => state.events);
 
-  const updateItem = async (e, id) => {
+  const handleSubmit = async (e, obj) => {
     e.preventDefault();
+
+    console.log('UpdateEvent - handleSubmit', { obj });
 
     props.setSelectedEvent(false);
 
@@ -36,7 +44,7 @@ function UpdateItem(props) {
       console.log('UpdateEvent', { updatedSelectedEvent })
 
       try {
-        await gapi.update(props.hICalendar.id, id, updatedSelectedEvent);
+        await gapi.update(props.hICalendar.id, obj.id, updatedSelectedEvent);
         // await gapi.client.calendar.events.update({
         //   'calendarId': props.hICalendar.id,
         //   'eventId': id,
@@ -115,11 +123,26 @@ function UpdateItem(props) {
     }
   }
   return (
-    <Button
-      onClick={(e) => updateItem(e, props?.selectedEvent?.id, 'future')}
+    <div
+      className="modal show"
+      style={{ display: 'block', position: 'initial' }}
     >
-      {props.text}
-    </Button>
+      <Modal.Dialog>
+        <Modal.Header onHide={() => { props.setSelectedDate(false); props.setSelectedEvent(false) }} closeButton>
+          <Modal.Title>Update Event</Modal.Title>
+        </Modal.Header>
+
+        <form>
+          <AddEditModal
+            selectedDate={props.selectedDate}
+            newEvent={false}
+            setSelectedDate={props.setSelectedDate}
+            handleSubmit={handleSubmit}
+            selectedEvent={props.selectedEvent}
+          />
+        </form>
+      </Modal.Dialog>
+    </div >
   )
 }
 

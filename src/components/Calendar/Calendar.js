@@ -3,7 +3,8 @@ import { zonedTimeToUtc, utcToZonedTime, format } from 'date-fns-tz';
 
 // components
 import Event from "./Event";
-import AddEvent from './AddEvent/AddEvent';
+import UpdateEvent from './AddEvent/UpdateEvent';
+import AddEvent from "./AddEvent/AddEvent";
 
 // helper functions
 import { Languages } from "../../lib/utils/languages";
@@ -75,15 +76,15 @@ function Calendar(props) {
   }, [activeMonth, daysInMonth, monthlyEvents])
 
 
-  const editEvent = useCallback((obj) => {
-    // console.log('edit event', { obj })
-    obj.e.stopPropagation();
-    const chosenEvent = { ...events.find(event => event.id === obj.id) };
-    chosenEvent.activeDate = obj.current.toDate();
-    chosenEvent.activeDate.setMinutes(chosenEvent.activeDate.getMinutes() + new Date().getTimezoneOffset());
-    // console.log('current to date OBJ', chosenEvent.activeDate)
-    chosenEvent.activeDate.setDate(obj.date);
-    console.log('!', { chosenEvent, obj })
+  const editEvent = useCallback((e, id) => {
+    e.stopPropagation();
+    const chosenEvent = { ...monthlyEvents.find(event => event.id === id) };
+    console.log('edit event', { chosenEvent, id })
+    // chosenEvent.activeDate = obj.current.toDate();
+    // chosenEvent.activeDate.setMinutes(chosenEvent.activeDate.getMinutes() + new Date().getTimezoneOffset());
+    // // console.log('current to date OBJ', chosenEvent.activeDate)
+    // chosenEvent.activeDate.setDate(obj.date);
+    // console.log('!', { chosenEvent, obj })
     setSelectedEvent(chosenEvent);
   }, [events])
 
@@ -126,7 +127,7 @@ function Calendar(props) {
     const utcDate = zonedTimeToUtc(`${activeYear}-${activeMonth}-${day} 00:00:00`, `${timeZoneString}`)
     // in local time
     const selectedDateObj = new Date(utcDate);
-    console.log({ selectedDateObj, utcDate })
+    // console.log({ selectedDateObj, utcDate })
     setSelectedDate(selectedDateObj);
 
   }, [activeYear, activeMonth])
@@ -210,10 +211,18 @@ function Calendar(props) {
         ))}
 
       </div>
-      {(selectedDate || selectedEvent) &&
+      {selectedDate &&
         <AddEvent
           selectedDate={selectedDate}
           setSelectedDate={setSelectedDate}
+        />
+      }
+      {selectedEvent.id &&
+        <UpdateEvent
+          selectedDate={selectedDate}
+          setSelectedDate={setSelectedDate}
+          setSelectedEvent={setSelectedEvent}
+          selectedEvent={selectedEvent}
         />
       }
     </div>
