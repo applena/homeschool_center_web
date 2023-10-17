@@ -12,13 +12,24 @@ import gapi from '../../../lib/GAPI';
 
 // redux
 import { useSelector, useDispatch } from 'react-redux';
-import { setEvents, modifyEvent } from '../../../redux/eventsSlice';
+import { setEvents, modifyEvent, removeEvent } from '../../../redux/eventsSlice';
 
 function UpdateItem(props) {
   // console.log('UpdateItem', { props })
   const dispatch = useDispatch();
   const hICalendar = useSelector((state) => state.hICalendar);
   const events = useSelector((state) => state.events);
+
+  const deleteEvent = () => {
+    props.setSelectedEvent(false);
+    dispatch(removeEvent(props.selectedEvent.id));
+    try {
+      gapi.remove(hICalendar.id, props.selectedEvent.id);
+      console.log('sucessfully removed event');
+    } catch {
+      console.log('error removing event');
+    }
+  }
 
   const handleSubmit = async (e, obj) => {
     e.preventDefault();
@@ -35,10 +46,6 @@ function UpdateItem(props) {
       // console.log({ until, yesterday });
 
       const updatedSelectedEvent = { ...props.selectedEvent };
-
-      // delete updatedSelectedEvent.activeDate;
-
-      // console.log('UpdateItem', { updatedSelectedEvent })
 
       updatedSelectedEvent.recurrence = [updatedSelectedEvent.recurrence[0].replace(/;UNTIL=.+Z/, '') + `;UNTIL=${until}`];
       console.log('UpdateEvent', { updatedSelectedEvent })
@@ -141,6 +148,11 @@ function UpdateItem(props) {
             selectedEvent={props.selectedEvent}
           />
         </form>
+        <Button
+          onClick={deleteEvent}
+        >
+          Delete Event
+        </Button>
       </Modal.Dialog>
     </div >
   )
