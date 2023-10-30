@@ -5,6 +5,7 @@ import TimePicker from 'react-time-picker';
 import Modal from 'react-bootstrap/Modal';
 import DatePicker from "react-datepicker";
 import Button from 'react-bootstrap/Button';
+import './addEvent.scss';
 
 // redux
 import { setHICalendarConfig } from '../../../redux/config';
@@ -34,6 +35,7 @@ function AddEditModal(props) {
   const [day, setDay] = useState(''); // used to display the day of the month (ie - 28th)
   const [name, setName] = useState(!props.newEvent ? props.selectedEvent.summary : '');
   const [allDay, setAllDay] = useState(!props.newEvent ? props.selectedEvent.allDay : true);
+  const [displayDeleteOptions, setDisplayDeleteOptions] = useState(false);
 
   console.log('AddEditModal - after state', { startDate }, props.selectedEvent)
 
@@ -246,10 +248,43 @@ function AddEditModal(props) {
         </div>
       </Modal.Body>
       <Modal.Footer>
-        <Button onClick={() => { props.setSelectedDate(false); props.setSelectedEvent(false) }} variant="secondary">Close</Button>
-        <Button
-          onClick={(e) => props.handleSubmit(e, { allDay, startDate, startTime, endTime, event, repeats, rRuleObj, ordinalIndex, ordinalsOfMonth })}
-          variant="primary">Save Changes</Button>
+        <div className='delete-options'>
+          <Button onClick={() => { props.setSelectedDate(false); props.setSelectedEvent(false) }} variant="secondary">Close</Button>
+          <Button
+            onClick={(e) => props.handleSubmit(e, { allDay, startDate, startTime, endTime, event, repeats, rRuleObj, ordinalIndex, ordinalsOfMonth })}
+            variant="primary">Save Changes</Button>
+          {props.selectedEvent?.recurrence?.length ?
+            <Button
+              onClick={() => setDisplayDeleteOptions(true)}
+            >
+              Delete
+            </Button>
+            :
+            <Button
+              onClick={props.deleteEvent}
+            >
+              Delete Event
+            </Button>
+          }
+        </div>
+        {displayDeleteOptions &&
+          <div className='delete-options'>
+            <Button
+              onClick={props.deleteFutureEvent}
+            >
+              Delete This And All Future Events
+            </Button><Button
+              onClick={props.deleteEvent}
+            >
+              Delete All Events
+            </Button>
+            <Button
+              onClick={props.deleteSingleEvent}
+            >
+              Delete This Event
+            </Button>
+          </div>
+        }
       </Modal.Footer>
     </div>
   )

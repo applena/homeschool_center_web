@@ -76,17 +76,17 @@ function Calendar(props) {
   }, [activeMonth, daysInMonth, monthlyEvents])
 
 
-  const editEvent = useCallback((e, id) => {
+  const editEvent = useCallback((e, id, day) => {
     e.stopPropagation();
     const chosenEvent = { ...monthlyEvents.find(event => event.id === id) };
-    console.log('edit event', { chosenEvent, id })
-    // chosenEvent.activeDate = obj.current.toDate();
-    // chosenEvent.activeDate.setMinutes(chosenEvent.activeDate.getMinutes() + new Date().getTimezoneOffset());
+    // console.log('edit event', { chosenEvent, id, day, activeMonth })
+    chosenEvent.activeDate = new Date(`${activeYear}-${activeMonth.padStart(2, '0')}-${day.padStart(2, '0')}`);
+    chosenEvent.activeDate.setMinutes(chosenEvent.activeDate.getMinutes() + new Date().getTimezoneOffset());
     // // console.log('current to date OBJ', chosenEvent.activeDate)
     // chosenEvent.activeDate.setDate(obj.date);
     // console.log('!', { chosenEvent, obj })
     setSelectedEvent(chosenEvent);
-  }, [events])
+  }, [monthlyEvents, activeMonth, activeYear])
 
   //sets current month to previous month
   const lastMonth = useCallback(() => {
@@ -189,6 +189,7 @@ function Calendar(props) {
                 key={`eventsEachDay-${i}`}
               >
                 <Event
+                  day={day}
                   editEvent={editEvent}
                   color={hICalendar.backgroundColor}
                   event={event}
@@ -223,6 +224,7 @@ function Calendar(props) {
           setSelectedDate={setSelectedDate}
           setSelectedEvent={setSelectedEvent}
           selectedEvent={selectedEvent}
+          events={events}
         />
       }
     </div>

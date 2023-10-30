@@ -49,3 +49,13 @@ form {
   display: block;
   margin-top: 4px;
 }
+
+.delete-options {
+  display: flex;
+  // border-top: 1px solid gray;
+  // padding-top: 8px;
+
+  button {
+    margin: 0 2px;
+  }
+}
