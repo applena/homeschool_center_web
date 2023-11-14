@@ -80,11 +80,10 @@ function Calendar(props) {
     e.stopPropagation();
     const chosenEvent = { ...monthlyEvents.find(event => event.id === id) };
     // console.log('edit event', { chosenEvent, id, day, activeMonth })
-    chosenEvent.activeDate = new Date(`${activeYear}-${activeMonth.padStart(2, '0')}-${day.padStart(2, '0')}`);
-    chosenEvent.activeDate.setMinutes(chosenEvent.activeDate.getMinutes() + new Date().getTimezoneOffset());
-    // // console.log('current to date OBJ', chosenEvent.activeDate)
+    chosenEvent.activeDate = new Date(`${activeYear}-${activeMonth.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`);
+    // chosenEvent.activeDate.setMinutes(chosenEvent.activeDate.getMinutes() + new Date().getTimezoneOffset());
     // chosenEvent.activeDate.setDate(obj.date);
-    // console.log('!', { chosenEvent, obj })
+    console.log('editEvent', { chosenEvent, activeYear, activeMonth, day })
     setSelectedEvent(chosenEvent);
   }, [monthlyEvents, activeMonth, activeYear])
 
@@ -124,7 +123,8 @@ function Calendar(props) {
   const handleDayClick = useCallback((day) => {
     const timeZoneString = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-    const utcDate = zonedTimeToUtc(`${activeYear}-${activeMonth}-${day} 00:00:00`, `${timeZoneString}`)
+    const utcDate = zonedTimeToUtc(`${activeYear}-${activeMonth.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')} 00:00:00`, `${timeZoneString}`);
+    console.log({ utcDate }, `${activeYear}-${activeMonth}-${day} 00:00:00`)
     // in local time
     const selectedDateObj = new Date(utcDate);
     // console.log({ selectedDateObj, utcDate })

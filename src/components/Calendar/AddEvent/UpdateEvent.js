@@ -35,41 +35,6 @@ function UpdateItem(props) {
 
 
 
-  //   const updatedSelectedEvent = { ...props.selectedEvent };
-
-  //   // delete updatedSelectedEvent.activeDate;
-
-  //   // console.log('UpdateItem', { updatedSelectedEvent })
-
-  //   updatedSelectedEvent.recurrence = [updatedSelectedEvent.recurrence[0].replace(/;UNTIL=.+Z/, '') + `;UNTIL=${until}`];
-  //   console.log('UpdateEvent', { updatedSelectedEvent })
-
-  //   try {
-  //     await gapi.update(props.hICalendar.id, id, updatedSelectedEvent);
-  //     // await gapi.client.calendar.events.update({
-  //     //   'calendarId': props.hICalendar.id,
-  //     //   'eventId': id,
-  //     //   'resource': updatedSelectedEvent
-  //     // })
-  //     console.log('event successfully updated');
-
-  //     // find the event and replace it with updatedSelectedEvent
-  //     events.forEach(event => {
-  //       if (event.id === props.selectedEvent.id) {
-  //         event = updatedSelectedEvent
-  //       }
-  //       dispatch(setEvents(events));
-  //     })
-
-  //     // const events = await gapi.client.calendar.events.list({ calendarId: hICalendar.id })
-  //     // console.log({ events });
-  //     props.setSelectedDate(false);
-  //     props.setSelectedEvent(false);
-
-  //   } catch {
-  //     console.log('problem updating event');
-  //   }
-
   // }
 
   // if (props.text === 'Save Changes') {
@@ -123,15 +88,41 @@ function UpdateItem(props) {
   //   // events.instances() 
   // }
 
-  const deleteFutureEvent = () => {
+  const deleteFutureEvent = async () => {
     props.setSelectedEvent(false);
-    // TODO: delete future events
-    console.log('deleteFutureEvent', { props })
+
+    // find the day before the selected date
     const yesterday = new Date(props.selectedEvent.activeDate);
     yesterday.setDate(yesterday.getDate() - 1);
 
     const until = yesterday.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
-    console.log({ until, yesterday });
+    // console.log({ until, yesterday });
+
+    // remove the activeDate key on the event
+    // delete updatedSelectedEvent.activeDate;
+
+    // change the recurrance rule so that it ends the day before
+    // find the event and replace it with updatedSelectedEvent
+
+    const changedEvent = events.find(event => event.id === props.selectedEvent.id);
+    changedEvent.recurrence = [changedEvent.recurrence[0].replace(/;UNTIL=.+Z/, '') + `;UNTIL=${until}`]
+
+    console.log('UpdateEvent', { changedEvent });
+
+    // update GAPI with the updated event
+    try {
+      await gapi.update(hICalendar.id, props.selectedEvent.id, changedEvent);
+      console.log('event successfully updated');
+
+
+      dispatch(setEvents(...events));
+
+      props.setSelectedDate(false);
+      props.setSelectedEvent(false);
+
+    } catch (e) {
+      console.log('problem updating event', e);
+    }
   }
 
   const deleteSingleEvent = () => {
