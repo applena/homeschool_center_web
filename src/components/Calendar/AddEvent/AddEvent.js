@@ -16,6 +16,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { addEvent } from '../../../redux/eventsSlice';
 
 function AddEvent(props) {
+  console.log('AddEvent', { props })
   // from redux
   const dispatch = useDispatch();
   const hICalendar = useSelector((state) => state.hICalendar);

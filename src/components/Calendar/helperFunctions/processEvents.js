@@ -62,7 +62,7 @@ const processEvents = (formattedEvents, hICalendar, activeMonth, activeYear) => 
 
       let dates = getDatesFromRRule(event.recurrence[0], event.dateStart, activeMonth, nextMonth, activeMonth, activeYear);
 
-      // console.log({ dates })
+      console.log({ dates })
 
       dates.forEach(day => {
         const duration = event.dateEnd - event.dateStart;

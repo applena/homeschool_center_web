@@ -55,14 +55,14 @@ function Calendar(props) {
   const localCurrentMonthName = useMemo(() => monthNames[activeMonth - 1], [activeMonth]);
 
   const monthlyEvents = useMemo(() => {
-    // console.log('in getCurrentMonthEvents')
 
     const formattedEvents = formatEvents(events);
     const { currentEvents, cancelled, changed } = processEvents(formattedEvents, hICalendar, activeMonth, activeYear);
     const allCurrentEvents = addCancelledChanged(currentEvents, cancelled, changed);
     const processedCurrentEvents = updateChangedEvents(allCurrentEvents);
     const filteredEvents = filterEvents(processedCurrentEvents, activeMonth, activeYear);
-    console.log({ filteredEvents, processedCurrentEvents, allCurrentEvents, currentEvents, formattedEvents })
+    // console.log({ filteredEvents, processedCurrentEvents, allCurrentEvents, currentEvents, formattedEvents });
+    console.log(allCurrentEvents.filter(e => e.summary === 'weekly test'));
 
     return filteredEvents;
   }, [activeMonth, activeYear, hICalendar, events])
@@ -132,7 +132,7 @@ function Calendar(props) {
 
   }, [activeYear, activeMonth])
 
-  // console.log({ eventsEachDay, daysArr })
+  // console.log({ selectedDate })
 
   // renders++;
   // if (renders > 50) return;

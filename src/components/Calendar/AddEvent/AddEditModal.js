@@ -37,7 +37,7 @@ function AddEditModal(props) {
   const [allDay, setAllDay] = useState(!props.newEvent ? props.selectedEvent.allDay : true);
   const [displayDeleteOptions, setDisplayDeleteOptions] = useState(false);
 
-  console.log('AddEditModal - after state', { startDate }, props.selectedEvent)
+  // console.log('AddEditModal - after state', { props })
 
   // REPEATING RULES
   const [rRuleObj, setRRuleObj] = useState({
@@ -253,17 +253,11 @@ function AddEditModal(props) {
           <Button
             onClick={(e) => props.handleSubmit(e, { allDay, startDate, startTime, endTime, event, repeats, rRuleObj, ordinalIndex, ordinalsOfMonth })}
             variant="primary">Save Changes</Button>
-          {props.selectedEvent?.recurrence?.length ?
+          {!props.newEvent &&
             <Button
               onClick={() => setDisplayDeleteOptions(true)}
             >
               Delete
-            </Button>
-            :
-            <Button
-              onClick={props.deleteEvent}
-            >
-              Delete Event
             </Button>
           }
         </div>

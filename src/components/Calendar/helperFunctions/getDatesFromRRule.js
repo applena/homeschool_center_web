@@ -29,7 +29,7 @@ const getDatesFromRRule = (str, eventStart, betweenStart, betweenEnd, activeMont
   const previousYear = activeMonth === 1 ? activeYear - 1 : activeYear;
   const previousMonth = activeMonth === 1 ? 12 : activeMonth - 1;
 
-  // console.log('getDatesFromRRule', { str, eventStart, betweenStart, betweenEnd, activeMonth, activeYear, endYear, previousMonth, previousYear });
+  console.log('getDatesFromRRule', { str, eventStart, betweenStart, betweenEnd, activeMonth, activeYear, endYear, previousMonth, previousYear });
   //get dates
   let dates = rruleSet.between(datetime(previousYear, previousMonth, 1), datetime(endYear, betweenEnd, 1));
 
