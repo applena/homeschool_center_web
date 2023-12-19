@@ -16,16 +16,19 @@ function getTimezoneOffset(d, tz) {
 
 const formatEvents = (events) => {
   return events.map(e => {
-    const st = e.start?.date || e.start?.dateTime;
-    const et = e.end?.date || e.end?.dateTime;
-    if (!st || !et) return false;
+    // const st = e.start?.date || e.start?.dateTime;
+    // const et = e.end?.date || e.end?.dateTime;
+    // console.log('formatEvents', e.startMoment, e.endMoment)
+    if (!e.startMoment || !e.endMoment) return false;
 
-    const timeZoneOffest = getTimezoneOffset(new Date(st), timeZone);
+    // console.log('does thsi work?', new Date(e.startMoment));
+
+    const timeZoneOffest = getTimezoneOffset(new Date(e.startMoment), timeZone);
 
     const dateEndTZ = e.end?.timeZone ? e.end?.timeZone : timeZone;
     const dateStartTZ = e.start?.timeZone ? e.start?.timeZone : timeZone;
-    const dateEnd = new Date(et);
-    const dateStart = new Date(st)
+    const dateEnd = new Date(e.endMoment);
+    const dateStart = new Date(e.startMoment)
 
     if (e.start?.date) {
       dateStart.setMinutes(dateStart.getMinutes() + timeZoneOffest);

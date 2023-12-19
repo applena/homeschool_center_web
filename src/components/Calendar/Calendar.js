@@ -61,14 +61,13 @@ function Calendar(props) {
     const allCurrentEvents = addCancelledChanged(currentEvents, cancelled, changed);
     const processedCurrentEvents = updateChangedEvents(allCurrentEvents);
     const filteredEvents = filterEvents(processedCurrentEvents, activeMonth, activeYear);
-    // console.log({ filteredEvents, processedCurrentEvents, allCurrentEvents, currentEvents, formattedEvents });
-    console.log(allCurrentEvents.filter(e => e.summary === 'weekly test'));
+    console.log({ filteredEvents, processedCurrentEvents, allCurrentEvents, currentEvents, formattedEvents });
+    // console.log(allCurrentEvents.filter(e => e.summary === 'weekly test'));
 
     return filteredEvents;
   }, [activeMonth, activeYear, hICalendar, events])
 
   const eventsEachDay = useMemo(() => {
-    // console.log('in eventsEachDay');
     const daysArray = addEventsEachDay(monthlyEvents, daysInMonth, activeMonth);
 
     return daysArray;

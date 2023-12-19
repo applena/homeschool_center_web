@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect } from 'react';
 import './header.scss';
+import moment from 'moment';
 import HSCLogo from '../assets/logo.png';
 // import { BrowserRouter as Link } from "react-router-dom";
 import { GoogleLogin, hasGrantedAllScopesGoogle } from '@react-oauth/google';
@@ -12,6 +13,7 @@ import { setHICalendarObj } from '../redux/hICalendar';
 import { setHICalendarConfig } from '../redux/config';
 import { setEvents } from '../redux/eventsSlice';
 import { gapi } from 'gapi-script';
+import removeAllEvents from './devHelperFunctions/removeAllEvents';
 const _ = require('lodash');
 
 
@@ -28,6 +30,9 @@ function Header(props) {
   const credentials = useSelector((state) => state.signInStatus.credentialResponse);
   const isSignedIn = useSelector((state) => state.signInStatus.signedIn);
   const hICalendar = useSelector((state) => state.hICalendar);
+  const events = useSelector((state => state.events));
+
+  console.log({ events })
 
   const dispatch = useDispatch();
 
@@ -62,7 +67,19 @@ function Header(props) {
     }
     const events = await gapi.client.calendar.events.list({ calendarId: hICalendar.id })
 
-    console.log({ events })
+    console.log({ events });
+
+    // add moment to events
+    events.result.items.forEach(e => {
+      if (e.start) {
+        e.startMoment = e.start?.date ? moment().format(e.start?.date) : moment().format(e.start?.dateTime);
+      }
+
+      if (e.end) {
+        e.endMoment = e.end?.date ? moment().format(e.end?.date) : moment().format(e.end?.dateTime);
+      }
+    });
+
     dispatch(setEvents(events.result.items));
 
     // get the configEvent
@@ -182,6 +199,13 @@ function Header(props) {
 
       }
 
+      {window.location.hostname === "localhost" &&
+        <div>
+          <button onClick={() => removeAllEvents(hICalendar.id, events)}>
+            clear all events
+          </button>
+        </div>
+      }
     </div>
   )
 }

@@ -22,7 +22,7 @@ const makeConfig = async (hICalendarID) => {
   return gapi.client.calendar.events.insert(eventObj
   ).then(function (response) {
     console.log('config made', response);
-    configObj.id = response.results.items[0];
+    configObj.id = response.results?.items[0] || response.result;
     return configObj;
   });
 }

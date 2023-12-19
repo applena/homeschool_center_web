@@ -1,4 +1,5 @@
 import getDatesFromRRule from "./getDatesFromRRule";
+import moment from 'moment';
 
 /*
 function that updates the keys on the event objects for each instance of recurring events while putting cancelled and changed events into array.
@@ -22,7 +23,9 @@ const processEvents = (formattedEvents, hICalendar, activeMonth, activeYear) => 
 
   // loop through all events
   formattedEvents.forEach(event => {
-    const duration = event.dateEnd - event.dateStart;
+    // const duration = event.dateEnd, event.dateStart;
+    const duration = moment(event.endMoment).diff(moment(event.startMoment));
+    // console.log({ duration }, event.startMoment, event.endMoment);
     if (event.originalStartTime) {
       // 'cancelled' events into the cancelled array
       if (event.status === "cancelled") {
@@ -35,8 +38,10 @@ const processEvents = (formattedEvents, hICalendar, activeMonth, activeYear) => 
           dateEndTZ: event.dateEndTZ || 'Etc/UTC',
           calendarName: hICalendar.summary,
           color: hICalendar.backgroundColor,
-          dateStart: event.dateStart,
-          dateEnd: new Date(event.dateStart.getTime() + duration)
+          // dateStart: event.dateStart,
+          dateStart: event.startMoment,
+          // dateEnd: new Date(event.dateStart.getTime() + duration)
+          dateEnd: moment(event.endMoment + duration)
         }
         changed.push(newEvent);
       } else {
@@ -51,7 +56,7 @@ const processEvents = (formattedEvents, hICalendar, activeMonth, activeYear) => 
           cancelledEvents: [],
           calendarName: hICalendar.summary,
           color: hICalendar.backgroundColor,
-          dateEnd: new Date(event.dateStart.getTime() + duration)
+          dateEnd: moment(event.endMoment + duration)
         }
         // console.log('found a non-repeating event', { newEvent })
         currentEvents.push(newEvent);
@@ -60,9 +65,9 @@ const processEvents = (formattedEvents, hICalendar, activeMonth, activeYear) => 
     } else if (event.recurrence?.length) {
       const nextMonth = activeMonth < 12 ? activeMonth + 1 : 1;
 
-      let dates = getDatesFromRRule(event.recurrence[0], event.dateStart, activeMonth, nextMonth, activeMonth, activeYear);
+      let dates = getDatesFromRRule(event.recurrence[0], event.startMoment, activeMonth, nextMonth, activeMonth, activeYear);
 
-      console.log({ dates })
+      // console.log({ dates })
 
       dates.forEach(day => {
         const duration = event.dateEnd - event.dateStart;
