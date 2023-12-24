@@ -6,7 +6,7 @@ export const hISlice = createSlice({
   reducers: {
     setHICalendarObj: (state, action) => {
       state = action.payload;
-      console.log('hi calendar saved', action.payload);
+      console.log('hi calendar saved in redux', action.payload);
       return state;
     }
   }

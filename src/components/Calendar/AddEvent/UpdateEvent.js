@@ -111,6 +111,7 @@ function UpdateItem(props) {
 
     // update GAPI with the updated event
     try {
+      console.log('calling GAPI to update event', { changedEvent })
       await gapi.update(hICalendar.id, props.selectedEvent.id, changedEvent);
       console.log('event successfully updated');
 
@@ -150,6 +151,7 @@ function UpdateItem(props) {
       console.log('UpdateEvent', { updatedSelectedEvent })
 
       try {
+        console.log('calling GAPI to update event', { updatedSelectedEvent })
         await gapi.update(props.hICalendar.id, obj.id, updatedSelectedEvent);
         // await gapi.client.calendar.events.update({
         //   'calendarId': props.hICalendar.id,
@@ -180,7 +182,7 @@ function UpdateItem(props) {
     if (props.text === 'Save Changes') {
 
       try {
-        console.log('update event', props.event)
+        console.log('calling GAPI to update event', props.event)
         const response = await gapi.update(hICalendar.id, props.selectedEvent.id, props.event);
         console.log('response from gapi', { response });
         const updatedEvent = response.result;
@@ -197,6 +199,7 @@ function UpdateItem(props) {
       console.log('just today')
       try {
         // const response = await gapi.getOne(hICalendar.id, props.selectedEvent?.id)
+        console.log('calling GAPI to get event instance', props.selectedEvent?.id);
         const instance = await gapi.instances(hICalendar.id, props.selectedEvent?.id);
 
         // console.log('just today', { instance }, instance.result.item, props.selectedEvent.activeDate)

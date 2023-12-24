@@ -29,7 +29,7 @@ const days = [...Languages.EN.DAYS];
 // let renders = 0;
 
 function Calendar(props) {
-  // const [currentDay, setCurrentDay] = useState(new Date());
+  console.log('Calendar')
 
   const [activeYear, setActiveYear] = useState(new Date().getFullYear());
   const [activeMonth, setActiveMonth] = useState(new Date().getMonth() + 1);

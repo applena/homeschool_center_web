@@ -27,7 +27,7 @@ import { setHICalendarConfig } from '../../../redux/config';
 // global variables
 const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-function AddNewEvent(props) {
+function EditEvent(props) {
   // from redux
   const dispatch = useDispatch();
   const hICalendar = useSelector((state) => state.hICalendar);
@@ -245,6 +245,7 @@ function AddNewEvent(props) {
     console.log('event', { event })
     if (props.selectedEvent?.id) {
       try {
+        console.log('calling GAPI to update event', { event })
         const response = await gapi.update(hICalendar.id, props.selectedEvent.id, event);
         console.log('response from gapi', { response });
         updatedEvent = response.result;
@@ -257,6 +258,7 @@ function AddNewEvent(props) {
       }
     } else {
       try {
+        console.log('calling GAPI to create event', { event })
         const response = await gapi.create(hICalendar.id, event);
         console.log('response from gapi', { response })
         createdEvent = response.result;
@@ -480,4 +482,4 @@ function AddNewEvent(props) {
   )
 }
 
-export default AddNewEvent;
+export default EditEvent;
