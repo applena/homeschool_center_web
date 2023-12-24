@@ -15,38 +15,48 @@ function getTimezoneOffset(d, tz) {
 }
 
 const formatEvents = (events) => {
-  return events.map(e => {
-    // const st = e.start?.date || e.start?.dateTime;
-    // const et = e.end?.date || e.end?.dateTime;
-    // console.log('formatEvents', e.startMoment, e.endMoment)
-    if (!e.startMoment || !e.endMoment) return false;
+  console.log("formatEvents", { events });
+  return events
+    .map((e) => {
+      // const st = e.start?.date || e.start?.dateTime;
+      // const et = e.end?.date || e.end?.dateTime;
+      // console.log('formatEvents', e.startMoment, e.endMoment)
+      if (!e.startMoment || !e.endMoment) return false;
 
-    // console.log('does thsi work?', new Date(e.startMoment));
+      const timeZoneOffest = getTimezoneOffset(
+        new Date(e.startMoment),
+        timeZone
+      );
 
-    const timeZoneOffest = getTimezoneOffset(new Date(e.startMoment), timeZone);
+      const dateEndTZ = e.end?.timeZone ? e.end?.timeZone : timeZone;
+      const dateStartTZ = e.start?.timeZone ? e.start?.timeZone : timeZone;
+      const dateEnd = new Date(e.endMoment);
+      const dateStart = new Date(e.startMoment);
 
-    const dateEndTZ = e.end?.timeZone ? e.end?.timeZone : timeZone;
-    const dateStartTZ = e.start?.timeZone ? e.start?.timeZone : timeZone;
-    const dateEnd = new Date(e.endMoment);
-    const dateStart = new Date(e.startMoment)
+      if (e.start?.date) {
+        dateStart.setMinutes(dateStart.getMinutes() + timeZoneOffest);
+        dateEnd.setMinutes(dateEnd.getMinutes() + timeZoneOffest);
+      }
 
-    if (e.start?.date) {
-      dateStart.setMinutes(dateStart.getMinutes() + timeZoneOffest);
-      dateEnd.setMinutes(dateEnd.getMinutes() + timeZoneOffest);
-    }
+      console.log("formatEvents", {
+        e,
+        timeZoneOffest,
+        dateEndTZ,
+        dateStartTZ,
+        dateEnd,
+        dateStart,
+      });
 
-    // console.log('formatEvents',)
-
-
-    return {
-      ...e,
-      allDay: e.start?.date ? true : false,
-      dateEnd,
-      dateStart,
-      dateStartTZ,
-      dateEndTZ,
-    }
-  }).filter(i => i);
-}
+      return {
+        ...e,
+        allDay: e.start?.date ? true : false,
+        dateEnd,
+        dateStart,
+        dateStartTZ,
+        dateEndTZ,
+      };
+    })
+    .filter((i) => i);
+};
 
 export default formatEvents;

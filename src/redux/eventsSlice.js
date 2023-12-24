@@ -1,10 +1,28 @@
 import { createSlice } from "@reduxjs/toolkit";
+import moment from "moment";
+
+const addMoments = (e) => {
+  if (e.startMoment) return;
+  if (e.start) {
+    e.startMoment = e.start?.date
+      ? moment().format(e.start?.date)
+      : moment().format(e.start?.dateTime);
+  }
+
+  if (e.endMoment) return;
+  if (e.end) {
+    e.endMoment = e.end?.date
+      ? moment().format(e.end?.date)
+      : moment().format(e.end?.dateTime);
+  }
+};
 
 export const eventsSlice = createSlice({
   name: "events",
   initialState: [],
   reducers: {
     addEvent: (state, action) => {
+      addMoments(action.payload);
       state = [...state, action.payload];
       console.log("event saved", state);
       return state;
@@ -30,6 +48,7 @@ export const eventsSlice = createSlice({
     },
 
     setEvents: (state, action) => {
+      action.payload.forEach((e) => addMoments(e));
       console.log("setting events from google", action.payload);
       state = action.payload;
       return state;

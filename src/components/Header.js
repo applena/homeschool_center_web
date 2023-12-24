@@ -85,6 +85,7 @@ function Header(props) {
           configObject.calendarId = hICalendar.id;
           configObject.saved = true;
         }
+        console.log("Header-adding moments", { e });
         if (e.start) {
           e.startMoment = e.start?.date
             ? moment().format(e.start?.date)
