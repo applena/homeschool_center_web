@@ -85,18 +85,6 @@ function Header(props) {
           configObject.calendarId = hICalendar.id;
           configObject.saved = true;
         }
-        console.log("Header-adding moments", { e });
-        if (e.start) {
-          e.startMoment = e.start?.date
-            ? moment().format(e.start?.date)
-            : moment().format(e.start?.dateTime);
-        }
-
-        if (e.end) {
-          e.endMoment = e.end?.date
-            ? moment().format(e.end?.date)
-            : moment().format(e.end?.dateTime);
-        }
       });
 
       dispatch(
@@ -133,7 +121,13 @@ function Header(props) {
   }, [setUpHICalendar]);
 
   useEffect(() => {
-    if (!credentials || isSignedIn) return;
+    if (!credentials || isSignedIn) {
+      console.log("user has no credentials or is already signed in", {
+        credentials,
+        isSignedIn,
+      });
+      return;
+    }
 
     gapi.load("client", async () => {
       console.log(`gapi client loaded`);

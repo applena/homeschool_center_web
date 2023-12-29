@@ -96,8 +96,8 @@ function Calendar(props) {
       allCurrentEvents,
       currentEvents,
       formattedEvents,
+      events,
     });
-    // console.log(allCurrentEvents.filter(e => e.summary === 'weekly test'));
 
     return filteredEvents;
   }, [activeMonth, activeYear, hICalendar, events]);
