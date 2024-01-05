@@ -2,44 +2,38 @@ import createEvent from "../Calendar/AddEvent/createEvent";
 
 async function addTestEvents({ hICalendar }) {
   console.log("addTestEvents");
-  const now = new Date();
+  const now = new Date("2023-12-30");
   const hourFromNow = new Date();
   hourFromNow.setHours(now.getHours() + 1);
-  const hourFromNowISOString = hourFromNow.toISOString();
-  const templateObj = {
-    allDay: true,
-    startDate: now,
-    startTime: "",
-    endTime: "",
-    event: {
-      summary: "weekly saturday",
-      description: '{"description":"test","subject":"MATH"}',
-      start: { timeZone: "America/Los_Angeles" },
-      end: { timeZone: "America/Los_Angeles" },
-    },
-    repeats: true,
-    rRuleObj: { FREQ: "WEEKLY", BYDAY: "SA" },
-    ordinalIndex: 1,
-    ordinalsOfMonth: "the first Saturday of the month",
-  };
-
+  // const hourFromNowISOString = hourFromNow.toISOString();
   const testEvents = [
-    templateObj,
     {
-      ...templateObj,
-      ...{
-        summary: "single event",
-        allDay: false,
-        start: {
-          dateTime: `${new Date().toISOString()}`,
-          timeZone: "America/Los_Angeles",
-        },
-        end: {
-          dateTime: `${hourFromNowISOString}`,
-          timeZone: "America/Los_Angeles",
-        },
+      allDay: true,
+      startDate: now,
+      event: {
+        summary: "weekly saturday",
+        description: '{"description":"test","subject":"MATH"}',
+        start: { timeZone: "America/Los_Angeles" },
+        end: { timeZone: "America/Los_Angeles" },
       },
+      repeats: true,
+      rRuleObj: { FREQ: "WEEKLY", BYDAY: "SA" },
+      ordinalIndex: 1,
+      ordinalsOfMonth: "the first Saturday of the month",
     },
+    // {
+    //   summary: "single event",
+    //   startDate: now,
+    //   allDay: false,
+    //   start: {
+    //     dateTime: `${new Date().toISOString()}`,
+    //     timeZone: "America/Los_Angeles",
+    //   },
+    //   end: {
+    //     dateTime: `${hourFromNowISOString}`,
+    //     timeZone: "America/Los_Angeles",
+    //   },
+    // },
   ];
 
   const addedEvents = [];

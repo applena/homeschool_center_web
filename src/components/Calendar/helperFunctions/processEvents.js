@@ -1,5 +1,5 @@
 import getDatesFromRRule from "./getDatesFromRRule";
-import moment from 'moment';
+import moment from "moment";
 
 /*
 function that updates the keys on the event objects for each instance of recurring events while putting cancelled and changed events into array.
@@ -16,13 +16,18 @@ input:
   changed[] = array of changed events
 */
 
-const processEvents = (formattedEvents, hICalendar, activeMonth, activeYear) => {
+const processEvents = (
+  formattedEvents,
+  hICalendar,
+  activeMonth,
+  activeYear
+) => {
   let currentEvents = [];
   let cancelled = [];
   let changed = [];
 
   // loop through all events
-  formattedEvents.forEach(event => {
+  formattedEvents.forEach((event) => {
     // const duration = event.dateEnd, event.dateStart;
     const duration = moment(event.endMoment).diff(moment(event.startMoment));
     // console.log({ duration }, event.startMoment, event.endMoment);
@@ -31,18 +36,19 @@ const processEvents = (formattedEvents, hICalendar, activeMonth, activeYear) => 
       if (event.status === "cancelled") {
         cancelled.push(event);
         // changed events go into the changed array
-      } else if (event.status === "confirmed") { //changed events
+      } else if (event.status === "confirmed") {
+        //changed events
         let newEvent = {
           ...event,
           dateStartTZ: event.dateStartTZ || `Etc/UTC`,
-          dateEndTZ: event.dateEndTZ || 'Etc/UTC',
+          dateEndTZ: event.dateEndTZ || "Etc/UTC",
           calendarName: hICalendar.summary,
           color: hICalendar.backgroundColor,
           // dateStart: event.dateStart,
           dateStart: event.startMoment,
           // dateEnd: new Date(event.dateStart.getTime() + duration)
-          dateEnd: moment(event.endMoment + duration)
-        }
+          dateEnd: moment(event.endMoment + duration),
+        };
         changed.push(newEvent);
       } else {
         console.log("Not categorized: ", event);
@@ -56,8 +62,8 @@ const processEvents = (formattedEvents, hICalendar, activeMonth, activeYear) => 
           cancelledEvents: [],
           calendarName: hICalendar.summary,
           color: hICalendar.backgroundColor,
-          dateEnd: moment(event.endMoment + duration)
-        }
+          dateEnd: moment(event.endMoment + duration),
+        };
         // console.log('found a non-repeating event', { newEvent })
         currentEvents.push(newEvent);
       }
@@ -65,32 +71,39 @@ const processEvents = (formattedEvents, hICalendar, activeMonth, activeYear) => 
     } else if (event.recurrence?.length) {
       const nextMonth = activeMonth < 12 ? activeMonth + 1 : 1;
 
-      let dates = getDatesFromRRule(event.recurrence[0], event.startMoment, activeMonth, nextMonth, activeMonth, activeYear);
+      let dates = getDatesFromRRule({
+        str: event.recurrence[0],
+        eventStart: event.startMoment,
+        betweenStart: activeMonth,
+        betweenEnd: nextMonth,
+        activeMonth: activeMonth,
+        activeYear: activeYear,
+      });
 
       // console.log({ dates })
 
-      dates.forEach(day => {
+      dates.forEach((day) => {
         const duration = event.dateEnd - event.dateStart;
         //unchanged events
         let newEvent = {
           ...event,
           dateStartTZ: event.dateStartTZ || `Etc/UTC`,
-          dateEndTZ: event.dateEndTZ || 'Etc/UTC',
+          dateEndTZ: event.dateEndTZ || "Etc/UTC",
           changedEvents: [],
           cancelledEvents: [],
           calendarName: hICalendar.summary,
           color: hICalendar.backgroundColor,
           dateStart: day,
-          dateEnd: new Date(day.getTime() + duration)
-        }
+          dateEnd: new Date(day.getTime() + duration),
+        };
         // console.log('found a repeating event', { newEvent })
         currentEvents.push(newEvent);
-      })
+      });
     }
-  })
+  });
 
   // console.log({ cancelled })
   return { currentEvents, cancelled, changed };
-}
+};
 
 export default processEvents;
