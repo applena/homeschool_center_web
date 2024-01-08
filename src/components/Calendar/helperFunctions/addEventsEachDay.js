@@ -1,7 +1,7 @@
 import moment from "moment";
 
 const addEventsEachDay = (monthlyEvents, daysInMonth, activeMonth) => {
-  console.log("addEventsEachDay", { monthlyEvents, daysInMonth, activeMonth });
+  // console.log("addEventsEachDay", { monthlyEvents, daysInMonth, activeMonth });
   const daysArray = [...Array(daysInMonth)].map((day) => []);
   monthlyEvents.forEach((event) => {
     // getting all the parts to compose the date string for moment
@@ -24,10 +24,6 @@ const addEventsEachDay = (monthlyEvents, daysInMonth, activeMonth) => {
       isoStartTime.length - 1
     )}${dateTZ}`;
 
-    console.log("addEventsEachDay", { st, ed, event });
-    // 2013-02-08 09:30:26.123+07:00
-    // "2024-01-06 00:00:00.000-0800"
-
     let startDate = moment(st).date();
     let endDate = moment(ed).date();
     // let startDate = moment(event.dateStart.getTime())
@@ -35,10 +31,24 @@ const addEventsEachDay = (monthlyEvents, daysInMonth, activeMonth) => {
     //   .date();
     // let endDate = moment(event.dateEnd.getTime()).date();
 
-    if (startDate === endDate) {
-      // deal with events that don't span multiple days
-      console.log("event starts and ends on the same day");
-      daysArray[startDate - 1].push(event);
+    console.log("addEventsEachDay", { startDate, endDate, event });
+
+    // if this is an all day or multi day event
+    if (event.start.date) {
+      console.log(
+        "all day or multi-day event",
+        { event },
+        new Date(event.start.date).getDate(),
+        new Date(event.end.date).getDate()
+      );
+      // if this is a one day all day event
+      if (
+        new Date(event.start.date).getDate() ===
+        new Date(event.end.date).getDate() - 1
+      ) {
+        console.log("event starts and ends on the same day", event);
+        daysArray[startDate - 1].push(event);
+      }
     } else {
       let duration = moment(event.endDate).diff(moment(event.startDate));
 
