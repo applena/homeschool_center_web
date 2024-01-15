@@ -28,9 +28,8 @@ const processEvents = (
 
   // loop through all events
   formattedEvents.forEach((event) => {
-    // const duration = event.dateEnd, event.dateStart;
     const duration = moment(event.endMoment).diff(moment(event.startMoment));
-    // console.log({ duration }, event.startMoment, event.endMoment);
+    // console.log('processEvents', {event, duration})
     if (event.originalStartTime) {
       // 'cancelled' events into the cancelled array
       if (event.status === "cancelled") {
@@ -46,8 +45,7 @@ const processEvents = (
           color: hICalendar.backgroundColor,
           // dateStart: event.dateStart,
           dateStart: event.startMoment,
-          // dateEnd: new Date(event.dateStart.getTime() + duration)
-          dateEnd: moment(event.endMoment + duration),
+          dateEnd: new Date(event.dateEnd.getTime() + duration),
         };
         changed.push(newEvent);
       } else {
@@ -62,7 +60,7 @@ const processEvents = (
           cancelledEvents: [],
           calendarName: hICalendar.summary,
           color: hICalendar.backgroundColor,
-          dateEnd: moment(event.endMoment + duration),
+          dateEnd: new Date(event.dateEnd.getTime() + duration),
         };
         // console.log('found a non-repeating event', { newEvent })
         currentEvents.push(newEvent);
@@ -84,6 +82,7 @@ const processEvents = (
 
       dates.forEach((day) => {
         const duration = event.dateEnd - event.dateStart;
+        console.log('processEvents', {duration})
         //unchanged events
         let newEvent = {
           ...event,

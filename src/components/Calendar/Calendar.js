@@ -90,14 +90,14 @@ function Calendar(props) {
       activeMonth,
       activeYear
     );
-    console.log({
-      filteredEvents,
-      processedCurrentEvents,
-      allCurrentEvents,
-      currentEvents,
-      formattedEvents,
-      events,
-    });
+    console.log(
+      '5', {filteredEvents},
+      '4', {processedCurrentEvents},
+      '3', {allCurrentEvents},
+      '2', {currentEvents},
+      '1', {formattedEvents},
+      '0', {events},
+    );
 
     return filteredEvents;
   }, [activeMonth, activeYear, hICalendar, events]);
