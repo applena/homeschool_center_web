@@ -1,6 +1,8 @@
 // update changed events
 const updateChangedEvents = (allEvents) => {
+  console.log('udateChangedEvent', {allEvents})
   const updatedEvents = allEvents.map(event => {
+    if(!event.changedEvents)return event;
     let changed = event.changedEvents.find(ce => new Date(ce.dateStart).toISOString() === event.dateStart.toISOString());
 
     if (changed) event = changed;

@@ -32,20 +32,14 @@ const formatEvents = (events) => {
       const dateStartTZ = e.start?.timeZone ? e.start?.timeZone : timeZone;
       const dateEnd = new Date(e.endMoment);
       const dateStart = new Date(e.startMoment);
-
+      
       if (e.start?.date) {
         dateStart.setMinutes(dateStart.getMinutes() + timeZoneOffest);
         dateEnd.setMinutes(dateEnd.getMinutes() + timeZoneOffest);
       }
-
-      console.log("formatEvents", {
-        e,
-        timeZoneOffest,
-        dateEndTZ,
-        dateStartTZ,
-        dateEnd,
-        dateStart,
-      });
+      
+      // console.log('formatEvent', e.startMoment, dateStart)
+      // console.log("formatEvents", {e, timeZoneOffest, dateEndTZ, dateStartTZ, dateEnd, dateStart,});
 
       return {
         ...e,

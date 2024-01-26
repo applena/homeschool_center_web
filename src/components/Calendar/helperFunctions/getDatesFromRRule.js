@@ -53,7 +53,7 @@ const getDatesFromRRule = ({
     datetime(endYear, betweenEnd, 1)
   );
 
-  // console.log("Final getDatesFromRRules", "dates", { dates });
+  console.log("Final getDatesFromRRules", "dates", { dates });
 
   return dates;
 };
