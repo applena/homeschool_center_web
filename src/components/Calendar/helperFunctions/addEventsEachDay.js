@@ -27,47 +27,17 @@ const addEventsEachDay = (monthlyEvents, daysInMonth, activeMonth) => {
           daysArray[startDate - 1].push(event);
           // console.log("event starts and ends on the same day", event, {startDate});
       } else {
-        // console.log(`multi-day event?`, {event}, event.dateEnd.getTime(), event.dateStart.getTime())
-        // multi-day events
-        let durationMilliseconds = moment(event.dateEnd.getTime()).diff(moment(event.dateStart.getTime()),true);
-
-        let durationDays = durationMilliseconds/86400000;
-  
-        // console.log('addEventEachDay - multi-day events', { durationMilliseconds, durationDays });
-
-        // if the event ends after the current month
-        if (moment(event.dateEnd).month() + 1 !== activeMonth) {
-          endDate = daysArray.length + 1;
-          durationDays = daysArray.length + 1 - startDate; // TODO: this is wierd and not right - not sure what to do instead
-          // console.log("events ends in a later month", { durationDays });
-        }
-
-        // if the event started in a prior month
-        if (moment(event.dateStart).month() + 1 !== activeMonth) {
-          startDate = 1;
-          durationDays = endDate - 1;
-          // console.log("events starts in a prior month", { durationDays });
-        }
-
-        if(!durationDays){
-          // this was a single day of a multi-day collection
-          // console.log(`setting multi-day segment on`, startDate);
-          daysArray[startDate - 1].push(event);
-        }else{
-          console.log({durationDays})
-          // duration needs to be in days here
-          for (let i = 0; i < durationDays; i++) {
-            daysArray[startDate - 1 + i].push(event);
-          }
-        }
-
+        // TODO: multi-day events - need logic to handle events spaning more than one day 
       }
     } else {
-
+      // not an all day event or a mulit-day event
       const localStartTime = new Date(isoStartDateTime);
       localStartTime.setMinutes(localStartTime.getMinutes() - new Date().getTimezoneOffset());
       event.dateStart = localStartTime;
-      console.log('single timed event - local start time', isoStartDateTime, localStartTime);
+      const localEndTime = new Date(event.dateEnd);
+      localEndTime.setMinutes(localEndTime.getMinutes() - new Date().getTimezoneOffset());
+      event.dateEnd = localEndTime
+      console.log('single timed event - local start time', event.summary, isoStartDateTime, localStartTime);
       daysArray[startDate - 1].push(event);
     }
 

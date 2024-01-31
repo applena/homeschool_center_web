@@ -1,3 +1,4 @@
+import { current } from "@reduxjs/toolkit";
 import getDatesFromRRule from "./getDatesFromRRule";
 import moment from "moment";
 
@@ -17,6 +18,7 @@ input:
 */
 
 const processEvents = (formattedEvents, hICalendar, activeMonth, activeYear) => {
+  console.log('beginning of processEvents', {formattedEvents})
   let currentEvents = [];
   let cancelled = [];
   let changed = [];
@@ -35,6 +37,7 @@ const processEvents = (formattedEvents, hICalendar, activeMonth, activeYear) => 
 
     // cancelled events go in cancelled bucket
     if(event.originalStartTime && event.status === 'canceled'){
+      console.log('processEvents - event was cancelled', {event})
       cancelled.push(event);
     }
 
@@ -85,6 +88,12 @@ const processEvents = (formattedEvents, hICalendar, activeMonth, activeYear) => 
         // console.log('processEvents', {day})
         currentEvents.push(additionalEvent);
       });
+    } 
+    else if(!event.recurrence?.length && event.start.dateTime){
+      //non-repeating events
+      const additionalEvent = {...newEvent};
+      additionalEvent.dateEnd = new Date(event.dateStart.getTime() + duration);
+      currentEvents.push(additionalEvent);
     }
 
     if(event.multiDay){
