@@ -21,7 +21,10 @@ const formatEvents = (events) => {
       // const st = e.start?.date || e.start?.dateTime;
       // const et = e.end?.date || e.end?.dateTime;
       // console.log('formatEvents', e.startMoment, e.endMoment)
-      if (!e.startMoment || !e.endMoment) return false;
+      // if (!e.startMoment || !e.endMoment) return false;
+      if(e.originalStartTime){
+        return e;
+      }
 
       const timeZoneOffest = getTimezoneOffset(
         new Date(e.startMoment),
