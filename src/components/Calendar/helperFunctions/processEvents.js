@@ -24,6 +24,16 @@ const processEvents = (formattedEvents, hICalendar, activeMonth, activeYear) => 
   let changed = [];
 
   formattedEvents.forEach(event => {
+    // console.log('beginning of loop', {event})
+
+    // cancelled events go in cancelled bucket
+    if(event.originalStartTime && event.status === 'cancelled'){
+      console.log('processEvents - event was cancelled', {event})
+      cancelled.push(event);
+      return;
+    }
+
+    // if(event.id === "6jp1injiu4797ogd2ru700a6bt_20240129T193000Z"){console.log('bad date', {event})}
     const duration = moment(event.endMoment).diff(moment(event.startMoment));
     event = {
       ...event,
@@ -31,23 +41,21 @@ const processEvents = (formattedEvents, hICalendar, activeMonth, activeYear) => 
       dateEndTZ: event.dateEndTZ || "Etc/UTC",
       calendarName: hICalendar.summary,
       color: hICalendar.backgroundColor,
-      dateStart: event.dateStart,
-      dateEnd: event.dateEnd,
+      dateStart: new Date(event.start.date || event.start.dateTime),
+      dateEnd: new Date(event.end.date || event.end.dateTime),
     };
 
-    // cancelled events go in cancelled bucket
-    if(event.originalStartTime && event.status === 'cancelled'){
-      console.log('processEvents - event was cancelled', {event})
-      cancelled.push(event);
-    }
 
-    console.log('processEvent-middle of fucking nowhere', {event})
+    // console.log('processEvent-middle of fucking nowhere', {event})
     // is an all day - add all day flag
     if(event.start.date){
       event.allDay = true;
     } else {
+      if(event.id === "6jp1injiu4797ogd2ru700a6bt_20240129T193000Z"){console.log('bad date', {event}, event.dateEnd, duration)}
       event.dateEnd = new Date(event.dateEnd.getTime() + duration);
     }
+
+
 
     // // is multi-day - add multi-day flag
     // if((new Date(event.end.date).getTime()-new Date(event.start.date).getTime() > 86400000) || (new Date(event.end.dateTime).getTime() - new Date(event.start.dateTime).getTime() > 86400000)){
@@ -83,15 +91,17 @@ const processEvents = (formattedEvents, hICalendar, activeMonth, activeYear) => 
 
       dates.forEach((day) => {
         const additionalEvent = {...event}
+        console.log('recurring-process events - day', {day, duration});
         additionalEvent.dateEnd = new Date(day.getTime() + duration);
         additionalEvent.dateStart = day;
         // console.log('processEvents', {day})
         currentEvents.push(additionalEvent);
       });
     } else if(!event.recurrence?.length && event.start.dateTime){
+      console.log('no recurrance - process events - day', {event, duration});
       //non-repeating events
       const additionalEvent = {...event};
-      additionalEvent.dateEnd = new Date(event.dateStart.getTime() + duration);
+      additionalEvent.dateEnd = new Date(new Date(event.dateStart).getTime() + duration);
       currentEvents.push(additionalEvent);
     }
 
