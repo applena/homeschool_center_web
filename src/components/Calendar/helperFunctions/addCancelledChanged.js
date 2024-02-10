@@ -1,4 +1,5 @@
 const addCancelledChanged = (currentEvents, cancelled, changed) => {
+  // console.log('addCancelledChanged', {currentEvents})
   // add changed events and cancelled events to corresponding event object
   currentEvents.forEach((event, idx, arr) => {
     if (!event.recurrence) return;
@@ -19,6 +20,7 @@ const addCancelledChanged = (currentEvents, cancelled, changed) => {
     });
 
   })
+  // console.log('finish addCancelChanged', {currentEvents})
 
   return currentEvents;
 }

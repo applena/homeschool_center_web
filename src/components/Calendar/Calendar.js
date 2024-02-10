@@ -72,41 +72,60 @@ function Calendar(props) {
   console.log("Calendar - events from redux", { events });
 
   const monthlyEvents = useMemo(() => {
+    console.log('useMemo', {events})
+    // take in events
+    // format events -> returns an array of events in the same format
     const formattedEvents = formatEvents(events);
-    const { currentEvents, cancelled, changed } = processEvents(
-      formattedEvents,
-      hICalendar,
-      activeMonth,
-      activeYear
-    );
-    const allCurrentEvents = addCancelledChanged(
-      currentEvents,
-      cancelled,
-      changed
-    );
-    const processedCurrentEvents = updateChangedEvents(allCurrentEvents);
-    const filteredEvents = filterEvents(
-      processedCurrentEvents,
-      activeMonth,
-      activeYear
-    );
-    console.log(
-      '5', {filteredEvents},
-      '4', {processedCurrentEvents},
-      '3', {allCurrentEvents},
-      '2', {currentEvents},
-      '1', {formattedEvents},
-      '0', {events},
-    );
+    console.log({formattedEvents});
+      // loop through events
+      // put all start.date and start.dateTime into a dateTime key
+      // add key of allDay, Repeating, multiDay
 
-    return filteredEvents;
-  }, [activeMonth, activeYear, hICalendar, events]);
+    // cancelled/changed -> returns an array of events with a cancelled and changed array on events that have been cancelled or changed
+      // loop through format events
+      // add cancelled events to an array on the original event
+      // add changed events to an array that is part of the original event object
 
-  const eventsEachDay = useMemo(() => {
-    const daysArray = addEventsEachDay(monthlyEvents, daysInMonth, activeMonth);
+    // getDatesForRepeatingEvents -> returns an array of all the events including repeating ones
+      // loop through events
+      // if repeating
+        // get dates from RRule
 
-    return daysArray;
-  }, [activeMonth, daysInMonth, monthlyEvents]);
+    // removeCancelledEvents -> returns an array of all events that are not cancelled
+      // loop through the events
+      // if the event has a cancelled array on it
+      // loop through the array and check the dates
+        // they they match, remove the event on that day
+
+    // const formattedEvents = formatEvents(events);
+    // const { currentEvents, cancelled, changed } = processEvents(
+    //   formattedEvents,
+    //   hICalendar,
+    //   activeMonth,
+    //   activeYear
+    // );
+    // const allCurrentEvents = addCancelledChanged(
+    //   currentEvents,
+    //   cancelled,
+    //   changed
+    // );
+    // const processedCurrentEvents = updateChangedEvents(allCurrentEvents);
+    // const filteredEvents = filterEvents(
+    //   processedCurrentEvents,
+    //   activeMonth,
+    //   activeYear
+    // );
+    // console.log(
+    //   '5', {filteredEvents},
+    //   '4', {processedCurrentEvents},
+    //   '3', {allCurrentEvents},
+    //   '2', {currentEvents},
+    //   '1', {formattedEvents},
+    //   '0', {events},
+    // );
+
+    // return filteredEvents;
+  }, [events]);
 
   const editEvent = useCallback(
     (e, id, day) => {
@@ -174,7 +193,7 @@ function Calendar(props) {
     [activeYear, activeMonth]
   );
 
-  // console.log({ selectedDate })
+  console.log('Calendar Render', {monthlyEvents})
 
   // renders++;
   // if (renders > 50) return;
@@ -212,7 +231,7 @@ function Calendar(props) {
               }}
             >
               {/* renders the numbers */}
-              <span className="day-span">{day}</span>
+              {/* <span className="day-span">{day}</span>
               {eventsEachDay[day - 1]?.length ? (
                 eventsEachDay[day - 1].map((event, i) => (
                   <div
@@ -241,7 +260,7 @@ function Calendar(props) {
                 ))
               ) : (
                 <div></div>
-              )}
+              )} */}
             </div>
           ))}
 

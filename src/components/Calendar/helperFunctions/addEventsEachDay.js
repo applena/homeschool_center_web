@@ -16,7 +16,6 @@ const addEventsEachDay = (monthlyEvents, daysInMonth, activeMonth) => {
     const ed = `${isoEndDate} ${isoEndTime.substring(0,isoStartTime.length - 1)}${dateTZ}`;
 
     let startDate = moment(st).date();
-    let endDate = moment(ed).date();
 
     console.log("addEventsEachDay", event.summary, isoStartDateTime);
 
@@ -37,7 +36,7 @@ const addEventsEachDay = (monthlyEvents, daysInMonth, activeMonth) => {
       const localEndTime = new Date(event.dateEnd);
       localEndTime.setMinutes(localEndTime.getMinutes() - new Date().getTimezoneOffset());
       event.dateEnd = localEndTime
-      console.log('single timed event - local start time', event.summary, isoStartDateTime, localStartTime);
+      console.log('single timed event - local start time', {event}, event.summary, isoStartDateTime, localStartTime);
       daysArray[startDate - 1].push(event);
     }
 

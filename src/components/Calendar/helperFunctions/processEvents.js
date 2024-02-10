@@ -23,6 +23,9 @@ const processEvents = (formattedEvents, hICalendar, activeMonth, activeYear) => 
   let cancelled = [];
   let changed = [];
 
+  // if(event.id === "7u9r9t7gsukjskojnjpv0pplcg"){
+  //   console.log('beginning - !!!!!!!', {event})
+  // }
   formattedEvents.forEach(event => {
     // console.log('beginning of loop', {event})
 
@@ -41,18 +44,25 @@ const processEvents = (formattedEvents, hICalendar, activeMonth, activeYear) => 
       dateEndTZ: event.dateEndTZ || "Etc/UTC",
       calendarName: hICalendar.summary,
       color: hICalendar.backgroundColor,
-      dateStart: new Date(event.start.date || event.start.dateTime),
-      dateEnd: new Date(event.end.date || event.end.dateTime),
+      // dateStart: new Date(event.start.date || event.start.dateTime),
+      // dateEnd: new Date(event.end.date || event.end.dateTime),
     };
 
+if(!event.dateEnd){
+  event.dateEnd = new Date(event.end.date || event.end.dateTime);
+}
+
+if(!event.dateStart){
+  event.dateStart = new Date(event.start.date || event.start.dateTime);
+}
 
     // console.log('processEvent-middle of fucking nowhere', {event})
     // is an all day - add all day flag
     if(event.start.date){
       event.allDay = true;
     } else {
-      if(event.id === "6jp1injiu4797ogd2ru700a6bt_20240129T193000Z"){console.log('bad date', {event}, event.dateEnd, duration)}
-      event.dateEnd = new Date(event.dateEnd.getTime() + duration);
+      // if(event.id === "6jp1injiu4797ogd2ru700a6bt_20240129T193000Z"){console.log('bad date', {event}, event.dateEnd, duration)}
+      // event.dateEnd = new Date(event.dateEnd.getTime() + duration);
     }
 
 
@@ -87,7 +97,7 @@ const processEvents = (formattedEvents, hICalendar, activeMonth, activeYear) => 
         activeYear: activeYear,
       });
 
-      // console.log('processEvents dates', { dates })
+      console.log('processEvents dates', event.summary, { dates })
 
       dates.forEach((day) => {
         const additionalEvent = {...event}
@@ -98,7 +108,7 @@ const processEvents = (formattedEvents, hICalendar, activeMonth, activeYear) => 
         currentEvents.push(additionalEvent);
       });
     } else if(!event.recurrence?.length && event.start.dateTime){
-      console.log('no recurrance - process events - day', {event, duration});
+      console.log('no recurrance - process events - day', event.summary, {event, duration});
       //non-repeating events
       const additionalEvent = {...event};
       additionalEvent.dateEnd = new Date(new Date(event.dateStart).getTime() + duration);
