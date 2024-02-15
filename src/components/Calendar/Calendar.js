@@ -10,11 +10,10 @@ import AddEvent from "./AddEvent/AddEvent";
 import { Languages } from "../../lib/utils/languages";
 import processEvents from "./helperFunctions/processEvents";
 import formatEvents from "./helperFunctions/formatEvents";
-import addCancelledChanged from "./helperFunctions/addCancelledChanged";
+import getDatesForRepeatingEvents from "./helperFunctions/getDatesForRepeatingEvents";
 import filterEvents from "./helperFunctions/filterEvents";
 import addEventsEachDay from "./helperFunctions/addEventsEachDay";
-import updateChangedEvents from "./helperFunctions/updateChangedEvents";
-
+import daysInMonth from "./helperFunctions/daysInMonth";
 // redux
 import { useSelector } from "react-redux";
 // import { setEvents } from "../../redux/eventsSlice";
@@ -69,63 +68,29 @@ function Calendar(props) {
     [activeMonth]
   );
 
-  console.log("Calendar - events from redux", { events });
-
   const monthlyEvents = useMemo(() => {
     console.log('useMemo', {events})
     // take in events
     // format events -> returns an array of events in the same format
-    const formattedEvents = formatEvents(events);
-    console.log({formattedEvents});
-      // loop through events
-      // put all start.date and start.dateTime into a dateTime key
-      // add key of allDay, Repeating, multiDay
-
-    // cancelled/changed -> returns an array of events with a cancelled and changed array on events that have been cancelled or changed
-      // loop through format events
-      // add cancelled events to an array on the original event
-      // add changed events to an array that is part of the original event object
+    const formattedEvents = formatEvents(events, hICalendar);
+    console.log('01 - formatEvents', {formattedEvents});
 
     // getDatesForRepeatingEvents -> returns an array of all the events including repeating ones
-      // loop through events
-      // if repeating
-        // get dates from RRule
+    const {allEvents, cancelled} = getDatesForRepeatingEvents({formattedEvents, activeMonth, activeYear});
+    console.log('02 - getDatesForRepeatingEvents', {allEvents, cancelled});
 
-    // removeCancelledEvents -> returns an array of all events that are not cancelled
-      // loop through the events
-      // if the event has a cancelled array on it
-      // loop through the array and check the dates
-        // they they match, remove the event on that day
+    // processEvents -> returns an array of events with a cancelled and changed array on events that have been cancelled or changed
+    const processedEvents = processEvents(allEvents, cancelled);
+    console.log('03 - processEvents', {processedEvents});
 
-    // const formattedEvents = formatEvents(events);
-    // const { currentEvents, cancelled, changed } = processEvents(
-    //   formattedEvents,
-    //   hICalendar,
-    //   activeMonth,
-    //   activeYear
-    // );
-    // const allCurrentEvents = addCancelledChanged(
-    //   currentEvents,
-    //   cancelled,
-    //   changed
-    // );
-    // const processedCurrentEvents = updateChangedEvents(allCurrentEvents);
-    // const filteredEvents = filterEvents(
-    //   processedCurrentEvents,
-    //   activeMonth,
-    //   activeYear
-    // );
-    // console.log(
-    //   '5', {filteredEvents},
-    //   '4', {processedCurrentEvents},
-    //   '3', {allCurrentEvents},
-    //   '2', {currentEvents},
-    //   '1', {formattedEvents},
-    //   '0', {events},
-    // );
+    return processedEvents;
 
-    // return filteredEvents;
-  }, [events]);
+  }, [events, activeMonth, activeYear, hICalendar]);
+
+  const populateMonthlyCalendar = useMemo(() => {
+    const daysMonth = daysInMonth(activeMonth, activeYear);
+    addEventsEachDay(monthlyEvents, daysMonth, activeMonth)
+  }, [monthlyEvents, activeMonth, activeYear, daysInMonth])
 
   const editEvent = useCallback(
     (e, id, day) => {
@@ -193,7 +158,7 @@ function Calendar(props) {
     [activeYear, activeMonth]
   );
 
-  console.log('Calendar Render', {monthlyEvents})
+  console.log('Calendar Render', {monthlyEvents, populateMonthlyCalendar})
 
   // renders++;
   // if (renders > 50) return;

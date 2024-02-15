@@ -6,10 +6,11 @@ output: array of formatted events from gapi
 */
 import debugLog from './log';
 // global variables
-const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+// const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
 
-const formatEvents = (events) => {
+const formatEvents = (events, hICalendar) => {
+  // console.log('formatEvents', {events, hICalendar})
   const formattedEvents = events.map(e =>{
     if(e.status === 'cancelled') return e;
 
@@ -17,52 +18,16 @@ const formatEvents = (events) => {
       ...e,
       allDay: e.start?.date ? true : false,
       dateStart: new Date(e.start?.date || e.start?.dateTime),
-      dateEnd: new Date(e.end?.date || e.end?.dateTime)
+      dateEnd: new Date(e.end?.date || e.end?.dateTime),
+      changedEvent: e.originalStartTime ? true: false,
+      repeating: e.recurrence ? true: false,
+      calendarName: hICalendar.summary,
+      color: hICalendar.backgroundColor,
+      cancelled: [], 
+      changed: []
     }
   })
   return formattedEvents;
-
-  // debugLog(`formatEvents`, events);
-  // return events
-  //   .map((e) => {
-  //     // const st = e.start?.date || e.start?.dateTime;
-  //     // const et = e.end?.date || e.end?.dateTime;
-  //     // console.log('formatEvents', e.startMoment, e.endMoment)
-  //     // if (!e.startMoment || !e.endMoment) return false;
-  //     if(e.originalStartTime){
-  //       return e;
-  //     }
-
-  //     // const timeZoneOffest = getTimezoneOffset(
-  //     //   new Date(e.startMoment),
-  //     //   timeZone
-  //     // );
-
-  //     const dateEndTZ = e.end?.timeZone ? e.end?.timeZone : timeZone;
-  //     const dateStartTZ = e.start?.timeZone ? e.start?.timeZone : timeZone;
-  //     const dateEnd = new Date(e.end.date || e.end.dateTime);
-  //     const dateStart = new Date(e.start.date || e.start.dateTime);
-      
-  //     // if (e.start?.date) {
-  //     //   dateStart.setMinutes(dateStart.getMinutes() + timeZoneOffest);
-  //     //   dateEnd.setMinutes(dateEnd.getMinutes() + timeZoneOffest);
-  //     // }
-      
-  //     // console.log('formatEvent', e.startMoment, dateStart)
-  //     // if(e.summary === "science lab"){
-  //     //   console.log("formatEvents", {e, timeZoneOffest, dateEndTZ, dateStartTZ, dateEnd, dateStart,});
-  //     // }
-
-  //     return {
-  //       ...e,
-  //       allDay: e.start?.date ? true : false,
-  //       dateEnd,
-  //       dateStart,
-  //       dateStartTZ,
-  //       dateEndTZ,
-  //     };
-  //   })
-  //   .filter((i) => i);
 };
 
 export default formatEvents;
