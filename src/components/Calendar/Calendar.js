@@ -13,7 +13,6 @@ import formatEvents from "./helperFunctions/formatEvents";
 import getDatesForRepeatingEvents from "./helperFunctions/getDatesForRepeatingEvents";
 import filterEvents from "./helperFunctions/filterEvents";
 import addEventsEachDay from "./helperFunctions/addEventsEachDay";
-import daysInMonth from "./helperFunctions/daysInMonth";
 // redux
 import { useSelector } from "react-redux";
 // import { setEvents } from "../../redux/eventsSlice";
@@ -34,6 +33,7 @@ function Calendar(props) {
   const [activeMonth, setActiveMonth] = useState(new Date().getMonth() + 1);
   const [selectedEvent, setSelectedEvent] = useState(false);
   const [selectedDate, setSelectedDate] = useState(false);
+  const [eventsEachDay, setEventsEachDay] = useState([]);
 
   // redux
   const events = useSelector((state) => state.events);
@@ -83,14 +83,16 @@ function Calendar(props) {
     const processedEvents = processEvents(allEvents, cancelled);
     console.log('03 - processEvents', {processedEvents});
 
+    // filter events to just the active month
+    const filteredEvents = filterEvents(processedEvents, activeMonth, activeYear);
+    console.log('04 - filterEvents', {filteredEvents})
+
+    const daysArray = addEventsEachDay(filteredEvents, daysInMonth, activeMonth);
+    setEventsEachDay(daysArray);
+
     return processedEvents;
 
-  }, [events, activeMonth, activeYear, hICalendar]);
-
-  const populateMonthlyCalendar = useMemo(() => {
-    const daysMonth = daysInMonth(activeMonth, activeYear);
-    addEventsEachDay(monthlyEvents, daysMonth, activeMonth)
-  }, [monthlyEvents, activeMonth, activeYear, daysInMonth])
+  }, [events, activeMonth, activeYear, hICalendar, daysInMonth]);
 
   const editEvent = useCallback(
     (e, id, day) => {
@@ -158,7 +160,7 @@ function Calendar(props) {
     [activeYear, activeMonth]
   );
 
-  console.log('Calendar Render', {monthlyEvents, populateMonthlyCalendar})
+  console.log('Calendar Render', {monthlyEvents})
 
   // renders++;
   // if (renders > 50) return;
@@ -195,8 +197,8 @@ function Calendar(props) {
                 handleDayClick(day);
               }}
             >
-              {/* renders the numbers */}
-              {/* <span className="day-span">{day}</span>
+              {/* renders the numbers */} 
+              <span className="day-span">{day}</span>
               {eventsEachDay[day - 1]?.length ? (
                 eventsEachDay[day - 1].map((event, i) => (
                   <div
@@ -225,7 +227,7 @@ function Calendar(props) {
                 ))
               ) : (
                 <div></div>
-              )} */}
+              )}
             </div>
           ))}
 

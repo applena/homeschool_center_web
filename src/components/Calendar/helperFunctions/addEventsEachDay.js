@@ -2,7 +2,7 @@ import moment from "moment";
 
 const addEventsEachDay = (monthlyEvents, daysInMonth, activeMonth) => {
   const daysArray = [...Array(daysInMonth)].map((day) => []);
-  console.log('addEventsEachDay', {monthlyEvents});
+  console.log('addEventsEachDay', {monthlyEvents, daysInMonth, activeMonth});
   monthlyEvents.forEach((event) => {
     // console.log('addEventsEachDay - event - dateEnd', moment(event.dateEnd).toDate(), event.dateEnd, event);
     const isoStartDateTime = event.dateStart.toISOString();
