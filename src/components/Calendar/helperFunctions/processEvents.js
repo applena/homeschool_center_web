@@ -17,9 +17,7 @@ const processEvents = (formattedEvents, cancelled) => {
   formattedEvents.forEach(event => {
     if(event.originalStartTime && event.status !== 'cacncelled'){
       // changed events to into an changed bucket on the original event
-      const eventToBeChanged = formattedEvents.filter(e=>{
-        return e.id === event.recurringEventId && e.status==="confirmed" && e.dateStart.toISOString() === event.dateStart.toISOString();
-      });
+      const eventToBeChanged = formattedEvents.find(e=>e.id === event.recurringEventId && e.status==="confirmed" && e.dateStart.toISOString() === new Date(event.originalStartTime.date || event.originalStartTime.dateTime).toISOString());
 
       eventToBeChanged.remove = true;
       currentEvents.push(event);
