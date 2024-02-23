@@ -22,10 +22,13 @@ const processEvents = (formattedEvents, cancelled) => {
       eventToBeChanged.remove = true;
       currentEvents.push(event);
       return;
-    } 
+    } else if(event.dateEnd.getTime() - event.dateStart.getTime() > 86400000){
+      event.multiDay = true;
+      event.daySpan = Math.floor((event.dateEnd.getTime() - event.dateStart.getTime())/86400000) + 1
+    }
     
     currentEvents.push(event);
-  })
+  });
 
   return currentEvents.filter(e => !e.remove);
 };

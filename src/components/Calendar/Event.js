@@ -2,9 +2,6 @@ import React from "react";
 
 
 function Event(props) {
-  // const [showTooltip, setShowTooltip] = useState(false);
-  // console.log('EVENT', props)
-
   return (
     !props.event.allDay ?
       <div

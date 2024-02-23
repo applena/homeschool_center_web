@@ -4,7 +4,6 @@ const addEventsEachDay = (monthlyEvents, daysInMonth, activeMonth) => {
   const daysArray = [...Array(daysInMonth)].map((day) => []);
   console.log('addEventsEachDay', {monthlyEvents, daysInMonth, activeMonth});
   monthlyEvents.forEach((event) => {
-    // console.log('addEventsEachDay - event - dateEnd', moment(event.dateEnd).toDate(), event.dateEnd, event);
     const isoStartDateTime = event.dateStart.toISOString();
     const isoStartDate = isoStartDateTime.split("T")[0]; //2023-12-03
     const isoEndDate = isoStartDateTime.split("T")[0];
@@ -27,6 +26,10 @@ const addEventsEachDay = (monthlyEvents, daysInMonth, activeMonth) => {
           // console.log("event starts and ends on the same day", event, {startDate});
       } else {
         // TODO: multi-day events - need logic to handle events spaning more than one day 
+        console.log('found multi-day event', event.summary, startDate - 1, event, event.daySpan)
+        for(let i=0; i<event.daySpan; i++){
+          daysArray[startDate -2 + i].push(event);
+        }
       }
     } else {
       // not an all day event or a mulit-day event
@@ -40,7 +43,7 @@ const addEventsEachDay = (monthlyEvents, daysInMonth, activeMonth) => {
       daysArray[startDate - 1].push(event);
     }
 
-  // console.log('end of addEventsEachDay', { daysArray });
+  console.log('end of addEventsEachDay', { daysArray });
   });
 
   // put events in order from earliest to lastest
