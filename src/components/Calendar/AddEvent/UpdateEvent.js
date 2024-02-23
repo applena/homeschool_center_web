@@ -126,9 +126,23 @@ function UpdateItem(props) {
     }
   }
 
-  const deleteSingleEvent = () => {
+  const deleteSingleEvent = async () => {
+    //get a list of all instances of repeating event
+    const instances = await gapi.instances(hICalendar.id, props.selectedEvent.id);
+    const allInstances = instances.result.items;
+
+    // find the instance you want to delete
+    const selectedInstance = allInstances.find(i => new Date(i.start.date || i.start.dateTime).toISOString() === props.selectedEvent.dateStart.toISOString());
+
+    // set status of instance to cancelled
+    selectedInstance.status = 'cancelled';
+
+    // update Event
+    await gapi.update(hICalendar.id, selectedInstance.id, selectedInstance);
+
+    // 
+    console.log('results of finding an instance', hICalendar.id, props.selectedEvent.id,{selectedInstance})
     props.setSelectedEvent(false);
-    //TODO: delete single event
   }
 
   const handleSubmit = async (e, obj) => {
