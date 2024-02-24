@@ -132,7 +132,8 @@ function UpdateItem(props) {
     const allInstances = instances.result.items;
 
     // find the instance you want to delete
-    const selectedInstance = allInstances.find(i => new Date(i.start.date || i.start.dateTime).toISOString() === props.selectedEvent.dateStart.toISOString());
+    const selectedInstance = allInstances.find(i => new Date(i.start.date || i.start.dateTime).toISOString() === props.selectedEvent.activeDate.toISOString());
+    console.log('deleteSingleEvent - find', {selectedInstance}, props.selectedEvent)
 
     // set status of instance to cancelled
     selectedInstance.status = 'cancelled';
