@@ -20,9 +20,11 @@ function AddEditModal(props) {
   const dispatch = useDispatch();
   const config = useSelector((state) => state.config);
 
+  console.log('AddEditModal - config', {config})
+
   // state
   const [eventType, setEventType] = useState('Select Event Type');
-  const [subject, setSubject] = useState(config.subjectList[0]);
+  const [subject, setSubject] = useState(config?.subjectList[0] || '');
   const [newSubject, setNewSubject] = useState(''); // TODO: make a new subject option
   const [description, setDescription] = useState(!props.newEvent ? props.selectedEvent?.description?.description : '');
   const [startDate, setStartDate] = useState(!props.newEvent ? props.selectedEvent.dateStart : props.selectedDate);

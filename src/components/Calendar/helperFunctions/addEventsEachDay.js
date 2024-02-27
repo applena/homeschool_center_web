@@ -2,7 +2,7 @@ import moment from "moment";
 
 const addEventsEachDay = (monthlyEvents, daysInMonth, activeMonth) => {
   const daysArray = [...Array(daysInMonth)].map((day) => []);
-  console.log('addEventsEachDay', {monthlyEvents, daysInMonth, activeMonth});
+  // console.log('addEventsEachDay', {monthlyEvents, daysInMonth, activeMonth});
   monthlyEvents.forEach((event) => {
     const isoStartDateTime = event.dateStart.toISOString();
     const isoStartDate = isoStartDateTime.split("T")[0]; //2023-12-03
@@ -16,7 +16,7 @@ const addEventsEachDay = (monthlyEvents, daysInMonth, activeMonth) => {
 
     let startDate = moment(st).date();
 
-    console.log("addEventsEachDay", event.summary, isoStartDateTime);
+    // console.log("addEventsEachDay", event.summary, isoStartDateTime);
 
     // if this is an all day or multi day event
     if (event.start.date) {
@@ -26,7 +26,7 @@ const addEventsEachDay = (monthlyEvents, daysInMonth, activeMonth) => {
           // console.log("event starts and ends on the same day", event, {startDate});
       } else {
         // TODO: multi-day events - need logic to handle events spaning more than one day 
-        console.log('found multi-day event', event.summary, startDate - 1, event, event.daySpan)
+        // console.log('found multi-day event', event.summary, startDate - 1, event, event.daySpan)
         for(let i=0; i<event.daySpan; i++){
           daysArray[startDate -2 + i].push(event);
         }
@@ -39,11 +39,11 @@ const addEventsEachDay = (monthlyEvents, daysInMonth, activeMonth) => {
       const localEndTime = new Date(event.dateEnd);
       localEndTime.setMinutes(localEndTime.getMinutes() - new Date().getTimezoneOffset());
       event.dateEnd = localEndTime
-      console.log('single timed event - local start time', {event}, event.summary, isoStartDateTime, localStartTime);
+      // console.log('single timed event - local start time', {event}, event.summary, isoStartDateTime, localStartTime);
       daysArray[startDate - 1].push(event);
     }
 
-  console.log('end of addEventsEachDay', { daysArray });
+  // console.log('end of addEventsEachDay', { daysArray });
   });
 
   // put events in order from earliest to lastest

@@ -13,7 +13,7 @@ const processEvents = (formattedEvents, cancelled) => {
     return;
   })
 
-  // loop through formattedEvents and find the events that were changed
+  // loop through formattedEvents and find the events that were changed and multi-day
   formattedEvents.forEach(event => {
     if(event.originalStartTime && event.status !== 'cacncelled'){
       // changed events to into an changed bucket on the original event

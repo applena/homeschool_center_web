@@ -29,9 +29,23 @@ export const eventsSlice = createSlice({
     },
     removeEvent: (state, action) => {
       //find event with id via action.payload
+      console.log('removeEvent', {state})
       state = state.filter((item) => item.id !== action.payload);
+      console.log('removeEvent', {state})
       return state;
       // return state.splie(index of event, 1)
+    },
+  
+    cancelInstance: (state, action) => {
+      console.log('cancelInstance', {state}, action.payload);
+      const found = state.find(e => action.payload.id === e.id);
+      if(found){
+        found.status = 'cancelled';
+      } else {
+        action.payload.status = 'cancelled';
+        state.push(action.payload);
+      }
+      return state;
     },
 
     modifyEvent: (state, action) => {
@@ -57,7 +71,7 @@ export const eventsSlice = createSlice({
 });
 
 // Action creators are generated for each case reducer function
-export const { setEvents, removeEvent, modifyEvent, addEvent } =
+export const { setEvents, removeEvent, modifyEvent, addEvent, cancelInstance } =
   eventsSlice.actions;
 
 export default eventsSlice.reducer;

@@ -27,7 +27,7 @@ function AddEvent(props) {
     const createdEvent = await createEvent({ obj, hICalendar });
     dispatch(addEvent(createdEvent));
     props.setSelectedDate(false);
-    props.setSelectedEvent(false);
+    // props.setSelectedEvent(false);
   }
 
   return (

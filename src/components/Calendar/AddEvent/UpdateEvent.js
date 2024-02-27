@@ -14,7 +14,7 @@ import gapi from '../../../lib/GAPI';
 
 // redux
 import { useSelector, useDispatch } from 'react-redux';
-import { setEvents, modifyEvent, removeEvent } from '../../../redux/eventsSlice';
+import { setEvents, modifyEvent, removeEvent, cancelInstance } from '../../../redux/eventsSlice';
 
 function UpdateItem(props) {
   // console.log('UpdateItem', { props })
@@ -127,22 +127,32 @@ function UpdateItem(props) {
   }
 
   const deleteSingleEvent = async () => {
+    // Remove From GAPI
     //get a list of all instances of repeating event
     const instances = await gapi.instances(hICalendar.id, props.selectedEvent.id);
     const allInstances = instances.result.items;
 
     // find the instance you want to delete
     const selectedInstance = allInstances.find(i => new Date(i.start.date || i.start.dateTime).toISOString() === props.selectedEvent.activeDate.toISOString());
-    console.log('deleteSingleEvent - find', {selectedInstance}, props.selectedEvent)
 
+    console.log('found the selected deleted event', {selectedInstance})
     // set status of instance to cancelled
+    if(!selectedInstance){
+      console.error('can\'t find selected event'); 
+      return
+    }
+    
     selectedInstance.status = 'cancelled';
+
+    console.log('before gapi updates')
 
     // update Event
     await gapi.update(hICalendar.id, selectedInstance.id, selectedInstance);
 
-    // 
-    console.log('results of finding an instance', hICalendar.id, props.selectedEvent.id,{selectedInstance})
+    // Remove from Redux
+    console.log('after gapi updated Events', selectedInstance.id);
+    dispatch(cancelInstance(selectedInstance));
+    
     props.setSelectedEvent(false);
   }
 
@@ -232,7 +242,7 @@ function UpdateItem(props) {
         try {
           const response = await gapi.remove(props.hICalendar.id, specificEvent.id);
           console.log('successfully removed event', { response });
-          dispatch(setEvents([...events, { recurringEventId: props.selectedEvent.id, originalStartTime: { ...specificEvent.start }, status: 'cancelled' }]));
+          dispatch(setEvents([...events, { originalStartTime: { ...specificEvent.start }, status: 'cancelled' }]));
 
         } catch (e) {
           console.log('problem removing event', e.message)

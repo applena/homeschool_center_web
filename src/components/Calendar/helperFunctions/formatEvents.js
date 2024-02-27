@@ -10,7 +10,7 @@ import debugLog from './log';
 
 
 const formatEvents = (events, hICalendar) => {
-  // console.log('formatEvents', {events, hICalendar})
+  console.log('formatEvents', {events, hICalendar})
   const formattedEvents = events.map(e =>{
     if(e.status === 'cancelled') return e;
 

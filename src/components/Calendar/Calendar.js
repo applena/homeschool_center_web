@@ -27,7 +27,6 @@ const days = [...Languages.EN.DAYS];
 // let renders = 0;
 
 function Calendar(props) {
-  console.log("Calendar");
 
   const [activeYear, setActiveYear] = useState(new Date().getFullYear());
   const [activeMonth, setActiveMonth] = useState(new Date().getMonth() + 1);
@@ -69,7 +68,7 @@ function Calendar(props) {
   );
 
   const monthlyEvents = useMemo(() => {
-    console.log('useMemo', {events})
+    console.log('00 - montlyEvents', {events})
     // take in events
     // format events -> returns an array of events in the same format
     const formattedEvents = formatEvents(events, hICalendar);

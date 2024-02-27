@@ -6,6 +6,8 @@ function LandingPage(props) {
 
   console.log("landing page,", props.isSignedIn, eventsData.length);
 
+  console.log('LandingPage', {eventsData})
+
   return (
     <div id="landing-page">
       {props.isSignedIn && <Calendar events={eventsData} />}

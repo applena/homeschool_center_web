@@ -26,9 +26,9 @@ function Event(props) {
         <div style={{
           width: '100%',
           borderRadius: '3px',
-          border: `1px solid ${props.color}`,
+          border: `1px solid ${props.color || 'black'}`,
           height: '26px',
-          background: props.event.color
+          background: props.event.color || 'black'
         }}
         >
           <div

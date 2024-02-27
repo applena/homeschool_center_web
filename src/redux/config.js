@@ -3,7 +3,7 @@ import updateConfig from '../components/Login/updateConfig';
 
 export const configSlice = createSlice({
   name: 'config',
-  initialState: {},
+  initialState: {subjectList: []},
   reducers: {
     setHICalendarConfig: (state, action) => {
       console.log('setHICalendarConfig', action.payload)

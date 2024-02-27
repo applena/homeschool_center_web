@@ -5,6 +5,7 @@ const getDatesForRepeatingEvents = ({formattedEvents, activeMonth, activeYear}) 
   const allEvents = [];
   const cancelled = [];
   
+  console.log('getDatesForRepeatingEvents', {formattedEvents})
   formattedEvents.forEach(event => {
     const duration = moment(event.endMoment).diff(moment(event.startMoment));
     if(event.status === "cancelled") {
