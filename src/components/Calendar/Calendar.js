@@ -73,19 +73,19 @@ function Calendar(props) {
     // format events -> returns an array of events in the same format
     const formattedEvents = formatEvents(events, hICalendar);
     console.log('01 - formatEvents', {formattedEvents});
-
+    
     // getDatesForRepeatingEvents -> returns an array of all the events including repeating ones
     const {allEvents, cancelled} = getDatesForRepeatingEvents({formattedEvents, activeMonth, activeYear});
     console.log('02 - getDatesForRepeatingEvents', {allEvents, cancelled});
-
+    
     // processEvents -> returns an array of events with a cancelled and changed array on events that have been cancelled or changed
     const processedEvents = processEvents(allEvents, cancelled);
     console.log('03 - processEvents', {processedEvents});
-
+    
     // filter events to just the active month
     const filteredEvents = filterEvents(processedEvents, activeMonth, activeYear);
     console.log('04 - filterEvents', {filteredEvents})
-
+    
     const daysArray = addEventsEachDay(filteredEvents, daysInMonth, activeMonth);
     setEventsEachDay(daysArray);
 

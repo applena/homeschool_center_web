@@ -32,14 +32,6 @@ const addEventsEachDay = (monthlyEvents, daysInMonth, activeMonth) => {
         }
       }
     } else {
-      // not an all day event or a mulit-day event
-      const localStartTime = new Date(isoStartDateTime);
-      localStartTime.setMinutes(localStartTime.getMinutes() - new Date().getTimezoneOffset());
-      event.dateStart = localStartTime;
-      const localEndTime = new Date(event.dateEnd);
-      localEndTime.setMinutes(localEndTime.getMinutes() - new Date().getTimezoneOffset());
-      event.dateEnd = localEndTime
-      // console.log('single timed event - local start time', {event}, event.summary, isoStartDateTime, localStartTime);
       daysArray[startDate - 1].push(event);
     }
 

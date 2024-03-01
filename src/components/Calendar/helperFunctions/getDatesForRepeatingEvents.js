@@ -29,14 +29,16 @@ const getDatesForRepeatingEvents = ({formattedEvents, activeMonth, activeYear}) 
         additionalEvent.dateStart = day;
         allEvents.push(additionalEvent);
       });
-    } else if(!event.recurrence?.length && event.start.dateTime){
-      //non-repeating events
-      const additionalEvent = {...event};
-      additionalEvent.dateEnd = new Date(new Date(event.dateStart).getTime() + duration);
-      allEvents.push(additionalEvent);
     } else {
+      // //non-repeating events
+      // const additionalEvent = {...event};
+      // additionalEvent.dateEnd = new Date(new Date(event.dateStart).getTime() + duration);
+      // additionalEvent.dateStart = new Date(event.start.dateTime);
+      console.log('getDatesForRepeating ... blah ... blah', {event})
       allEvents.push(event);
     }
+
+    
   })
 
   return {allEvents, cancelled};
