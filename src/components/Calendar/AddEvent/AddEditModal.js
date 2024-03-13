@@ -39,7 +39,7 @@ function AddEditModal(props) {
   const [allDay, setAllDay] = useState(!props.newEvent ? props.selectedEvent.allDay : true);
   const [displayDeleteOptions, setDisplayDeleteOptions] = useState(false);
 
-  // console.log('AddEditModal - after state', { props })
+  console.log('AddEditModal - after state', { props })
 
   // REPEATING RULES
   const [rRuleObj, setRRuleObj] = useState({
@@ -73,6 +73,26 @@ function AddEditModal(props) {
       ]
     }
   };
+
+  const updateEvent = (e) => {
+    e.preventDefault();
+    props.handleSubmit({
+      event: { ...props.selectedEvent,
+        startDate, 
+        startTime, 
+        endTime, 
+        rRuleObj,
+        summary: name
+      },
+      options: {
+        repeats, 
+        allDay,
+        update:true,
+        ordinalIndex,
+        ordinalsOfMonth
+      }
+    })
+  }
 
   const addNewSubject = useCallback((e) => {
     e.preventDefault();
@@ -253,7 +273,7 @@ function AddEditModal(props) {
         <div className='delete-options'>
           <Button onClick={() => { props.setSelectedDate(false); props.setSelectedEvent(false) }} variant="secondary">Close</Button>
           <Button
-            onClick={(e) => props.handleSubmit(e, { allDay, startDate, startTime, endTime, event, repeats, rRuleObj, ordinalIndex, ordinalsOfMonth })}
+            onClick={(e) => updateEvent(e)}
             variant="primary">Save Changes</Button>
           {!props.newEvent &&
             <Button

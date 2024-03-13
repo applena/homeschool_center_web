@@ -1,4 +1,4 @@
-// import { useState } from 'react';
+import { useState } from 'react';
 
 // components
 import AddEditModal from './AddEditModal';
@@ -17,7 +17,8 @@ import { useSelector, useDispatch } from 'react-redux';
 import { setEvents, modifyEvent, removeEvent, cancelInstance } from '../../../redux/eventsSlice';
 
 function UpdateItem(props) {
-  // console.log('UpdateItem', { props })
+
+  console.log('UpdateItem', { props })
   const dispatch = useDispatch();
   const hICalendar = useSelector((state) => state.hICalendar);
   const events = useSelector((state) => state.events);
@@ -32,26 +33,6 @@ function UpdateItem(props) {
       console.log('error removing event');
     }
   }
-
-
-
-  // }
-
-  // if (props.text === 'Save Changes') {
-
-  //   try {
-  //     console.log('update event', props.event)
-  //     const response = await gapi.update(hICalendar.id, props.selectedEvent.id, props.event);
-  //     console.log('response from gapi', { response });
-  //     const updatedEvent = response.result;
-  //     dispatch(modifyEvent(updatedEvent));
-  //     props.setSelectedDate(false);
-  //     props.setSelectedEvent(false);
-  //     console.log('event successfully updated');
-  //   } catch {
-  //     console.log('problem updating event');
-  //   }
-  // }
 
   // if (props.text === 'Just Today') {
   //   console.log('just today')
@@ -156,13 +137,14 @@ function UpdateItem(props) {
     props.setSelectedEvent(false);
   }
 
-  const handleSubmit = async (e, obj) => {
-    e.preventDefault();
+  const handleSubmit = async ({event, options}) => {
+    // {}
 
-    console.log('UpdateEvent - handleSubmit', { obj });
+    console.log('UpdateEvent - handleSubmit', { event, options, props });
 
     props.setSelectedEvent(false);
 
+    // deals with delete
     if (props.text === 'Today and All Future Events') {
       const yesterday = new Date(props.selectedEvent.activeDate);
       yesterday.setDate(yesterday.getDate() - 1);
@@ -177,7 +159,7 @@ function UpdateItem(props) {
 
       try {
         console.log('calling GAPI to update event', { updatedSelectedEvent })
-        await gapi.update(props.hICalendar.id, obj.id, updatedSelectedEvent);
+        await gapi.update(props.hICalendar.id, event.id, updatedSelectedEvent);
         // await gapi.client.calendar.events.update({
         //   'calendarId': props.hICalendar.id,
         //   'eventId': id,
@@ -204,11 +186,11 @@ function UpdateItem(props) {
 
     }
 
-    if (props.text === 'Save Changes') {
-
+    // deals with update
+    if(options.update){
       try {
-        console.log('calling GAPI to update event', props.event)
-        const response = await gapi.update(hICalendar.id, props.selectedEvent.id, props.event);
+        console.log('calling GAPI to update event', event)
+        const response = await gapi.update(hICalendar.id, props.selectedEvent.id, event);
         console.log('response from gapi', { response });
         const updatedEvent = response.result;
         dispatch(modifyEvent(updatedEvent));
