@@ -61,6 +61,7 @@ function Header(props) {
         console.log("no hi calendar found - making it");
         // make HI calendar and save to redux
         hICalendar = await makeHICalendar();
+        
         console.log("made hi calendar", { hICalendar });
       } else {
         console.log("hICalendar found", { hICalendar });

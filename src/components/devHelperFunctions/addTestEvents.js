@@ -1,4 +1,4 @@
-import createEvent from "../Calendar/AddEvent/createEvent";
+import createEvent from "../Calendar/AddEvent/createEvent/createEvent";
 
 async function addTestEvents({ hICalendar }) {
   console.log("addTestEvents");

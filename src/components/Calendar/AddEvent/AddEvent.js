@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import './addEvent.scss';
 import AddEditModal from './AddEditModal';
-import createEvent from './createEvent';
+import createEvent from './createEvent/createEvent';
 
 // external libraries
 import Modal from 'react-bootstrap/Modal';
@@ -22,9 +22,9 @@ function AddEvent(props) {
   const dispatch = useDispatch();
   const hICalendar = useSelector((state) => state.hICalendar);
 
-  const handleSubmit = async (e, obj) => {
-    console.log('handleSubmit', { obj });
-    const createdEvent = await createEvent({ obj, hICalendar });
+  const handleSubmit = async ({event, options}) => {
+    console.log('handleSubmit', { event, options });
+    const createdEvent = await createEvent({ event, hICalendar });
     dispatch(addEvent(createdEvent));
     props.setSelectedDate(false);
     // props.setSelectedEvent(false);
