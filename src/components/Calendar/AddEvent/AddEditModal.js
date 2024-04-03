@@ -393,15 +393,23 @@ function AddEditModal(props) {
           >
             Close
           </Button>
-          <Button onClick={(e) => createNewEvent(e)} variant="primary">
-            Save
-          </Button>
+          {props.newEvent && (
+            <Button onClick={(e) => createNewEvent(e)} variant="primary">
+              Save
+            </Button>
+          )}
           {!props.newEvent && (
             <>
               <Button onClick={(e) => updateEvent(e)} variant="primary">
                 Save Changes
               </Button>
-              <Button onClick={() => setDisplayDeleteOptions(true)}>
+              <Button
+                onClick={() => {
+                  props.deleteEvent(true);
+                  if (props.selectedEvent.repeats)
+                    setDisplayDeleteOptions(true);
+                }}
+              >
                 Delete
               </Button>
             </>
