@@ -48,7 +48,7 @@ async function createEvent({ event, hICalendar }) {
     }
 
     console.log("final", { recurrence });
-    event.event["recurrence"] = [recurrence.join(";")];
+    event["recurrence"] = [recurrence.join(";")];
   }
 
   let createdEvent = {};

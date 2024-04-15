@@ -54,6 +54,8 @@ function AddEditModal(props) {
     BYDAY: "Day Of Week",
   });
 
+  // console.log({ rRuleObj });
+
   // booliean reveals repeating options
   const [repeats, setRepeats] = useState(false);
 
@@ -93,6 +95,8 @@ function AddEditModal(props) {
         summary: name,
         description,
         allDay,
+        recurrence: rRuleObj,
+        repeats,
       },
       options: {
         repeats,
@@ -113,6 +117,8 @@ function AddEditModal(props) {
         summary: name,
         description,
         allDay,
+        recurrence: rRuleObj,
+        repeats,
       },
       options: {
         repeats,
