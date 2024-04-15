@@ -5,6 +5,7 @@ import { zonedTimeToUtc, utcToZonedTime, format } from "date-fns-tz";
 import Event from "./Event";
 import UpdateEvent from "./AddEvent/UpdateEvent";
 import AddEvent from "./AddEvent/AddEvent";
+import DeleteEvent from "./DeleteEvent/DeleteEvent";
 
 // helper functions
 import { Languages } from "../../lib/utils/languages";
@@ -27,12 +28,12 @@ const days = [...Languages.EN.DAYS];
 // let renders = 0;
 
 function Calendar(props) {
-
   const [activeYear, setActiveYear] = useState(new Date().getFullYear());
   const [activeMonth, setActiveMonth] = useState(new Date().getMonth() + 1);
   const [selectedEvent, setSelectedEvent] = useState(false);
   const [selectedDate, setSelectedDate] = useState(false);
   const [eventsEachDay, setEventsEachDay] = useState([]);
+  const [deleteEvent, setDeleteEvent] = useState(false);
 
   // redux
   const events = useSelector((state) => state.events);
@@ -68,29 +69,41 @@ function Calendar(props) {
   );
 
   const monthlyEvents = useMemo(() => {
-    console.log('00 - montlyEvents', {events})
+    console.log("00 - montlyEvents", { events });
     // take in events
     // format events -> returns an array of events in the same format
     const formattedEvents = formatEvents(events, hICalendar);
-    console.log('01 - formatEvents', {formattedEvents});
-    
+    console.log("01 - formatEvents", { formattedEvents });
+
     // getDatesForRepeatingEvents -> returns an array of all the events including repeating ones
-    const {allEvents, cancelled} = getDatesForRepeatingEvents({formattedEvents, activeMonth, activeYear});
-    console.log('02 - getDatesForRepeatingEvents', {allEvents, cancelled});
-    
+    const { allEvents, cancelled } = getDatesForRepeatingEvents({
+      formattedEvents,
+      activeMonth,
+      activeYear,
+    });
+    console.log("02 - getDatesForRepeatingEvents", { allEvents, cancelled });
+
     // processEvents -> returns an array of events with a cancelled and changed array on events that have been cancelled or changed
     const processedEvents = processEvents(allEvents, cancelled);
-    console.log('03 - processEvents', {processedEvents});
-    
+    console.log("03 - processEvents", { processedEvents });
+
     // filter events to just the active month
-    const filteredEvents = filterEvents(processedEvents, activeMonth, activeYear);
-    console.log('04 - filterEvents', {filteredEvents})
-    
-    const daysArray = addEventsEachDay(filteredEvents, daysInMonth, activeMonth);
+    const filteredEvents = filterEvents(
+      processedEvents,
+      activeMonth,
+      activeYear
+    );
+    console.log("04 - filterEvents", { filteredEvents });
+
+    const daysArray = addEventsEachDay(
+      filteredEvents,
+      daysInMonth,
+      activeMonth
+    );
+    console.log("05-addEventsEachDay", { daysArray });
     setEventsEachDay(daysArray);
 
     return processedEvents;
-
   }, [events, activeMonth, activeYear, hICalendar, daysInMonth]);
 
   const editEvent = useCallback(
@@ -103,8 +116,6 @@ function Calendar(props) {
           .toString()
           .padStart(2, "0")}`
       );
-      // chosenEvent.activeDate.setMinutes(chosenEvent.activeDate.getMinutes() + new Date().getTimezoneOffset());
-      // chosenEvent.activeDate.setDate(obj.date);
       console.log("editEvent", { chosenEvent, activeYear, activeMonth, day });
       setSelectedEvent(chosenEvent);
     },
@@ -159,7 +170,7 @@ function Calendar(props) {
     [activeYear, activeMonth]
   );
 
-  console.log('Calendar Render', {monthlyEvents})
+  console.log("Calendar Render", { monthlyEvents });
 
   // renders++;
   // if (renders > 50) return;
@@ -196,7 +207,7 @@ function Calendar(props) {
                 handleDayClick(day);
               }}
             >
-              {/* renders the numbers */} 
+              {/* renders the numbers */}
               <span className="day-span">{day}</span>
               {eventsEachDay[day - 1]?.length ? (
                 eventsEachDay[day - 1].map((event, i) => (
@@ -250,6 +261,7 @@ function Calendar(props) {
           events={events}
         />
       )}
+      {deleteEvent && <DeleteEvent />}
     </div>
   );
 }

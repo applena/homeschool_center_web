@@ -393,7 +393,9 @@ function AddEditModal(props) {
           <Button
             onClick={() => {
               props.setSelectedDate(false);
-              props.setSelectedEvent(false);
+              if (props.selectedEvent) {
+                props.setSelectedEvent(false);
+              }
             }}
             variant="secondary"
           >
@@ -411,9 +413,11 @@ function AddEditModal(props) {
               </Button>
               <Button
                 onClick={() => {
-                  props.deleteEvent(true);
-                  if (props.selectedEvent.repeats)
+                  if (props.selectedEvent.recurrence) {
                     setDisplayDeleteOptions(true);
+                  } else {
+                    props.deleteEvent(true);
+                  }
                 }}
               >
                 Delete
